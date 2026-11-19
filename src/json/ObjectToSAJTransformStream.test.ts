@@ -166,6 +166,43 @@ describe.concurrent("pattern", (test) => {
         { name: "endDocument" },
       ],
     },
+    {
+      name: "Date and custom toJSON",
+      input: [
+        {
+          date: new Date("2026-01-01T00:00:00.000Z"),
+          custom: {
+            toJSON(key: string) {
+              return { key };
+            },
+          },
+          arr: [
+            {
+              toJSON(key: string) {
+                return `item-${key}`;
+              },
+            },
+          ],
+        },
+      ],
+      output: [
+        { name: "startDocument", kind: "json" },
+        { name: "startObject" },
+        { name: "key", key: "date" },
+        { name: "value", type: "string", value: "2026-01-01T00:00:00.000Z" },
+        { name: "key", key: "custom" },
+        { name: "startObject" },
+        { name: "key", key: "key" },
+        { name: "value", type: "string", value: "custom" },
+        { name: "endObject" },
+        { name: "key", key: "arr" },
+        { name: "startArray" },
+        { name: "value", type: "string", value: "item-0" },
+        { name: "endArray" },
+        { name: "endObject" },
+        { name: "endDocument" },
+      ],
+    },
   ];
   test.each(entries)("$name", async ({ options, input, output }) => {
     const { readable, writable } = new ObjectToSAJTransformStream(options);

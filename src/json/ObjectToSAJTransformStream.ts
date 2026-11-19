@@ -137,7 +137,7 @@ export class ObjectToSAJTransformStream<T = unknown> extends TransformStream<T, 
     yield* this.#emitValue(newValue);
   }
 
-  async* #emitValue(value: unknown): AsyncGenerator<SAJEventInterface, void, void> {
+  async* #emitValue(value: unknown, key: string = "", callToJSON: boolean = true): AsyncGenerator<SAJEventInterface, void, void> {
     // #region primitive
     if (value === null || typeof value !== "object") {
       switch (typeof value) {
@@ -159,11 +159,16 @@ export class ObjectToSAJTransformStream<T = unknown> extends TransformStream<T, 
     }
     // #endregion
 
+    if (callToJSON && "toJSON" in value && typeof value.toJSON === "function") {
+      yield* this.#emitValue((value as { toJSON: (key: string) => unknown }).toJSON(key), key, false);
+      return;
+    }
+
     // #region array and iterable
     if (Array.isArray(value)) {
       yield new StartArrayEvent();
-      for (const item of value) {
-        yield* this.#emitValue(item);
+      for (const [index, item] of value.entries()) {
+        yield* this.#emitValue(item, String(index));
       }
       yield new EndArrayEvent();
       return;
@@ -190,11 +195,11 @@ export class ObjectToSAJTransformStream<T = unknown> extends TransformStream<T, 
 
     // #region object
     yield new StartObjectEvent();
-    for (const [key, val] of Object.entries(value)) {
+    for (const [propKey, val] of Object.entries(value)) {
       let sendKey = false;
-      for await (const child of this.#emitValue(val)) {
+      for await (const child of this.#emitValue(val, propKey)) {
         if (!sendKey) {
-          yield new KeyEvent(key);
+          yield new KeyEvent(propKey);
           sendKey = true;
         }
         yield child;

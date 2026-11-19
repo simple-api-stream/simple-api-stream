@@ -119,7 +119,7 @@ const events = ReadableStream.from([{ a: [1, null] }])
   .pipeThrough(new ObjectToSAJTransformStream());
 ```
 
-Arrays, plain objects, primitives, `null`, iterators and async iterators (serialized as arrays) are supported. How unsupported values (`undefined`, functions, `bigint`, symbols, …) are handled is controlled by the `unSupported` option.
+Arrays, plain objects, primitives, `null`, objects with `toJSON()` (such as `Date`), iterators and async iterators (serialized as arrays) are supported. How unsupported values (`undefined`, functions, `bigint`, symbols, …) are handled is controlled by the `unSupported` option.
 
 ### Building SAJ events imperatively
 
