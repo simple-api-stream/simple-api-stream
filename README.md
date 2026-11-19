@@ -19,6 +19,7 @@ flowchart LR
     OBJ["JS values"] -- ObjectToSAJTransformStream --> SAJ
     RJ["ResolveToSAJReadableStream (imperative)"] --> SAJ
     SAJ -- SAJToObjectTransformStream --> OBJ2["JS values"]
+    SAJ -- SAJToJSONTextTransformStream --> JT2["JSON text"]
     JT -- JSONTextToSAJEventWritableStream --> HJ["SAJHandler callbacks"]
   end
   subgraph XML
@@ -37,6 +38,7 @@ flowchart LR
 | | [`JSONTextToSAJEventWritableStream`](./src/json/JSONTextToSAJEventWritableStream.ts) | `WritableStream` | JSON text (`string` chunks) | Calls a [`SAJHandler`](./src/json/interface/SAJHandler.ts) |
 | | [`SAJToObjectTransformStream<T>`](./src/json/SAJToObjectTransformStream.ts) | `TransformStream` | SAJ events | JavaScript values of type `T` |
 | | [`ObjectToSAJTransformStream<T>`](./src/json/ObjectToSAJTransformStream.ts) | `TransformStream` | JavaScript values (incl. iterators / async iterators) | SAJ events |
+| | [`SAJToJSONTextTransformStream`](./src/json/SAJToJSONTextTransformStream.ts) | `TransformStream` | SAJ events | JSON text |
 | | [`ResolveToSAJReadableStream`](./src/json/ResolveToSAJReadableStream.ts) | `ReadableStream` | Method calls ([`SAJResolver`](./src/json/interface/SAJResolver.ts)) | SAJ events |
 | **XML** | [`XMLTextToSAXTransformStream`](./src/xml/XMLTextToSAXTransformStream.ts) | `TransformStream` | XML text (`string` chunks) | [`SAXEventInterface`](./src/xml/event-interface/SAXEventInterface.ts) objects |
 | | [`XMLTextToSAXEventWritableStream`](./src/xml/XMLTextToSAXEventWritableStream.ts) | `WritableStream` | XML text (`string` chunks) | Calls a [`SAXHandler`](./src/xml/interface/SAXHandler.ts) |
@@ -293,6 +295,7 @@ A self-closing tag such as `<br/>` produces a `startElement` with `selfClosing: 
 | `JSONTextToSAJParserError` | `simple-api-stream/json` (`streams.JSONTextToSAJParserError`) |
 | `SAJToObjectTransformStreamError` | `simple-api-stream/json` (`streams.SAJToObjectTransformStreamError`) |
 | `ObjectToSAJTransformStreamError` | `simple-api-stream/json` (`streams.ObjectToSAJTransformStreamError`) |
+| `SAJToJSONTextTransformStreamError` | `simple-api-stream/json` (`streams.SAJToJSONTextTransformStreamError`) |
 | `XMLTextToSAXParserError` | `simple-api-stream/xml` (`streams.XMLTextToSAXParserError`) |
 | `SAXToXMLTextTransformStreamError` | `simple-api-stream/xml` (`streams.SAXToXMLTextTransformStreamError`) |
 | `ResolveToSAXReadableStreamError` | `simple-api-stream/xml` (`streams.ResolveToSAXReadableStreamError`) |
@@ -325,6 +328,7 @@ import {
   JSONTextToSAJEventWritableStream,
   SAJToObjectTransformStream,
   ObjectToSAJTransformStream,
+  SAJToJSONTextTransformStream,
   ResolveToSAJReadableStream,
   // XML
   XMLTextToSAXTransformStream,
@@ -339,8 +343,8 @@ import {
 import {
   JSONTextToSAJTransformStream,
   SAJToObjectTransformStream,
-  // also: JSONTextToSAJEventWritableStream, ObjectToSAJTransformStream, ResolveToSAJReadableStream,
-  //       streams, events, eventInterfaces (types), interfaces (types)
+  // also: JSONTextToSAJEventWritableStream, ObjectToSAJTransformStream, SAJToJSONTextTransformStream,
+  //       ResolveToSAJReadableStream, streams, events, eventInterfaces (types), interfaces (types)
 } from "simple-api-stream/json";
 
 import {

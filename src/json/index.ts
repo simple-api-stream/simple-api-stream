@@ -9,6 +9,7 @@ import * as JSONTextToSAJTransformStreamModule from "./JSONTextToSAJTransformStr
 import * as SAJToObjectTransformStreamModule from "./SAJToObjectTransformStream.js";
 import * as JSONTextToSAJParserModule from "./JSONTextToSAJParser.js";
 import * as ObjectToSAJTransformStreamModule from "./ObjectToSAJTransformStream.js";
+import * as SAJToJSONTextTransformStreamModule from "./SAJToJSONTextTransformStream.js";
 
 export const streams = {
   ...JSONTextToSAJEventWritableStreamModule,
@@ -16,9 +17,11 @@ export const streams = {
   ...SAJToObjectTransformStreamModule,
   ...JSONTextToSAJParserModule,
   ...ObjectToSAJTransformStreamModule,
+  ...SAJToJSONTextTransformStreamModule,
 };
 export const JSONTextToSAJEventWritableStream = JSONTextToSAJEventWritableStreamModule.JSONTextToSAJEventWritableStream;
 export const ResolveToSAJReadableStream = ResolveToSAJReadableStreamModule.ResolveToSAJReadableStream;
 export const JSONTextToSAJTransformStream = JSONTextToSAJTransformStreamModule.JSONTextToSAJTransformStream;
 export const SAJToObjectTransformStream = SAJToObjectTransformStreamModule.SAJToObjectTransformStream;
 export const ObjectToSAJTransformStream = ObjectToSAJTransformStreamModule.ObjectToSAJTransformStream;
+export const SAJToJSONTextTransformStream = SAJToJSONTextTransformStreamModule.SAJToJSONTextTransformStream;

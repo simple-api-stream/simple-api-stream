@@ -16,5 +16,6 @@ export {
   JSONTextToSAJTransformStream,
   SAJToObjectTransformStream,
   ObjectToSAJTransformStream,
+  SAJToJSONTextTransformStream,
 } from "./json/index.js";
 // #endregion
