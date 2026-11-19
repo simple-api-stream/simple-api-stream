@@ -140,6 +140,8 @@ describe("SAJToJSONTextTransformStream - error handling", () => {
     expect(stream.status).toEqual({
       containerStack: [],
       firstItemStack: [],
+      indent: "",
+      lineBreak: "",
       parts: [],
       pendingValueForKey: false,
       summarize: "default",
@@ -164,6 +166,8 @@ describe("SAJToJSONTextTransformStream - error handling", () => {
     expect(stream.status).toEqual({
       containerStack: [],
       firstItemStack: [],
+      indent: "",
+      lineBreak: "",
       parts: [],
       pendingValueForKey: false,
       summarize: "default",
@@ -289,6 +293,55 @@ describe.concurrent("pattern", (test) => {
       ],
       output: [
         "42",
+      ],
+    },
+    {
+      name: "indent: 2 with nested object, array, and empty containers",
+      options: { indent: 2, summarize: true },
+      input: [
+        { name: "startObject" },
+        { name: "key", key: "a" },
+        { name: "startArray" },
+        { name: "value", type: "number", value: 1 },
+        { name: "startObject" },
+        { name: "endObject" },
+        { name: "startArray" },
+        { name: "endArray" },
+        { name: "endArray" },
+        { name: "key", key: "b" },
+        { name: "startObject" },
+        { name: "key", key: "c" },
+        { name: "value", type: "boolean", value: true },
+        { name: "endObject" },
+        { name: "endObject" },
+      ],
+      output: [
+        JSON.stringify({ a: [1, {}, []], b: { c: true } }, null, 2),
+      ],
+    },
+    {
+      name: "indent: tab with custom lineBreak",
+      options: { indent: "\t", lineBreak: "\r\n", summarize: true },
+      input: [
+        { name: "startObject" },
+        { name: "key", key: "k" },
+        { name: "value", type: "string", value: "v" },
+        { name: "endObject" },
+      ],
+      output: [
+        "{\r\n\t\"k\": \"v\"\r\n}",
+      ],
+    },
+    {
+      name: "indent: 0 (no indent)",
+      options: { indent: 0, summarize: true },
+      input: [
+        { name: "startArray" },
+        { name: "value", type: "number", value: 1 },
+        { name: "endArray" },
+      ],
+      output: [
+        "[1]",
       ],
     },
   ];

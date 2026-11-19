@@ -19,6 +19,8 @@ type Status = {
   get firstItemStack(): boolean[]
   get pendingValueForKey(): boolean
   get summarize(): Summarize
+  get indent(): string
+  get lineBreak(): string
   get parts(): string[]
 };
 
@@ -30,6 +32,8 @@ export class SAJToJSONTextTransformStreamError extends Error implements Status {
     this.firstItemStack = status.firstItemStack;
     this.pendingValueForKey = status.pendingValueForKey;
     this.summarize = status.summarize;
+    this.indent = status.indent;
+    this.lineBreak = status.lineBreak;
     this.parts = status.parts;
   }
 
@@ -37,12 +41,18 @@ export class SAJToJSONTextTransformStreamError extends Error implements Status {
   firstItemStack: boolean[];
   pendingValueForKey: boolean;
   summarize: Summarize;
+  indent: string;
+  lineBreak: string;
   parts: string[];
 }
 
 export type SAJToJSONTextTransformStreamOptions = {
   /** json text is document summarize */
   summarize: boolean | Summarize
+  /** indent size or indent character */
+  indent: number | string
+  /** line break character (defaults to "\n" when indent is set) */
+  lineBreak: string
 };
 const stacks = Object.freeze({
   object: "object",
@@ -72,6 +82,10 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
   #pendingValueForKey = false;
   /** JSON Text summarize unit */
   #summarize: Summarize;
+  /** Indent unit string */
+  #indent: string;
+  /** Line break string */
+  #lineBreak: string;
   #parts: string[] = [];
 
   #status() {
@@ -80,6 +94,8 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
       firstItemStack: structuredClone(this.#firstItemStack),
       pendingValueForKey: this.#pendingValueForKey,
       summarize: this.#summarize,
+      indent: this.#indent,
+      lineBreak: this.#lineBreak,
       parts: structuredClone(this.#parts),
     };
   }
@@ -88,7 +104,7 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
     return this.#status();
   }
 
-  constructor({ summarize }: Partial<SAJToJSONTextTransformStreamOptions> = {}) {
+  constructor({ summarize, indent, lineBreak }: Partial<SAJToJSONTextTransformStreamOptions> = {}) {
     let controller_!: TransformStreamDefaultController<string>;
     super({
       start: (controller) => {
@@ -103,6 +119,10 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
     });
     this.#controller = controller_;
     this.#summarize = this.#toSummarize(summarize);
+    this.#indent = typeof indent === "number"
+      ? (indent > 0 ? " ".repeat(indent) : "")
+      : (indent ?? "");
+    this.#lineBreak = lineBreak ?? (this.#indent ? "\n" : "");
   }
 
   #toSummarize(value?: SAJToJSONTextTransformStreamOptions["summarize"]): Summarize {
@@ -175,11 +195,22 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
     this.#containerStack.push(stacks.document);
   }
 
+  #makeIndentPrefix(): string {
+    if (!this.#lineBreak && !this.#indent) return "";
+    return `${this.#lineBreak}${this.#indent.repeat(this.#firstItemStack.length)}`;
+  }
+
   #startStructure(type: typeof stacks.array | typeof stacks.object): string[] {
     const out: string[] = [];
-    // オブジェクト内の key の直後ならカンマは抑制（#pendingValueForKey が true）
-    if (!this.#pendingValueForKey && !this.#isFirstItem()) {
-      out.push(",");
+    // オブジェクト内の key の直後ならカンマ・インデントは抑制（#pendingValueForKey が true）
+    if (!this.#pendingValueForKey) {
+      if (!this.#isFirstItem()) {
+        out.push(",");
+      }
+      if (this.#firstItemStack.length > 0) {
+        const prefix = this.#makeIndentPrefix();
+        if (prefix) out.push(prefix);
+      }
     }
     out.push(type === stacks.object ? "{" : "[");
     // 新しいコンテナに入る
@@ -210,11 +241,15 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
   #endStructure(type: typeof stacks.array | typeof stacks.object): string[] {
     const out: string[] = [];
     const top = this.#containerStack.pop();
-    this.#firstItemStack.pop();
+    const wasEmpty = this.#firstItemStack.pop();
     if (top !== type) {
       const error = this.#makeError(`Mismatched end${type}, expected to close ${top}`);
       Object.assign(error as unknown as Record<string, unknown>, { type, top });
       throw error;
+    }
+    if (!wasEmpty) {
+      const prefix = this.#makeIndentPrefix();
+      if (prefix) out.push(prefix);
     }
     out.push(type === stacks.object ? "}" : "]");
     // この構造自体が親の中の項目なので、親ではカンマを入れるべき状態にする
@@ -234,7 +269,9 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
     if (!this.#isFirstItem()) {
       out.push(",");
     }
-    out.push(JSON.stringify(key) + ":");
+    const prefix = this.#makeIndentPrefix();
+    if (prefix) out.push(prefix);
+    out.push(JSON.stringify(key) + (this.#indent ? ": " : ":"));
     // key の直後の値／構造ではカンマを抑制する
     this.#pendingValueForKey = true;
     // この key:value ペア全体で最初の部分（key）を出したので current container はもう first item ではない
@@ -245,9 +282,15 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
   #value(chunk: ValueSAJEventInterface): string[] {
     const out: string[] = [];
 
-    // 通常の値（配列内またはオブジェクトの value）についてカンマ処理
-    if (!this.#pendingValueForKey && !this.#isFirstItem()) {
-      out.push(",");
+    // 通常の値（配列内またはオブジェクトの value）についてカンマ・インデント処理
+    if (!this.#pendingValueForKey) {
+      if (!this.#isFirstItem()) {
+        out.push(",");
+      }
+      if (this.#firstItemStack.length > 0) {
+        const prefix = this.#makeIndentPrefix();
+        if (prefix) out.push(prefix);
+      }
     }
 
     let serialized: string;

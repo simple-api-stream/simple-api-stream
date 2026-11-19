@@ -209,6 +209,14 @@ console.log((await Array.fromAsync(xmlText)).join(""));
 | `makeDocument` | `boolean` | `true` | Wrap each written value in `startDocument` / `endDocument`. |
 | `unSupported` | `"ignore" \| "error" \| "null" \| (arg: { value, skip }) => unknown` | `"ignore"` | How to handle values that cannot be represented in JSON. `"ignore"` drops them (and their key), `"error"` errors the stream, `"null"` replaces them with `null`. A function can return a replacement value or return `skip` to drop the value. |
 
+### `SAJToJSONTextTransformStream(options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `summarize` | `boolean \| "default" \| "normal" \| "document"` | `"default"` | Output granularity. `"default"` (`false`) emits one chunk per event, `"normal"` (`true`) emits one chunk per top-level JSON value, `"document"` emits one chunk per `startDocument` … `endDocument`. |
+| `indent` | `number \| string` | – | Indentation per nesting level: a number of spaces or a string such as `"\t"`. |
+| `lineBreak` | `string` | `"\n"` (when `indent` is set), `""` otherwise | Line break string used between lines. |
+
 ### `XMLTextToSAXTransformStream(options?)` / `XMLTextToSAXEventWritableStream(handler, options?)`
 
 | Option | Type | Default | Description |
