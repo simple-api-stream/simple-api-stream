@@ -23,8 +23,9 @@
             "editor.tabSize": 2
         },
 		"coverage-gutters.coverageFileNames": [
-			"TestResults/coverage/cobertura-coverage.xml",
-			"TestResults/*/coverage.cobertura.xml"
+			"cobertura-coverage.xml",
+			"coverage.cobertura.xml",
+            "coverage-final.json",
 		],
         "explorer.fileNesting.enabled": true,
         "explorer.fileNesting.patterns": {

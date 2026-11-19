@@ -5,13 +5,13 @@
   ],
   "references": [
     {
-      "path": "./packages/core"
+      "path": "./packages/core/tsconfig.build.json"
     },
     {
-      "path": "./packages/json"
+      "path": "./packages/json/tsconfig.build.json"
     },
     {
-      "path": "./packages/xml"
+      "path": "./packages/xml/tsconfig.build.json"
     }
   ]
 }
