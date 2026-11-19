@@ -502,7 +502,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {
@@ -525,7 +525,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {
@@ -628,7 +628,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {
@@ -647,7 +647,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {
@@ -706,7 +706,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {
@@ -725,7 +725,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {
@@ -764,7 +764,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {
@@ -823,7 +823,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {
@@ -842,7 +842,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {
@@ -861,7 +861,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {
@@ -920,7 +920,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {
@@ -1019,7 +1019,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {
@@ -1038,7 +1038,7 @@ describe("error", (it) => {
       output: {
         write: {
           error: [
-            TypeError,
+            json.streams.JSONTextToSAJParserError,
           ],
         },
         read: {

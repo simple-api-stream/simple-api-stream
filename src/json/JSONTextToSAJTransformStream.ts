@@ -48,7 +48,10 @@ export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEve
  */
 function toHandler(controller: TransformStreamDefaultController<SAJEventInterface>, handler: Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseRoopAfter" | "onParseRoopBefore">>): Partial<SAJHandler> {
   const enqueue = controller.enqueue.bind<typeof controller.enqueue>(controller);
-  const error = controller.error.bind<typeof controller.error>(controller);
+  const error = (err: unknown) => {
+    controller.error(err);
+    throw err;
+  };
   const iterable = [
     makeEntry("onStartObject", enqueue),
     makeEntry("onEndObject", enqueue),

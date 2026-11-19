@@ -96,6 +96,7 @@ function toHandler(controller: TransformStreamDefaultController<SAXEventInterfac
     },
     onError: (err) => {
       controller.error(err);
+      throw err;
     },
     onCdata: (arg) => {
       controller.enqueue(arg);

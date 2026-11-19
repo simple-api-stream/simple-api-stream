@@ -43,7 +43,7 @@ describe("error pattern", (it) => {
     })();
     const read = Array.fromAsync(readable);
     await expect(read).rejects.toThrow("mismatch startElement not found. endTagName: a");
-    await expect(write).rejects.toThrow(TypeError);
+    await expect(write).rejects.toThrow("mismatch startElement not found. endTagName: a");
   });
 
   it.concurrent("mismatch startElement tagName", async ({ expect }) => {
@@ -56,7 +56,7 @@ describe("error pattern", (it) => {
     })();
     const read = Array.fromAsync(readable);
     await expect(read).rejects.toThrow("mismatch startElement tagName a / endTagName b");
-    await expect(write).rejects.toThrow(TypeError);
+    await expect(write).rejects.toThrow("mismatch startElement tagName a / endTagName b");
   });
 
   it.concurrent("mismatch startDocument not found", async ({ expect }) => {
@@ -68,7 +68,7 @@ describe("error pattern", (it) => {
     })();
     const read = Array.fromAsync(readable);
     await expect(read).rejects.toThrow("mismatch startDocument not found.");
-    await expect(write).rejects.toThrow(TypeError);
+    await expect(write).rejects.toThrow("mismatch startDocument not found.");
   });
 });
 

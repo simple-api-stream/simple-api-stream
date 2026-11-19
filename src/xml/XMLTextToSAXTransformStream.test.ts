@@ -78,11 +78,12 @@ test("SimpleSAXTransformStream handles malformed XML", async ({ expect }) => {
   const { readable, writable } = new XMLTextToSAXTransformStream();
   const writer = writable.getWriter();
   const reader = readable.getReader();
-  void (async () => {
+  const writed = (async () => {
     await writer.write("<tag attr=foo></tag>");
-    await writer.close().catch(() => undefined);
+    await writer.close();
   })();
   await expect(() => reader.read()).rejects.toThrow("Invalid or unquoted attribute syntax near: attr=foo");
+  await expect(writed).rejects.toThrow("Invalid or unquoted attribute syntax near: attr=foo");
 });
 
 test("parses xml declaration and stylesheet", async ({ expect }) => {
@@ -398,11 +399,12 @@ test("rejects invalid attribute before valid attribute and invalid closing tag",
     const stream = new XMLTextToSAXTransformStream();
     const writer = stream.writable.getWriter();
     const readed = Array.fromAsync(stream.readable);
-    void (async () => {
+    const writed = (async () => {
       await writer.write(badXml);
-      await writer.close().catch(() => undefined);
+      await writer.close();
     })();
     await expect(readed).rejects.toThrow();
+    await expect(writed).rejects.toThrow();
   }
 });
 
@@ -416,10 +418,11 @@ test("rejects mismatched, stray, and unclosed tags", async ({ expect }) => {
     const stream = new XMLTextToSAXTransformStream();
     const writer = stream.writable.getWriter();
     const readed = Array.fromAsync(stream.readable);
-    void (async () => {
+    const writed = (async () => {
       await writer.write(badXml);
-      await writer.close().catch(() => undefined);
+      await writer.close();
     })();
     await expect(readed).rejects.toThrow(expectedMessage);
+    await expect(writed).rejects.toThrow(expectedMessage);
   }
 });

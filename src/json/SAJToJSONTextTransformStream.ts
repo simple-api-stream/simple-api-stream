@@ -166,6 +166,7 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
     }
     catch (e: unknown) {
       this.#controller.error(e);
+      throw e;
     }
   }
 

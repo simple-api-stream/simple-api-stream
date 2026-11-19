@@ -21,7 +21,7 @@ test("single error", async ({ expect }) => {
     state: "startEntry",
   });
   await expect(wait).rejects.toThrow(expect.any(SAJToObjectTransformStreamError));
-  await expect(wait2).rejects.toThrow(expect.any(TypeError));
+  await expect(wait2).rejects.toThrow(expect.any(SAJToObjectTransformStreamError));
 });
 
 describe("pattern", (it) => {
@@ -277,8 +277,8 @@ describe("error pattern", (it) => {
         },
         write: {
           error: [
-            "Invalid state: WritableStream is closed",
-            TypeError,
+            "Unexpected endObject in array",
+            SAJToObjectTransformStreamError,
           ],
         },
       },
@@ -299,8 +299,8 @@ describe("error pattern", (it) => {
         },
         write: {
           error: [
-            "Invalid state: WritableStream is closed",
-            TypeError,
+            "Unexpected endObject after key",
+            SAJToObjectTransformStreamError,
           ],
         },
       },
@@ -319,8 +319,8 @@ describe("error pattern", (it) => {
         },
         write: {
           error: [
-            "Invalid state: WritableStream is closed",
-            TypeError,
+            "Unexpected endArray at root",
+            SAJToObjectTransformStreamError,
           ],
         },
       },
@@ -340,8 +340,8 @@ describe("error pattern", (it) => {
         },
         write: {
           error: [
-            "Invalid state: WritableStream is closed",
-            TypeError,
+            "Unexpected startArray in object",
+            SAJToObjectTransformStreamError,
           ],
         },
       },
@@ -361,8 +361,8 @@ describe("error pattern", (it) => {
         },
         write: {
           error: [
-            "Invalid state: WritableStream is closed",
-            TypeError,
+            "Unexpected startDocument at root",
+            SAJToObjectTransformStreamError,
           ],
         },
       },
@@ -381,8 +381,8 @@ describe("error pattern", (it) => {
         },
         write: {
           error: [
-            "Invalid state: WritableStream is closed",
-            TypeError,
+            "Unexpected endDocument at root",
+            SAJToObjectTransformStreamError,
           ],
         },
       },

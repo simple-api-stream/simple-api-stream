@@ -161,7 +161,7 @@ describe("SAJToJSONTextTransformStream - error handling", () => {
       await writer.close();
     })();
     await expect(readPromise).rejects.toThrow(expect.any(SAJToJSONTextTransformStreamError));
-    await expect(writePromise).rejects.toThrow(expect.any(TypeError));
+    await expect(writePromise).rejects.toThrow(expect.any(SAJToJSONTextTransformStreamError));
 
     expect(stream.status).toEqual({
       containerStack: [],
@@ -192,7 +192,7 @@ describe("SAJToJSONTextTransformStream - error handling", () => {
     })();
 
     await expect(readPromise).rejects.toThrow(expect.any(SAJToJSONTextTransformStreamError));
-    await expect(writePromise).rejects.toThrow(expect.any(TypeError));
+    await expect(writePromise).rejects.toThrow(expect.any(SAJToJSONTextTransformStreamError));
   });
 });
 describe.concurrent("pattern", (test) => {
@@ -385,8 +385,8 @@ describe.concurrent("error pattern", (test) => {
         },
         write: {
           error: [
-            "Invalid state: WritableStream is closed",
-            TypeError,
+            "Mismatched enddocument, expected to close undefined",
+            SAJToJSONTextTransformStreamError,
           ],
         },
       },
@@ -407,8 +407,8 @@ describe.concurrent("error pattern", (test) => {
         },
         write: {
           error: [
-            "Invalid state: WritableStream is closed",
-            TypeError,
+            "Mismatched enddocument, expected to close object",
+            SAJToJSONTextTransformStreamError,
           ],
         },
       },
@@ -428,8 +428,8 @@ describe.concurrent("error pattern", (test) => {
         },
         write: {
           error: [
-            "Invalid state: WritableStream is closed",
-            TypeError,
+            "invalid startDocument",
+            SAJToJSONTextTransformStreamError,
           ],
         },
       },
@@ -448,8 +448,8 @@ describe.concurrent("error pattern", (test) => {
         },
         write: {
           error: [
-            "Invalid state: WritableStream is closed",
-            TypeError,
+            "Unknown value type: unknown",
+            SAJToJSONTextTransformStreamError,
           ],
         },
       },
@@ -488,8 +488,8 @@ describe.concurrent("error pattern", (test) => {
         },
         write: {
           error: [
-            "Invalid state: WritableStream is closed",
-            TypeError,
+            "Invalid non-finite number: NaN",
+            SAJToJSONTextTransformStreamError,
           ],
         },
       },
@@ -508,8 +508,8 @@ describe.concurrent("error pattern", (test) => {
         },
         write: {
           error: [
-            "Invalid state: WritableStream is closed",
-            TypeError,
+            "Invalid non-finite number: Infinity",
+            SAJToJSONTextTransformStreamError,
           ],
         },
       },

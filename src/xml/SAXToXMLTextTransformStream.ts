@@ -188,6 +188,7 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
     }
     catch (e) {
       this.#controller.error(e);
+      throw e;
     }
   }
 

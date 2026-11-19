@@ -82,6 +82,7 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
     }
     catch (e: unknown) {
       this.#controller.error(e);
+      throw e;
     }
   }
 
