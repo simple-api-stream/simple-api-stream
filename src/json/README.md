@@ -17,6 +17,8 @@ They are designed for **incremental processing of large or untrusted JSON payloa
 | [`JSONTextToSAJTransformStream`](./JSONTextToSAJTransformStream.ts) | JSON text from a `ReadableStream<string>` | Emits [`SAJEventInterface`](./event-interface/SAJEventInterface.ts) objects |
 | [`ResolveToSAJReadableStream`](./ResolveToSAJReadableStream.ts) | Invokes [`SAJResolver`](./interface/SAJResolver.ts) methods manually | Emits resolved [`SAJEventInterface`](./event-interface/SAJEventInterface.ts) |
 | [`SAJToObjectTransformStream<T>`](./SAJToObjectTransformStream.ts) | `SAJEventInterface` stream | Outputs JavaScript objects of type `T` |
+| [`ObjectToSAJTransformStream<T>`](./ObjectToSAJTransformStream.ts) | JavaScript values of type `T` | Emits [`SAJEventInterface`](./event-interface/SAJEventInterface.ts) objects |
+| [`SAJToJSONTextTransformStream`](./SAJToJSONTextTransformStream.ts) | `SAJEventInterface` stream | Outputs JSON text to a `ReadableStream<string>` |
 
 ---
 
@@ -70,10 +72,11 @@ SAJ represents JSON as a **sequence of discrete events**, allowing incremental h
 #### Structural Events
 
 - `startDocument`
-  Makrs the beginning of an document.
+  Marks the beginning of a document.
   Example:
+
   ```ts
-  { name: "startDocument" }
+  { name: "startDocument", kind: "json" }
   ```
 
 - `endDocument`

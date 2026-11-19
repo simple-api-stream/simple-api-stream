@@ -4,8 +4,8 @@
 > The XML streaming utilities documented here are **re-exported from the root package**.
 > Users of the published package can import directly from `"simple-api-stream"`.
 
-These utilities provide **streaming XML parsing** into a structured, event-based format (SAX = “Simple API for XML”), and then materialize it into JavaScript objects.
-Designed for **incremental processing of large or untrusted JSON payloads** using **Web Streams API** with proper backpressure handling.
+These utilities provide **streaming XML parsing** into a structured, event-based format (SAX = “Simple API for XML”), and serialize SAX events back into XML text.
+Designed for **incremental processing of large or untrusted XML payloads** using **Web Streams API** with proper backpressure handling.
 
 ---
 
@@ -16,7 +16,7 @@ Designed for **incremental processing of large or untrusted JSON payloads** usin
 | [`XMLTextToSAXEventWritableStream`](./XMLTextToSAXEventWritableStream.ts) | XML text from a `ReadableStream<string>` | Executes events on a provided [`SAXHandler`](./interface/SAXHandler.ts) |
 | [`XMLTextToSAXTransformStream`](./XMLTextToSAXTransformStream.ts) | XML text from a `ReadableStream<string>` | Emits [`SAXEventInterface`](./event-interface/SAXEventInterface.ts) objects |
 | [`ResolveToSAXReadableStream`](./ResolveToSAXReadableStream.ts) | Invokes [`SAXResolver`](./interface/SAXResolver.ts) methods manually | Emits resolved [`SAXEventInterface`](./event-interface/SAXEventInterface.ts) |
-| [`SAXToXMLTextTransformStream`](./SAXToXMLTextTransformStream.ts) | `SAJEventInterface` stream | Outputs XML text to a `REadableStream<string>` |
+| [`SAXToXMLTextTransformStream`](./SAXToXMLTextTransformStream.ts) | `SAXEventInterface` stream | Outputs XML text to a `ReadableStream<string>` |
 
 ## Getting Started (Development)
 
@@ -24,7 +24,7 @@ During development, you may import directly via relative paths:
 
 ```ts
 // Example: local development inside the repo
-import { XMLTextToSAXTransformStream } from "../../json/XMLTextToSAXTransformStream.ts";
+import { XMLTextToSAXTransformStream } from "./XMLTextToSAXTransformStream.js";
 ```
 
 When consumed via the built ESM package (npm install), import from the root:
@@ -40,15 +40,17 @@ import { XMLTextToSAXTransformStream } from "simple-api-stream";
 #### Structural Events
 
 - `startDocument`
-  Makrs the beginning of an document.
+  Marks the beginning of a document.
   Example:
+
   ```ts
-  { name: "startDocument", kind:"xml" }
+  { name: "startDocument", kind: "xml" }
   ```
 
 - `endDocument`
   Marks the end of the current document.
   Example:
+
   ```ts
   { name: "endDocument" }
   ```
@@ -56,15 +58,17 @@ import { XMLTextToSAXTransformStream } from "simple-api-stream";
 - `startElement`
   Marks the beginning of an element.
   Example:
+
   ```ts
-  { name: "startElement", tagName: "a", attrs: { href: "https://example.com" }, selfClosing: false}
+  { name: "startElement", tagName: "a", attrs: { href: "https://example.com" }, selfClosing: false }
   ```
 
 - `endElement`
   Marks the end of the current element.
   Example:
+
   ```ts
-  { name: "endElement" }
+  { name: "endElement", tagName: "a" }
   ```
 
 

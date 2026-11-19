@@ -119,7 +119,7 @@ const events = ReadableStream.from([{ a: [1, null] }])
   .pipeThrough(new ObjectToSAJTransformStream());
 ```
 
-Arrays, plain objects, primitives, `null`, objects with `toJSON()` (such as `Date`), iterators and async iterators (serialized as arrays) are supported. How unsupported values (`undefined`, functions, `bigint`, symbols, …) are handled is controlled by the `unSupported` option.
+Arrays, plain objects, primitives, `null`, objects with `toJSON()` (such as `Date`), iterables (such as `Set` and generators), and async iterables (serialized as arrays) are supported. How unsupported values (`undefined`, `NaN`, `Infinity`, functions, `bigint`, symbols, …) are handled is controlled by the `unSupported` option.
 
 ### Building SAJ events imperatively
 
@@ -192,7 +192,7 @@ console.log((await Array.fromAsync(xmlText)).join(""));
 |--------|------|---------|-------------|
 | `skipDocument` | `boolean` | `false` | Do not emit `startDocument` / `endDocument` events. |
 | `multiple` | `boolean` | `false` | Accept multiple top-level JSON values in one stream. When `false`, a second value is an error. |
-| `onParseBefore` / `onParseAfter` / `onParseRoopBefore` / `onParseRoopAfter` | `(status) => void` | – | Debug hooks that receive the internal parser status. |
+| `onParseBefore` / `onParseAfter` / `onParseLoopBefore` / `onParseLoopAfter` | `(status) => void` | – | Debug hooks that receive the internal parser status. |
 
 `JSONTextToSAJEventWritableStream(handler, options?)` accepts `{ skipDocument?: boolean, multiple?: boolean }` as `options` and the same debug hooks in its `handler` object.
 
@@ -272,10 +272,10 @@ Example for `{ "a": [1, null] }`:
 | `endDocument` | – |
 | `startElement` | `tagName`, `attrs: Record<string, string>`, `selfClosing: boolean` |
 | `endElement` | `tagName` |
-| `text` | `text` (entities are unescaped) |
+| `text` | `text` (numeric references and XML/HTML5 named entities are unescaped) |
 | `cdata` | `cdata` |
-| `comment` | `comment` |
-| `doctype` | `root`, `dtdType?: "PUBLIC" \| "SYSTEM"`, `identifer?`, `uri?`, `declarations?: string[]` |
+| `comment` | `comment` (preserved verbatim without entity unescaping) |
+| `doctype` | `root`, `dtdType?: "PUBLIC" \| "SYSTEM"`, `identifier?`, `uri?`, `declarations?: string[]` |
 | `processingInstruction` | `target`, `data`; `<?xml …?>` additionally has `version`, `encoding`, `standalone`, and `<?xml-stylesheet …?>` has `type`, `href` |
 
 Example for `<a href="https://example.com">Hello</a>`:
