@@ -6,6 +6,7 @@ export default defineConfig({
       entry: resolve(import.meta.dirname, "src/index.ts"),
       name: "index",
       fileName: "index",
+      formats: ["es"],
     },
   },
 });
