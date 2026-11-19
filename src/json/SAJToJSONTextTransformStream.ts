@@ -114,7 +114,7 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
         this.#enqueue(chunk);
       },
       flush: () => {
-        // nothing special
+        this.#flush();
       },
     });
     this.#controller = controller_;
@@ -130,6 +130,11 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
       return value ? summarize.normal : summarize.default;
     if (!value) return summarize.default;
     return value;
+  }
+
+  #flush(): void {
+    if (this.#containerStack.length === 0 && this.#parts.length === 0) return;
+    throw this.#makeError("Incomplete JSON structure");
   }
 
   #enqueue(chunk: SAJEventInterface): void {

@@ -454,6 +454,48 @@ describe.concurrent("error pattern", (test) => {
         },
       },
     },
+    {
+      name: "incomplete object on flush",
+      input: [
+        { name: "startObject" },
+      ],
+      output: {
+        read: {
+          error: [
+            "Incomplete JSON structure",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+        write: {
+          error: [
+            "Incomplete JSON structure",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+      },
+    },
+    {
+      name: "incomplete document on flush (summarize: document)",
+      options: { summarize: "document" },
+      input: [
+        { name: "startDocument", kind: "json" },
+        { name: "value", type: "number", value: 1 },
+      ],
+      output: {
+        read: {
+          error: [
+            "Incomplete JSON structure",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+        write: {
+          error: [
+            "Incomplete JSON structure",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+      },
+    },
   ];
   test.each(entries)("$name", async ({ options, input, output: { read, write } }) => {
     const { readable, writable } = new SAJToJSONTextTransformStream(options);
