@@ -292,3 +292,20 @@ describe("pattern test", (it) => {
     },
   );
 });
+
+test("reports explicit state names during incomplete chunks", async ({ expect }) => {
+  const stream = new XMLTextToSAXTransformStream();
+  const writer = stream.writable.getWriter();
+  const readed = Array.fromAsync(stream.readable);
+
+  await writer.write("<root");
+  expect(stream.status.state).toBe("tag");
+  await writer.write("><!--com");
+  expect(stream.status.state).toBe("comment");
+  await writer.write("--><![CDATA[cd");
+  expect(stream.status.state).toBe("cdata");
+  await writer.write("]]></root>");
+  await writer.close();
+  await readed;
+  expect(stream.status.state).toBe("text");
+});

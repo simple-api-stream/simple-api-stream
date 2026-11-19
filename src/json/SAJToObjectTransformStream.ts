@@ -1,4 +1,4 @@
-import { assertIsDefined, functionToName as stateToName, toErrorMessage } from "../utils/index.js";
+import { assertIsDefined, toErrorMessage } from "../utils/index.js";
 import type { SAJEventInterface } from "./event-interface/index.js";
 
 type SAJStateFn = (event: SAJEventInterface) => void;
@@ -66,7 +66,7 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
 
   #status(): Status {
     return {
-      state: stateToName(this.#state, "#"),
+      state: this.#stateName,
       stackedList: structuredClone(this.#stack),
       current: structuredClone(this.#current),
     };
@@ -87,7 +87,13 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
 
   // ========== 状態スタックと構築スタック ==========
   #state: SAJStateFn = this.#startEntry;
+  #stateName = "startEntry";
   #stack: { container: unknown, key?: string }[] = [];
+
+  #setState(state: SAJStateFn, name: string) {
+    this.#state = state;
+    this.#stateName = name;
+  }
 
   // #region 状態関数
   #startEntry(event: SAJEventInterface): void {
@@ -103,13 +109,13 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
       case "startObject": {
         const container: unknown = {};
         this.#stack.push({ container });
-        this.#state = this.#inObject;
+        this.#setState(this.#inObject, "inObject");
         return;
       }
       case "startArray": {
         const container: unknown[] = [];
         this.#stack.push({ container });
-        this.#state = this.#inArray;
+        this.#setState(this.#inArray, "inArray");
         return;
       }
 
@@ -132,7 +138,7 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
     switch (event.name) {
       case "key":
         top.key = event.key;
-        this.#state = this.#inObjectExpectingValue;
+        this.#setState(this.#inObjectExpectingValue, "inObjectExpectingValue");
         return;
 
       case "endObject": {
@@ -171,21 +177,21 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
       case "value":
         this.#setPropertyValue(obj, key, event.value);
         top.key = undefined;
-        this.#state = this.#inObject;
+        this.#setState(this.#inObject, "inObject");
         return;
 
       case "startObject": {
         const newObj: Record<string, unknown> = {};
         this.#setPropertyValue(obj, key, newObj);
         this.#stack.push({ container: newObj });
-        this.#state = this.#inObject;
+        this.#setState(this.#inObject, "inObject");
         return;
       }
       case "startArray": {
         const newArr: unknown[] = [];
         this.#setPropertyValue(obj, key, newArr);
         this.#stack.push({ container: newArr });
-        this.#state = this.#inArray;
+        this.#setState(this.#inArray, "inArray");
         return;
       }
     }
@@ -205,14 +211,14 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
       case "startObject": {
         const newObj: unknown = {};
         this.#stack.push({ container: newObj });
-        this.#state = this.#inObject;
+        this.#setState(this.#inObject, "inObject");
         return;
       }
 
       case "startArray": {
         const newArr: unknown[] = [];
         this.#stack.push({ container: newArr });
-        this.#state = this.#inArray;
+        this.#setState(this.#inArray, "inArray");
         return;
       }
 
@@ -245,7 +251,10 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
 
   #endEntry(finished: unknown) {
     this.#controller.enqueue(finished as T);
-    this.#state = this.#multiple ? this.#startEntry : this.#done;
+    if (this.#multiple)
+      this.#setState(this.#startEntry, "startEntry");
+    else
+      this.#setState(this.#done, "done");
   }
 
   #attachValue(value: unknown) {
@@ -253,12 +262,12 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
     assertIsDefined(top, "required top");
     if (Array.isArray(top.container)) {
       top.container.push(value);
-      this.#state = this.#inArray;
+      this.#setState(this.#inArray, "inArray");
       return;
     }
     const key = top.key!;
     this.#setPropertyValue(top.container as Record<string, unknown>, key, value);
     top.key = undefined;
-    this.#state = this.#inObject;
+    this.#setState(this.#inObject, "inObject");
   }
 }

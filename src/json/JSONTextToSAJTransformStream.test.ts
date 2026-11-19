@@ -951,3 +951,25 @@ test("clears consumed buffer after each chunk to avoid unbounded growth", async 
   expect(stream.status.buffer).toBe("");
   expect(stream.status.pos).toBe(0);
 });
+
+test("reports explicit state names during parsing and on error", async ({ expect }) => {
+  const states: string[] = [];
+  const stream = new JSONTextToSAJTransformStream({
+    onParseRoopAfter: (status) => {
+      states.push(status.state);
+    },
+  });
+  const writer = stream.writable.getWriter();
+  const readed = Array.fromAsync(stream.readable);
+  await writer.write(`{"a":1}`);
+  await writer.close();
+  await readed;
+
+  expect(states).toContain("KeyOrEndObject");
+  expect(states).toContain("parseStringHandler");
+  expect(states).toContain("Colon");
+  expect(states).toContain("Value");
+  expect(states).toContain("parseNumberHandler");
+  expect(states).toContain("AfterValue");
+  expect(stream.status.state).toBe("#startDocument");
+});

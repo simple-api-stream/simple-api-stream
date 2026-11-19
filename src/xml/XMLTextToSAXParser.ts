@@ -61,13 +61,19 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
   #openDocumented: boolean = false;
   #skipDocument: boolean;
   #factor!: (flush: boolean) => { required?: true };
+  #stateName: string = "text";
+
+  #setFactor(factor: (flush: boolean) => { required?: true }, name: string) {
+    this.#factor = factor;
+    this.#stateName = name;
+  }
 
   get buffer() {
     return this.#buffer;
   }
 
   get state() {
-    return this.#factor.name.slice(1);
+    return this.#stateName;
   }
 
   get acc() {
@@ -89,7 +95,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
 
   constructor({ handler, skipDocument }: { handler: Partial<SAXHandler>, skipDocument?: boolean }) {
     this.#handler = handler;
-    this.#factor = this.#text;
+    this.#setFactor(this.#text, "text");
     this.#skipDocument = skipDocument ?? false;
   }
 
@@ -198,16 +204,16 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     const remaingin_upper = remaining.toUpperCase();
 
     if (remaining.startsWith(COMMENT_PREFIX)) {
-      this.#factor = this.#comment;
+      this.#setFactor(this.#comment, "comment");
     }
     else if (remaining.startsWith(CDATA_PREFIX)) {
-      this.#factor = this.#cdata;
+      this.#setFactor(this.#cdata, "cdata");
     }
     else if (remaingin_upper.startsWith(DOCTYPE_PREFIX)) {
-      this.#factor = this.#doctype;
+      this.#setFactor(this.#doctype, "doctype");
     }
     else if (remaining.startsWith(PROCESSING_INSTRUCTION_PREFIX)) {
-      this.#factor = this.#processingInstruction;
+      this.#setFactor(this.#processingInstruction, "processingInstruction");
     }
     else if (
       CDATA_PREFIX.startsWith(remaining)
@@ -219,7 +225,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
       return { required: true };
     }
     else {
-      this.#factor = this.#tag;
+      this.#setFactor(this.#tag, "tag");
     }
     return {};
   }
@@ -233,7 +239,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     const content = this.#buffer.slice(this.#cursor + COMMENT_PREFIX.length, end);
     this.#handler.onComment?.(new CommentEvent(unescape(content)));
     this.#cursor = end + COMMENT_SUFFIX.length;
-    this.#factor = this.#text;
+    this.#setFactor(this.#text, "text");
     return {};
   }
 
@@ -246,7 +252,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     const content = this.#buffer.slice(this.#cursor + CDATA_PREFIX.length, end);
     this.#handler.onCdata?.(new CdataEvent(content));
     this.#cursor = end + CDATA_SUFFIX.length;
-    this.#factor = this.#text;
+    this.#setFactor(this.#text, "text");
     return {};
   }
 
@@ -264,7 +270,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
       this.#handler.onDoctype?.(this.#parseDoctype(content));
       this.#cursor = next;
       this.#acc = "";
-      this.#factor = this.#text;
+      this.#setFactor(this.#text, "text");
       return {};
     }
     if (mode === "block" && 0 <= endBracket) {
@@ -274,7 +280,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
       this.#handler.onDoctype?.(this.#parseDoctype(content));
       this.#cursor = next;
       this.#acc = "";
-      this.#factor = this.#text;
+      this.#setFactor(this.#text, "text");
       return {};
     }
     this.#buffer = this.#buffer.slice(this.#cursor);
@@ -335,7 +341,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
       event,
     );
     this.#cursor = end + PROCESSING_INSTRUCTION_SUFFIX.length;
-    this.#factor = this.#text;
+    this.#setFactor(this.#text, "text");
     return {};
   }
 
@@ -355,7 +361,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
       if (end) this.#handler.onEndElement?.(end);
     }
     this.#cursor = end + BLOCK_SUFFIX.length;
-    this.#factor = this.#text;
+    this.#setFactor(this.#text, "text");
     this.#acc = "";
     return {};
   }

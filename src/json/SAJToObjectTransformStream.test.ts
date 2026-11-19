@@ -465,3 +465,23 @@ test("pipeThrough JSONTextToSAJTransformStream -> SAJToObjectTransformStream wit
     .pipeThrough(new SAJToObjectTransformStream({ multiple: true }));
   await expect(Array.fromAsync(objects)).resolves.toEqual([{ a: 1 }, { b: 2 }]);
 });
+
+test("reports explicit state names across transitions", async ({ expect }) => {
+  const stream = new SAJToObjectTransformStream();
+  const writer = stream.writable.getWriter();
+  const readed = Array.fromAsync(stream.readable);
+
+  expect(stream.status.state).toBe("startEntry");
+  await writer.write({ name: "startObject" });
+  expect(stream.status.state).toBe("inObject");
+  await writer.write({ name: "key", key: "arr" });
+  expect(stream.status.state).toBe("inObjectExpectingValue");
+  await writer.write({ name: "startArray" });
+  expect(stream.status.state).toBe("inArray");
+  await writer.write({ name: "endArray" });
+  expect(stream.status.state).toBe("inObject");
+  await writer.write({ name: "endObject" });
+  expect(stream.status.state).toBe("done");
+  await writer.close();
+  await expect(readed).resolves.toEqual([{ arr: [] }]);
+});
