@@ -1,6 +1,6 @@
 import { test, vi, describe, expect } from "vitest";
-import { XMLTextToSAXEventWritableStream, xml } from "..";
-import { toErrorMessage } from "../utils";
+import { XMLTextToSAXEventWritableStream, xml } from "../index.js";
+import { toErrorMessage } from "../utils/index.js";
 
 function makeStringListHandlerAndArray() {
   const events: string[] = [];
@@ -25,11 +25,11 @@ function makeStringListHandlerAndArray() {
     },
     onDoctype({ root, ...args }) {
       if (args.dtdType === "PUBLIC")
-        events.push(`doctype:${root}:${args.dtdType}:${args.identifer}:${args.uri ?? ""}:${args.declarations ?? ""}`);
+        events.push(`doctype:${root}:${args.dtdType}:${args.identifer}:${args.uri ?? ""}:${args.declarations?.join(",") ?? ""}`);
       else if (args.dtdType === "SYSTEM")
-        events.push(`doctype:${root}:${args.dtdType}:${args.uri}:${args.declarations ?? ""}`);
+        events.push(`doctype:${root}:${args.dtdType}:${args.uri}:${args.declarations?.join(",") ?? ""}`);
       else
-        events.push(`doctype:${root}:${args.declarations ?? ""}`);
+        events.push(`doctype:${root}:${args.declarations?.join(",") ?? ""}`);
     },
     onProcessingInstruction({ target, data }) {
       events.push(`processingInstruction:${target}:${data}`);

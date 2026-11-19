@@ -1,5 +1,5 @@
-import type { DoctypeSAXEventPublicInterface } from "../event-interface";
-import { DoctypeBaseEvent } from "./DoctypeBaseEvent";
+import type { DoctypeSAXEventPublicInterface } from "../event-interface/index.js";
+import { DoctypeBaseEvent } from "./DoctypeBaseEvent.js";
 
 export class DoctypePublicEvent extends DoctypeBaseEvent implements DoctypeSAXEventPublicInterface {
   dtdType: "PUBLIC";

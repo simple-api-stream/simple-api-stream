@@ -1,7 +1,7 @@
-import { toErrorMessage } from "../utils";
-import { CdataEvent, CommentEvent, DoctypePublicEvent, DoctypeSimpleEvent, DoctypeSystemEvent, EndElementEvent, StartElementEvent, TextEvent, ProcessingInstructionEvent, XMLStylesheetDeclarationEvent, XMLDeclarationEvent, StartDocumentEvent, EndDocumentEvent } from "./event";
-import type { SAXEventInterface } from "./event-interface";
-import type { SAXResolver } from "./interface";
+import { toErrorMessage } from "../utils/index.js";
+import { CdataEvent, CommentEvent, DoctypePublicEvent, DoctypeSimpleEvent, DoctypeSystemEvent, EndElementEvent, StartElementEvent, TextEvent, ProcessingInstructionEvent, XMLStylesheetDeclarationEvent, XMLDeclarationEvent, StartDocumentEvent, EndDocumentEvent } from "./event/index.js";
+import type { SAXEventInterface } from "./event-interface/index.js";
+import type { SAXResolver } from "./interface/index.js";
 
 type Status = object;
 
@@ -78,7 +78,7 @@ export class ResolveToSAXReadableStream extends ReadableStream<SAXEventInterface
       this.#controller.enqueue(new ProcessingInstructionEvent(...args as ConstructorParameters<typeof ProcessingInstructionEvent>));
       return;
     }
-    const options = args[0] as ConstructorParameters<typeof XMLDeclarationEvent | typeof XMLStylesheetDeclarationEvent>[0];
+    const options = args[0];
     if (options.target === "xml") {
       this.#controller.enqueue(new XMLDeclarationEvent(options));
       return;

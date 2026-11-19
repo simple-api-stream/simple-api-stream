@@ -1,5 +1,5 @@
-import type { ValueSAJEventInterface } from "../event-interface";
-import { TypeEvent } from "./TypeEvent";
+import type { ValueSAJEventInterface } from "../event-interface/index.js";
+import { TypeEvent } from "./TypeEvent.js";
 
 type ValueType = "number" | "string" | "null" | "boolean";
 type ValueDictionary = {

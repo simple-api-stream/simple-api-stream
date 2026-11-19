@@ -1,7 +1,8 @@
 import { describe, expect, test } from "vitest";
-import type { json } from "..";
-import { SAJToObjectTransformStream } from "..";
-import { SAJToObjectTransformStreamError, SAJToObjectTransformStreamOptions } from "./SAJToObjectTransformStream";
+import type { json } from "../index.js";
+import { SAJToObjectTransformStream } from "../index.js";
+import { SAJToObjectTransformStreamError } from "./SAJToObjectTransformStream.js";
+import type { SAJToObjectTransformStreamOptions } from "./SAJToObjectTransformStream.js";
 
 type SAJEventInterface = json.eventInterfaces.SAJEventInterface;
 
@@ -19,8 +20,8 @@ test("single error", async ({ expect }) => {
     stackedList: [],
     state: "startEntry",
   });
-  await expect(wait).rejects.toThrowError(expect.any(SAJToObjectTransformStreamError));
-  await expect(wait2).rejects.toThrowError(expect.any(TypeError));
+  await expect(wait).rejects.toThrow(expect.any(SAJToObjectTransformStreamError));
+  await expect(wait2).rejects.toThrow(expect.any(TypeError));
 });
 
 describe("pattern", (it) => {
@@ -52,7 +53,12 @@ describe("pattern", (it) => {
       ],
       output: [
         {
-          num: 0, str: "value", bool1: true, bool2: false, nullable: null, arry: [
+          num: 0,
+          str: "value",
+          bool1: true,
+          bool2: false,
+          nullable: null,
+          arry: [
             "test",
           ],
         },
@@ -197,7 +203,7 @@ describe("pattern", (it) => {
   it.each(entries)("$name", async ({ input, output, options }) => {
     const result = await (() => {
       const { readable, writable } = new SAJToObjectTransformStream(options);
-      (async () => {
+      void (async () => {
         const writer = writable.getWriter();
         for (const entry of input) {
           await writer.write(entry);
@@ -216,11 +222,11 @@ describe("error pattern", (it) => {
     options?: Partial<SAJToObjectTransformStreamOptions>
     input: SAJEventInterface[]
     output:
-    Record<"read" | "write", {
-      error: (string | RegExp | (new (...args: (ConstructorParameters<typeof SAJToObjectTransformStreamError>)) => unknown) | Error | undefined)[]
-    } | {
-      result: unknown[] | undefined
-    }>
+      Record<"read" | "write", {
+        error: (string | RegExp | (new (...args: (ConstructorParameters<typeof SAJToObjectTransformStreamError>)) => unknown) | Error | undefined)[]
+      } | {
+        result: unknown[] | undefined
+      }>
   }[] = [
     {
       name: "Incomplete JSON structure",
@@ -346,7 +352,7 @@ describe("error pattern", (it) => {
     ] as const)
       if ("error" in resultType) {
         for (const error of resultType.error)
-          await expect(result, `${name} throw`).rejects.toThrowError(error);
+          await expect(result, `${name} throw`).rejects.toThrow(error);
       }
       else {
         if (resultType.result === undefined)

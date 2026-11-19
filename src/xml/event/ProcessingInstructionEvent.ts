@@ -1,5 +1,5 @@
-import type { ProcessingInstructionSAXEventInterface } from "../event-interface";
-import { SAXEvent } from "./SAXEvent";
+import type { ProcessingInstructionSAXEventInterface } from "../event-interface/index.js";
+import { SAXEvent } from "./SAXEvent.js";
 
 export const SAX_PROCESSING_INSTRUCTION_EVENT_TYPE = "processingInstruction";
 export class ProcessingInstructionEvent<T extends string = string> extends SAXEvent<typeof SAX_PROCESSING_INSTRUCTION_EVENT_TYPE> implements ProcessingInstructionSAXEventInterface<T> {

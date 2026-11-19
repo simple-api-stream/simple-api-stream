@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
-import { json } from "..";
-import { JSONTextToSAJTransformStream } from "..";
+import { json } from "../index.js";
+import { JSONTextToSAJTransformStream } from "../index.js";
 const JSONTextToSAJParserError = json.streams.JSONTextToSAJParserError;
 type SAJEventInterface = json.eventInterfaces.SAJEventInterface;
 describe("pattern", (it) => {
@@ -299,7 +299,8 @@ describe("pattern", (it) => {
           name: "endDocument",
         },
       ],
-    }, {
+    },
+    {
       name: "multiple document",
       options: { multiple: true },
       input: [
@@ -411,7 +412,7 @@ describe("pattern", (it) => {
       await expect(readed).resolves.toEqual(output);
     }
     catch (e) {
-      const e2 = readed.catch(v => v);
+      const e2 = readed.catch((v: unknown) => v);
       if (e2 instanceof json.streams.JSONTextToSAJParserError) {
         console.dir(e2.cause);
       }
@@ -426,11 +427,11 @@ describe("error", (it) => {
     options?: ConstructorParameters<typeof JSONTextToSAJTransformStream>[0]
     input: string[]
     output:
-    Record<"read" | "write", {
-      error: (string | RegExp | (new (...args: (ConstructorParameters<typeof JSONTextToSAJParserError>)) => unknown) | Error | undefined)[]
-    } | {
-      result: unknown[] | undefined
-    }>
+      Record<"read" | "write", {
+        error: (string | RegExp | (new (...args: (ConstructorParameters<typeof JSONTextToSAJParserError>)) => unknown) | Error | undefined)[]
+      } | {
+        result: unknown[] | undefined
+      }>
   }[] = [
     {
       name: "parse error",
@@ -455,7 +456,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "not support multiple in single",
       options: { multiple: false },
       input: [
@@ -483,8 +485,7 @@ describe("error", (it) => {
       input: [`
           [
           "fuga"
-            `,
-      ],
+            `],
       output: {
         write: {
           error: [
@@ -511,8 +512,7 @@ describe("error", (it) => {
       input: [`
           {
           "fuga":"fuga"
-            `,
-      ],
+            `],
       output: {
         write: {
           error: [
@@ -539,8 +539,7 @@ describe("error", (it) => {
       input: [`
           {
           "fuga":"fuga",
-            `,
-      ],
+            `],
       output: {
         write: {
           error: [
@@ -567,8 +566,7 @@ describe("error", (it) => {
       input: [`
           {
           "fuga":{"fuga":"fuge"}
-            `,
-      ],
+            `],
       output: {
         write: {
           error: [
@@ -589,7 +587,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "invalid initial character",
       input: [
         `}`,
@@ -607,7 +606,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "invalid keyOrEndObject",
       input: [
         `{{`,
@@ -625,7 +625,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "parseColon to eol",
       input: [
         `{ "hoge"`,
@@ -644,7 +645,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "parseValue to eol",
       input: [
         `{ "hoge":`,
@@ -663,7 +665,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "invalid parseValue ",
       input: [
         "{ \"hoge\":`",
@@ -681,7 +684,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "invalid parseCommaOrEndObject ",
       input: [
         "{ \"hoge\":\"fuge\"{",
@@ -699,7 +703,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "parseValueOrEndArray to eol",
       input: [
         `[`,
@@ -718,7 +723,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "invalid parseCommaOrEndArray",
       input: [
         `[1 {`,
@@ -736,7 +742,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "parseValueInArray to eol",
       input: [
         `[1,`,
@@ -755,7 +762,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "parseString to eol",
       input: [
         `"hoge`,
@@ -774,7 +782,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "escaped string invalid escape",
       input: [
         `"\\z"`,
@@ -792,7 +801,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "invalid escaped unicode string to eol",
       input: [
         `"テスト\\u300メッセージ"`,
@@ -810,7 +820,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "invalid parseLiteral",
       input: [
         `treu`,
@@ -828,7 +839,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "parseLiteral to eol",
       input: [
         `tru`,
@@ -847,7 +859,8 @@ describe("error", (it) => {
           ],
         },
       },
-    }, {
+    },
+    {
       name: "invalid parseNumber",
       input: [
         `-123e-10e`,
@@ -885,10 +898,10 @@ describe("error", (it) => {
       if ("error" in resultType) {
         for (const error of resultType.error)
           try {
-            await expect(result).rejects.toThrowError(error);
+            await expect(result).rejects.toThrow(error);
           }
           catch (e) {
-            const error = await result.catch(v => v);
+            const error = await result.catch((v: unknown) => v);
             console.dir(error);
             throw e;
           }

@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import type { SAJEventInterface } from "./event-interface";
-import { ObjectToSAJTransformStream, json } from "..";
+import type { SAJEventInterface } from "./event-interface/index.js";
+import { ObjectToSAJTransformStream, json } from "../index.js";
 const ObjectToSAJTransformStreamError = json.streams.ObjectToSAJTransformStreamError;
 
-describe.concurrent("pattern", async (test) => {
+describe.concurrent("pattern", (test) => {
   const entries: {
     name: string
     options?: ConstructorParameters<typeof ObjectToSAJTransformStream>[0]
@@ -18,16 +18,16 @@ describe.concurrent("pattern", async (test) => {
     {
       name: "all type",
       input:
-          [{
-            num: 0,
-            str: "value",
-            bool1: true,
-            bool2: false,
-            nullable: null,
-            arry: [
-              "test",
-            ],
-          }],
+        [{
+          num: 0,
+          str: "value",
+          bool1: true,
+          bool2: false,
+          nullable: null,
+          arry: [
+            "test",
+          ],
+        }],
       output: [
         { name: "startDocument", kind: "json" },
         { name: "startObject" },
@@ -48,7 +48,8 @@ describe.concurrent("pattern", async (test) => {
         { name: "endObject" },
         { name: "endDocument" },
       ],
-    }, {
+    },
+    {
       name: "iterator",
       input: [
         (function* () {
@@ -66,7 +67,8 @@ describe.concurrent("pattern", async (test) => {
         { name: "endArray" },
         { name: "endDocument" },
       ],
-    }, {
+    },
+    {
       name: "async iterator",
       input: [
         (async function* () {
@@ -157,8 +159,8 @@ test("error inner exception", async ({ expect }) => {
     yield 0n;
     throw new Error("iterator user error");
   })());
-  await expect(readed).rejects.toThrowError("iterator user error");
-  await expect(writed).rejects.toThrowError("iterator user error");
+  await expect(readed).rejects.toThrow("iterator user error");
+  await expect(writed).rejects.toThrow("iterator user error");
 });
 test("notsupport to custom skip", async ({ expect }) => {
   const { readable, writable } = new ObjectToSAJTransformStream({
@@ -196,10 +198,10 @@ test("notsupport to custom error", async ({ expect }) => {
   })({
     value: 1n,
   });
-  await expect(readed).rejects.toThrowError(ObjectToSAJTransformStreamError);
-  await expect(readed).rejects.toThrowError("custom error");
-  await expect(writed).rejects.toThrowError(ObjectToSAJTransformStreamError);
-  await expect(writed).rejects.toThrowError("custom error");
+  await expect(readed).rejects.toThrow(ObjectToSAJTransformStreamError);
+  await expect(readed).rejects.toThrow("custom error");
+  await expect(writed).rejects.toThrow(ObjectToSAJTransformStreamError);
+  await expect(writed).rejects.toThrow("custom error");
 });
 
 test("notsupport to custom value", async ({ expect }) => {
@@ -241,10 +243,10 @@ test("notsupport to error", async ({ expect }) => {
   })({
     value: 1n,
   });
-  await expect(readed).rejects.toThrowError(ObjectToSAJTransformStreamError);
-  await expect(readed).rejects.toThrowError("not support value 1");
-  await expect(writed).rejects.toThrowError(ObjectToSAJTransformStreamError);
-  await expect(writed).rejects.toThrowError("not support value 1");
+  await expect(readed).rejects.toThrow(ObjectToSAJTransformStreamError);
+  await expect(readed).rejects.toThrow("not support value 1");
+  await expect(writed).rejects.toThrow(ObjectToSAJTransformStreamError);
+  await expect(writed).rejects.toThrow("not support value 1");
 });
 
 describe.concurrent("status", (it) => {

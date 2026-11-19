@@ -1,5 +1,5 @@
-import type { CommentSAXEventInterface } from "../event-interface/CommentSAXEventInterface";
-import { SAXEvent } from "./SAXEvent";
+import type { CommentSAXEventInterface } from "../event-interface/CommentSAXEventInterface.js";
+import { SAXEvent } from "./SAXEvent.js";
 
 export const SAX_COMMENT_EVENT_TYPE = "comment";
 export class CommentEvent extends SAXEvent<typeof SAX_COMMENT_EVENT_TYPE> implements CommentSAXEventInterface {

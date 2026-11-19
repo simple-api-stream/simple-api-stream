@@ -1,5 +1,5 @@
-import type { DoctypeSAXEventSystemInterface } from "../event-interface";
-import { DoctypeBaseEvent } from "./DoctypeBaseEvent";
+import type { DoctypeSAXEventSystemInterface } from "../event-interface/index.js";
+import { DoctypeBaseEvent } from "./DoctypeBaseEvent.js";
 
 export class DoctypeSystemEvent extends DoctypeBaseEvent implements DoctypeSAXEventSystemInterface {
   dtdType: "SYSTEM";

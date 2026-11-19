@@ -1,5 +1,5 @@
-import type { SimpleApiParser } from "../interface";
-import { assertIsTrue, toErrorMessage } from "../utils";
+import type { SimpleApiParser } from "../interface/index.js";
+import { assertIsTrue, toErrorMessage } from "../utils/index.js";
 import {
   CdataEvent,
   CommentEvent,
@@ -14,9 +14,9 @@ import {
   ProcessingInstructionEvent,
   StartDocumentEvent,
   EndDocumentEvent,
-} from "./event";
-import type { SAXHandler } from "./interface";
-import { unescape } from "./utils";
+} from "./event/index.js";
+import type { SAXHandler } from "./interface/index.js";
+import { unescape } from "./utils/index.js";
 
 const CDATA_PREFIX = "<![CDATA[";
 const CDATA_SUFFIX = "]]>";
@@ -172,8 +172,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     catch (err: unknown) {
       this.#handler.onError?.(err instanceof Error
         ? err
-        : this.#makeError(String(err), { cause: err }),
-      );
+        : this.#makeError(String(err), { cause: err }));
       return;
     }
   }
@@ -311,8 +310,8 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
           });
         }
         else {
-          const contentType = attrs.type as string;
-          const href = attrs.href as string;
+          const contentType = attrs.type;
+          const href = attrs.href;
           if (contentType && href) {
             return new XMLStylesheetDeclarationEvent({
               target,
@@ -450,7 +449,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
 /** iterate Regexp.exec */
 function* next(regexp: RegExp, source: string) {
   assertIsTrue(regexp.global);
-  let result: RegExpExecArray | null = null;
+  let result: RegExpExecArray | null;
   while ((result = regexp.exec(source)) !== null) {
     yield result;
   };

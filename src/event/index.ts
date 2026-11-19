@@ -1,3 +1,3 @@
-export * from "./SAEvent";
-export * from "./StartDocumentEvent";
-export * from "./EndDocumentEvent";
+export * from "./SAEvent.js";
+export * from "./StartDocumentEvent.js";
+export * from "./EndDocumentEvent.js";

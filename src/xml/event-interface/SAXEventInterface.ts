@@ -1,14 +1,14 @@
-import type { EndElementSAXEventInterface } from "./EndElementSAXEventInterface";
-import type { StartElementSAXEventInterface } from "./StartElementSAXEventInterface";
-import type { TextSAXEventInterface } from "./TextSAXEventInterface";
-import type { DoctypeSAXEventInterface } from "./DoctypeSAXEventInterface";
-import type { CommentSAXEventInterface } from "./CommentSAXEventInterface";
-import type { CdataSAXEventInterface } from "./CdataSAXEventInterface";
-import type { XMLdeclarationSAXEventInterface } from "./XMLdeclarationSAXEventInterface";
-import type { XMLStylesheetDeclarationSAXEventInterface } from "./XMLStylesheetDeclarationSAXEventInterface";
-import type { ProcessingInstructionSAXEventInterface } from "./ProcessingInstructionSAXEventInterface";
-import type { StartDocumentSAXEventInterface } from "./StartDocumentSAXEventInterface";
-import type { EndDocumentSAXEventInterface } from "./EndDocumentSAXEventInterface";
+import type { EndElementSAXEventInterface } from "./EndElementSAXEventInterface.js";
+import type { StartElementSAXEventInterface } from "./StartElementSAXEventInterface.js";
+import type { TextSAXEventInterface } from "./TextSAXEventInterface.js";
+import type { DoctypeSAXEventInterface } from "./DoctypeSAXEventInterface.js";
+import type { CommentSAXEventInterface } from "./CommentSAXEventInterface.js";
+import type { CdataSAXEventInterface } from "./CdataSAXEventInterface.js";
+import type { XMLdeclarationSAXEventInterface } from "./XMLdeclarationSAXEventInterface.js";
+import type { XMLStylesheetDeclarationSAXEventInterface } from "./XMLStylesheetDeclarationSAXEventInterface.js";
+import type { ProcessingInstructionSAXEventInterface } from "./ProcessingInstructionSAXEventInterface.js";
+import type { StartDocumentSAXEventInterface } from "./StartDocumentSAXEventInterface.js";
+import type { EndDocumentSAXEventInterface } from "./EndDocumentSAXEventInterface.js";
 
 export type SAXEventInterface
   = DoctypeSAXEventInterface

@@ -1,3 +1,3 @@
 export type {
   EndDocumentSAEventInterface as EndDocumentSAXEventInterface,
-} from "../../event-interface";
+} from "../../event-interface/index.js";

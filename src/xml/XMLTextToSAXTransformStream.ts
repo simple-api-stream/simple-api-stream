@@ -1,6 +1,6 @@
-import { XMLTextToSAXParser } from "./XMLTextToSAXParser";
-import type { SAXHandler } from "./interface";
-import type { SAXEventInterface } from "./event-interface";
+import { XMLTextToSAXParser } from "./XMLTextToSAXParser.js";
+import type { SAXHandler } from "./interface/index.js";
+import type { SAXEventInterface } from "./event-interface/index.js";
 
 /**
  * A `TransformStream` that converts streamed XML text chunks into SAX-style event objects.
@@ -42,7 +42,7 @@ import type { SAXEventInterface } from "./event-interface";
  */
 export class XMLTextToSAXTransformStream extends TransformStream<string, SAXEventInterface> {
   #buffer: XMLTextToSAXParser;
-  constructor({ skipDocument}: { skipDocument?: boolean } = {}) {
+  constructor({ skipDocument }: { skipDocument?: boolean } = {}) {
     let buffer!: XMLTextToSAXParser;
     super({
 

@@ -1,2 +1,2 @@
-export * from "./escape";
-export * from "./unescape";
+export * from "./escape.js";
+export * from "./unescape.js";

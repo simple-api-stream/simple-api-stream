@@ -1,14 +1,14 @@
-import type { EndArraySAJEventInterface } from "./EndArraySAJEventInterface";
-import type { EndObjectSAJEventInterface } from "./EndObjectSAJEventInterface";
-import type { KeySAJEventInterface } from "./KeySAJEventInterface";
-import type { StartArraySAJEventInterface } from "./StartArraySAJEventInterface";
-import type { StartObjectSAJEventInterface } from "./StartObjectSAJEventInterface";
-import type { ValueBooleanSAJEventInterface } from "./ValueBooleanSAJEventInterface";
-import type { ValueNullSAJEventInterface } from "./ValueNullSAJEventInterface";
-import type { ValueNumberSAJEventInterface } from "./ValueNumberSAJEventInterface";
-import type { ValueStringSAJEventInterface } from "./ValueStringSAJEventInterface";
-import type { StartDocumentSAJEventInterface } from "./StartDocumentSAJEventInterface";
-import type { EndDocumentSAJEventInterface } from "./EndDocumentSAJEventInterface";
+import type { EndArraySAJEventInterface } from "./EndArraySAJEventInterface.js";
+import type { EndObjectSAJEventInterface } from "./EndObjectSAJEventInterface.js";
+import type { KeySAJEventInterface } from "./KeySAJEventInterface.js";
+import type { StartArraySAJEventInterface } from "./StartArraySAJEventInterface.js";
+import type { StartObjectSAJEventInterface } from "./StartObjectSAJEventInterface.js";
+import type { ValueBooleanSAJEventInterface } from "./ValueBooleanSAJEventInterface.js";
+import type { ValueNullSAJEventInterface } from "./ValueNullSAJEventInterface.js";
+import type { ValueNumberSAJEventInterface } from "./ValueNumberSAJEventInterface.js";
+import type { ValueStringSAJEventInterface } from "./ValueStringSAJEventInterface.js";
+import type { StartDocumentSAJEventInterface } from "./StartDocumentSAJEventInterface.js";
+import type { EndDocumentSAJEventInterface } from "./EndDocumentSAJEventInterface.js";
 
 export type SAJEventInterface
   = StartArraySAJEventInterface

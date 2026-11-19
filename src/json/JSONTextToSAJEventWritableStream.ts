@@ -1,6 +1,6 @@
-import type { SAJHandler } from "./interface";
-import type { JSONTextToSAJParserAdditionalHandler } from "./JSONTextToSAJParser";
-import { JSONTextToSAJParser } from "./JSONTextToSAJParser";
+import type { SAJHandler } from "./interface/index.js";
+import type { JSONTextToSAJParserAdditionalHandler } from "./JSONTextToSAJParser.js";
+import { JSONTextToSAJParser } from "./JSONTextToSAJParser.js";
 
 export class JSONTextToSAJEventWritableStream extends WritableStream<string> {
   #parser: JSONTextToSAJParser;

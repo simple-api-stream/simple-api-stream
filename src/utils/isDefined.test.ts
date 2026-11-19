@@ -1,16 +1,16 @@
 import { describe } from "vitest";
-import { assertIsDefined, isDefined } from ".";
+import { assertIsDefined, isDefined } from "./index.js";
 
 describe.concurrent("assertIsDefined", (test) => {
   test("value is undefined: throw", ({ expect }) => {
     const value: string | undefined = undefined;
     expect(() => assertIsDefined(value), `value is undefined. required throw`)
-      .toThrowError("Value is undefined");
+      .toThrow("Value is undefined");
   });
   test("value is null: throw", ({ expect }) => {
     const value: string | null = null;
     expect(() => assertIsDefined(value), `value is null. required throw`)
-      .toThrowError("Value is undefined");
+      .toThrow("Value is undefined");
   });
 
   test("value is empty string: not throw", ({ expect }) => {

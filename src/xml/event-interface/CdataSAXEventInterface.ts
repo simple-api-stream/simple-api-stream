@@ -1,4 +1,4 @@
-import type { SAX_CDATA_EVENT_TYPE } from "../event/CdataEvent";
+import type { SAX_CDATA_EVENT_TYPE } from "../event/CdataEvent.js";
 
 export interface CdataSAXEventInterface {
   name: typeof SAX_CDATA_EVENT_TYPE

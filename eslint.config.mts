@@ -3,27 +3,37 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 import json from "@eslint/json";
 import markdown from "@eslint/markdown";
-import { defineConfig } from "eslint/config";
+import { defineConfig, globalIgnores } from "eslint/config";
 import stylistic from "@stylistic/eslint-plugin";
 
 export default defineConfig([
-  {
-    ignores: [
-      `dist/**/**.*`,
-    ],
-  },
-  { files: [`**/*.{js,mjs,cjs,ts,mts,cts}`], plugins: { js }, extends: [`js/recommended`] },
+  globalIgnores([
+    `dist/**/**.*`,
+  ]),
+  { files: [`**/*.{js,mjs,cjs,ts,mts,cts}`], plugins: { js }, extends: [js.configs.recommended] },
   { files: [`**/*.{js,mjs,cjs,ts,mts,cts}`], languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   {
     files: [`**/*.{js,mjs,cjs,ts,mts,cts}`],
     plugins: {
       "@stylistic": stylistic,
-      "tseslint": tseslint,
+      "@typescript-eslint": tseslint.plugin,
     },
     extends: [
-      "@stylistic/recommended",
-      "tseslint/recommended",
+      stylistic.configs.recommended,
+      tseslint.configs.recommendedTypeChecked,
     ],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+      parserOptions: {
+        projectService: {
+          allowDefaultProject: [
+            "eslint.config.mts",
+            "vite.config.js",
+            "vitest.config.ts",
+          ],
+        },
+      },
+    },
     rules: {
       "semi": [`error`],
       "@stylistic/semi": ["error", "always"],
@@ -36,9 +46,22 @@ export default defineConfig([
         varsIgnorePattern: `^_`,
       }],
       "@stylistic/quotes": [`error`, "double", { allowTemplateLiterals: "always" }],
+      "@typescript-eslint/no-deprecated": [`error`],
     },
   },
-  { files: [`**/*.json`], ignores: [`**/tsconfig.json`, `package-lock.json`, `**/.vscode/*.json`], plugins: { json }, language: `json/json`, extends: [`json/recommended`] },
+  {
+    files: [`**/*.json`],
+    ignores: [
+      `**/tsconfig.json`,
+      `package-lock.json`,
+      `**/.vscode/*.json`,
+    ],
+    plugins: { json },
+    language: `json/json`,
+    extends: [
+      json.configs.recommended,
+    ],
+  },
   {
     files: [
       `**/tsconfig.json`,
@@ -50,7 +73,16 @@ export default defineConfig([
     languageOptions: {
       allowTrailingCommas: true,
     },
-    extends: ["json/recommended"],
+    extends: [
+      json.configs.recommended,
+    ],
   },
-  { files: [`**/*.md`], plugins: { markdown }, language: `markdown/gfm`, extends: [`markdown/recommended`] },
+  {
+    files: [`**/*.md`],
+    plugins: { markdown },
+    language: `markdown/gfm`,
+    extends: [
+      markdown.configs.recommended,
+    ],
+  },
 ]);

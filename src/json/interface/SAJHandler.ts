@@ -1,4 +1,4 @@
-import type { EndArraySAJEventInterface, EndDocumentSAJEventInterface, EndObjectSAJEventInterface, KeySAJEventInterface, StartArraySAJEventInterface, StartDocumentSAJEventInterface, StartObjectSAJEventInterface, ValueBooleanSAJEventInterface, ValueNullSAJEventInterface, ValueNumberSAJEventInterface, ValueStringSAJEventInterface } from "../event-interface";
+import type { EndArraySAJEventInterface, EndDocumentSAJEventInterface, EndObjectSAJEventInterface, KeySAJEventInterface, StartArraySAJEventInterface, StartDocumentSAJEventInterface, StartObjectSAJEventInterface, ValueBooleanSAJEventInterface, ValueNullSAJEventInterface, ValueNumberSAJEventInterface, ValueStringSAJEventInterface } from "../event-interface/index.js";
 
 export interface SAJHandler {
   onStartObject: (arg: StartObjectSAJEventInterface) => void

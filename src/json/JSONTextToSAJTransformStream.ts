@@ -1,5 +1,5 @@
-import type { SAJEventInterface } from "./event-interface";
-import { JSONTextToSAJParser } from "./JSONTextToSAJParser";
+import type { SAJEventInterface } from "./event-interface/index.js";
+import { JSONTextToSAJParser } from "./JSONTextToSAJParser.js";
 
 type SAJHandler = Required<ConstructorParameters<typeof JSONTextToSAJParser>[0]["handler"]>;
 
@@ -47,8 +47,8 @@ export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEve
  * @returns
  */
 function toHandler(controller: TransformStreamDefaultController<SAJEventInterface>, handler: Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseRoopAfter" | "onParseRoopBefore">>): Partial<SAJHandler> {
-  const enqueue = controller.enqueue.bind(controller) as typeof controller.enqueue;
-  const error = controller.error.bind(controller) as typeof controller.error;
+  const enqueue = controller.enqueue.bind<typeof controller.enqueue>(controller);
+  const error = controller.error.bind<typeof controller.error>(controller);
   const iterable = [
     makeEntry("onStartObject", enqueue),
     makeEntry("onEndObject", enqueue),
@@ -64,7 +64,7 @@ function toHandler(controller: TransformStreamDefaultController<SAJEventInterfac
     ...(handler.onParseRoopAfter ? [makeEntry("onParseRoopAfter", arg => handler.onParseRoopAfter!(arg))] : []),
     ...(handler.onParseRoopBefore ? [makeEntry("onParseRoopBefore", arg => handler.onParseRoopBefore!(arg))] : []),
   ] as const;
-  return Object.fromEntries(iterable);
+  return Object.fromEntries(iterable) as Partial<SAJHandler>;
   function makeEntry<T extends keyof SAJHandler>(key: T, func: SAJHandler[T]) {
     return [key, func] as const;
   };

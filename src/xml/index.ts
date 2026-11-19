@@ -1,13 +1,13 @@
-export * as events from "./event";
+export * as events from "./event/index.js";
 
-export type * as eventInterfaces from "./event-interface";
-export type * as interfaces from "./interface";
+export type * as eventInterfaces from "./event-interface/index.js";
+export type * as interfaces from "./interface/index.js";
 
-import * as XMLTextToSAXEventWritableStreamModule from "./XMLTextToSAXEventWritableStream";
-import * as XMLTextToSAXTransformStreamModule from "./XMLTextToSAXTransformStream";
-import * as ResolveToSAXReadableStreamModule from "./ResolveToSAXReadableStream";
-import * as SAXToXMLTextTransformModule from "./SAXToXMLTextTransformStream";
-import * as XMLTextToSAXParserModule from "./XMLTextToSAXParser";
+import * as XMLTextToSAXEventWritableStreamModule from "./XMLTextToSAXEventWritableStream.js";
+import * as XMLTextToSAXTransformStreamModule from "./XMLTextToSAXTransformStream.js";
+import * as ResolveToSAXReadableStreamModule from "./ResolveToSAXReadableStream.js";
+import * as SAXToXMLTextTransformModule from "./SAXToXMLTextTransformStream.js";
+import * as XMLTextToSAXParserModule from "./XMLTextToSAXParser.js";
 export const streams = {
   ...XMLTextToSAXEventWritableStreamModule,
   ...XMLTextToSAXTransformStreamModule,

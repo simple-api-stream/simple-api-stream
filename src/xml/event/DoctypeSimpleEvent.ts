@@ -1,5 +1,5 @@
-import type { DoctypeSAXEventSimpleInterface } from "../event-interface";
-import { DoctypeBaseEvent } from "./DoctypeBaseEvent";
+import type { DoctypeSAXEventSimpleInterface } from "../event-interface/index.js";
+import { DoctypeBaseEvent } from "./DoctypeBaseEvent.js";
 
 export class DoctypeSimpleEvent extends DoctypeBaseEvent implements DoctypeSAXEventSimpleInterface {
   dtdType?: undefined = undefined;

@@ -1,5 +1,5 @@
-import type { TypeSAJEventInterface } from "../event-interface";
-import { SAJEvent } from "./SAJEvent";
+import type { TypeSAJEventInterface } from "../event-interface/index.js";
+import { SAJEvent } from "./SAJEvent.js";
 
 type ValueType = "number" | "string" | "null" | "array" | "object" | "boolean";
 export class TypeEvent<N extends string, VT extends ValueType> extends SAJEvent<N> implements TypeSAJEventInterface<VT> {

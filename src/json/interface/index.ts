@@ -1,2 +1,2 @@
-export type * from "./SAJHandler";
-export type * from "./SAJResolver";
+export type * from "./SAJHandler.js";
+export type * from "./SAJResolver.js";

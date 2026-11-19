@@ -1,5 +1,5 @@
-import { assertIsDefined, functionToName as stateToName, toErrorMessage } from "../utils";
-import type { SAJEventInterface } from "./event-interface";
+import { assertIsDefined, functionToName as stateToName, toErrorMessage } from "../utils/index.js";
+import type { SAJEventInterface } from "./event-interface/index.js";
 
 type SAJStateFn = (event: SAJEventInterface) => void;
 
@@ -23,7 +23,7 @@ export class SAJToObjectTransformStreamError extends Error implements Status {
 
   state: string;
   stackedList: { container: unknown, key?: string | undefined }[];
-  current: unknown | undefined;
+  current: unknown;
 }
 
 export type SAJToObjectTransformStreamOptions = {
@@ -58,7 +58,7 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
     return new SAJToObjectTransformStreamError(message, status, options);
   }
 
-  get #current(): unknown | undefined {
+  get #current(): unknown {
     const top = this.#stack.at(-1);
     return top?.container;
   }
@@ -105,7 +105,7 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
       }
 
       case "value":
-        this.#endEntry(event.value as T);
+        this.#endEntry(event.value);
         return;
     }
 

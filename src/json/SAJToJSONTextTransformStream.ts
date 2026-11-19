@@ -1,4 +1,4 @@
-import { toErrorMessage } from "../utils";
+import { toErrorMessage } from "../utils/index.js";
 import type {
   KeySAJEventInterface,
   SAJEventInterface,
@@ -6,13 +6,13 @@ import type {
   ValueNullSAJEventInterface,
   ValueNumberSAJEventInterface,
   ValueStringSAJEventInterface,
-} from "./event-interface";
+} from "./event-interface/index.js";
 
-type ValueSAJEventInterface
-  = | ValueNumberSAJEventInterface
-    | ValueBooleanSAJEventInterface
-    | ValueNullSAJEventInterface
-    | ValueStringSAJEventInterface;
+type ValueSAJEventInterface =
+  | ValueNumberSAJEventInterface
+  | ValueBooleanSAJEventInterface
+  | ValueNullSAJEventInterface
+  | ValueStringSAJEventInterface;
 
 type Status = {
   get containerStack(): Stacks[]
@@ -132,7 +132,8 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
               this.#containerStack.at(0) === stacks.document
               && this.#containerStack.length === 1
             )
-          ) && this.#parts.length > 0) {
+          ) && this.#parts.length > 0
+        ) {
           const json = this.#parts.splice(0, this.#parts.length).join("");
           this.#controller.enqueue(json);
         }
@@ -262,7 +263,7 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
         serialized = JSON.stringify(chunk.value);
         break;
       default: {
-        const error = this.#makeError(`Unknown value type: ${(chunk as { type: unknown }).type}`);
+        const error = this.#makeError(`Unknown value type: ${String((chunk as { type: unknown }).type)}`);
         Object.assign(error as unknown as Record<string, unknown>, { chunk });
         throw error;
       }

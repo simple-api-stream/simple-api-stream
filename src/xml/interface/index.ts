@@ -1,2 +1,2 @@
-export type * from "./SAXHandler";
-export type * from "./SAXResolver";
+export type * from "./SAXHandler.js";
+export type * from "./SAXResolver.js";

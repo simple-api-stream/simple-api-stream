@@ -1,5 +1,5 @@
-import type { XMLStylesheetDeclarationSAXEventInterface } from "../event-interface";
-import { ProcessingInstructionEvent } from "./ProcessingInstructionEvent";
+import type { XMLStylesheetDeclarationSAXEventInterface } from "../event-interface/index.js";
+import { ProcessingInstructionEvent } from "./ProcessingInstructionEvent.js";
 
 export const SAX_XML_DECLARATION_STYLESHEET_TARGET_TYPE = "xml-stylesheet";
 export class XMLStylesheetDeclarationEvent extends ProcessingInstructionEvent<typeof SAX_XML_DECLARATION_STYLESHEET_TARGET_TYPE> implements XMLStylesheetDeclarationSAXEventInterface {

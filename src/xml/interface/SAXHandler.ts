@@ -8,7 +8,7 @@ import type {
   ProcessingInstructionSAXEventInterface,
   StartDocumentSAXEventInterface,
   EndDocumentSAXEventInterface,
-} from "../event-interface";
+} from "../event-interface/index.js";
 
 export interface SAXHandler {
   onDoctype: (arg: DoctypeSAXEventInterface) => void

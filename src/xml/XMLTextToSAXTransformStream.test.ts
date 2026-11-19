@@ -1,13 +1,13 @@
 import { test, describe, expect } from "vitest";
-import { XMLTextToSAXTransformStream } from "..";
-import type { xml } from "..";
+import { XMLTextToSAXTransformStream } from "../index.js";
+import type { xml } from "../index.js";
 function collectEvents(stream: TransformStream<string, xml.eventInterfaces.SAXEventInterface>, xml: string) {
   const reader = stream.readable.getReader();
   const writer = stream.writable.getWriter();
   const output: string[] = [];
 
   return (async () => {
-    (async () => {
+    void (async () => {
       for (const chunk of xml.match(/.{1,10}/g) ?? []) {
         await writer.write(chunk);
       }
@@ -35,11 +35,11 @@ function collectEvents(stream: TransformStream<string, xml.eventInterfaces.SAXEv
           break;
         case "doctype":
           if (value.dtdType === "PUBLIC")
-            output.push(`doctype:${value.root}:${value.dtdType}:${value.identifer}:${value.uri}:${value.declarations ?? ""}`);
+            output.push(`doctype:${value.root}:${value.dtdType}:${value.identifer}:${value.uri}:${value.declarations?.join(",") ?? ""}`);
           else if (value.dtdType === "SYSTEM")
-            output.push(`doctype:${value.root}:${value.dtdType}:${value.uri}:${value.declarations ?? ""}`);
+            output.push(`doctype:${value.root}:${value.dtdType}:${value.uri}:${value.declarations?.join(",") ?? ""}`);
           else
-            output.push(`doctype:${value.root}:${value.declarations ?? ""}`);
+            output.push(`doctype:${value.root}:${value.declarations?.join(",") ?? ""}`);
           break;
         case "processingInstruction":
           output.push(`processingInstruction:${value.target}:${value.data}`);
@@ -78,11 +78,11 @@ test("SimpleSAXTransformStream handles malformed XML", async ({ expect }) => {
   const { readable, writable } = new XMLTextToSAXTransformStream();
   const writer = writable.getWriter();
   const reader = readable.getReader();
-  (async () => {
+  void (async () => {
     await writer.write("<tag attr=foo></tag>");
     await writer.close().catch(() => undefined);
   })();
-  await expect(() => reader.read()).rejects.toThrowError("Invalid or unquoted attribute syntax near: attr=foo");
+  await expect(() => reader.read()).rejects.toThrow("Invalid or unquoted attribute syntax near: attr=foo");
 });
 
 test("parses xml declaration and stylesheet", async ({ expect }) => {
@@ -141,7 +141,8 @@ describe("pattern test", (it) => {
       ],
       output: [
         {
-          name: "doctype", root: "person",
+          name: "doctype",
+          root: "person",
           declarations: [
             `<!ELEMENT person (name, age, city)>`,
             `<!ELEMENT name (#PCDATA)>`,
@@ -176,8 +177,7 @@ describe("pattern test", (it) => {
       name: "outputs correct XML chunks",
       options: { skipDocument: true },
       input: [`
-          <root id="123">Hello &lt;world&gt; &amp; othe&#x72;&#115;<empty/><!----></root>`,
-      ],
+          <root id="123">Hello &lt;world&gt; &amp; othe&#x72;&#115;<empty/><!----></root>`],
       output: [
         { name: "startElement", tagName: "root", attrs: { id: "123" }, selfClosing: false },
         { name: "text", text: "Hello <world> & others" },
@@ -218,21 +218,26 @@ describe("pattern test", (it) => {
         {
           cdata: " hoge ",
           name: "cdata",
-        }, {
+        },
+        {
           comment: " fuga ",
           name: "comment",
-        }, {
+        },
+        {
           attrs: {},
           selfClosing: false,
           tagName: "element",
           name: "startElement",
-        }, {
+        },
+        {
           text: "piyo",
           name: "text",
-        }, {
+        },
+        {
           tagName: "element",
           name: "endElement",
-        }, {
+        },
+        {
           tagName: "root",
           name: "endElement",
         },
@@ -275,7 +280,7 @@ describe("pattern test", (it) => {
     `$name`,
     async ({ input, output, options }) => {
       const { readable, writable } = new XMLTextToSAXTransformStream(options);
-      (async (xml, writer) => {
+      void (async (xml, writer) => {
         for (const x of xml)
           for (const chunk of x.match(/.{1,10}/g) ?? []) {
             await writer.write(chunk);

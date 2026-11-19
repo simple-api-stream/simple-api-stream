@@ -2,11 +2,11 @@
 import { describe, it, expect } from "vitest";
 import type {
   SAJEventInterface,
-} from "./event-interface";
+} from "./event-interface/index.js";
 import {
   SAJToJSONTextTransformStream,
   SAJToJSONTextTransformStreamError,
-} from "./SAJToJSONTextTransformStream";
+} from "./SAJToJSONTextTransformStream.js";
 
 // ヘルパー：SAJ イベント列を流し込んで出力チャンクを集める（正常系用）
 async function collectChunks(events: SAJEventInterface[]): Promise<string[]> {
@@ -158,8 +158,8 @@ describe("SAJToJSONTextTransformStream - error handling", () => {
       await writer.write({ name: "endObject" });
       await writer.close();
     })();
-    await expect(readPromise).rejects.toThrowError(expect.any(SAJToJSONTextTransformStreamError));
-    await expect(writePromise).rejects.toThrowError(expect.any(TypeError));
+    await expect(readPromise).rejects.toThrow(expect.any(SAJToJSONTextTransformStreamError));
+    await expect(writePromise).rejects.toThrow(expect.any(TypeError));
 
     expect(stream.status).toEqual({
       containerStack: [],
@@ -187,8 +187,8 @@ describe("SAJToJSONTextTransformStream - error handling", () => {
       await writer.close();
     })();
 
-    await expect(readPromise).rejects.toThrowError(expect.any(SAJToJSONTextTransformStreamError));
-    await expect(writePromise).rejects.toThrowError(expect.any(TypeError));
+    await expect(readPromise).rejects.toThrow(expect.any(SAJToJSONTextTransformStreamError));
+    await expect(writePromise).rejects.toThrow(expect.any(TypeError));
   });
 });
 describe.concurrent("pattern", (test) => {
@@ -303,11 +303,11 @@ describe.concurrent("error pattern", (test) => {
     options?: ConstructorParameters<typeof SAJToJSONTextTransformStream>[0]
     input: SAJEventInterface[]
     output:
-    Record<"read" | "write", {
-      error: (string | RegExp | (new (...args: (ConstructorParameters<typeof SAJToJSONTextTransformStreamError>)) => unknown) | Error | undefined)[]
-    } | {
-      result: unknown[] | undefined
-    }>
+      Record<"read" | "write", {
+        error: (string | RegExp | (new (...args: (ConstructorParameters<typeof SAJToJSONTextTransformStreamError>)) => unknown) | Error | undefined)[]
+      } | {
+        result: unknown[] | undefined
+      }>
   }[] = [
     {
       name: "endDocument",
@@ -388,7 +388,7 @@ describe.concurrent("error pattern", (test) => {
     ] as const)
       if ("error" in resultType) {
         for (const error of resultType.error)
-          await expect(result, `${name} throw`).rejects.toThrowError(error);
+          await expect(result, `${name} throw`).rejects.toThrow(error);
       }
       else {
         if (resultType.result === undefined)

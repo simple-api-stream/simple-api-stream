@@ -1,5 +1,5 @@
-import type { StartElementSAXEventInterface } from "../event-interface";
-import { SAXEvent } from "./SAXEvent";
+import type { StartElementSAXEventInterface } from "../event-interface/index.js";
+import { SAXEvent } from "./SAXEvent.js";
 
 export const SAX_START_ELEMENT_EVENT_TYPE = "startElement";
 export class StartElementEvent extends SAXEvent<typeof SAX_START_ELEMENT_EVENT_TYPE> implements StartElementSAXEventInterface {

@@ -1,2 +1,2 @@
-export type * from "./StartDocumentSAEventInterface";
-export type * from "./EndDocumentSAEventInterface";
+export type * from "./StartDocumentSAEventInterface.js";
+export type * from "./EndDocumentSAEventInterface.js";

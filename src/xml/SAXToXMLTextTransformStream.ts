@@ -1,6 +1,6 @@
-import { assertIsTrue, toErrorMessage } from "../utils";
-import type { CdataSAXEventInterface, CommentSAXEventInterface, DoctypeSAXEventInterface, EndElementSAXEventInterface, SAXEventInterface, StartElementSAXEventInterface, TextSAXEventInterface, ProcessingInstructionSAXEventInterface, StartDocumentSAXEventInterface, EndDocumentSAXEventInterface } from "./event-interface";
-import { escape } from "./utils";
+import { assertIsTrue, toErrorMessage } from "../utils/index.js";
+import type { CdataSAXEventInterface, CommentSAXEventInterface, DoctypeSAXEventInterface, EndElementSAXEventInterface, SAXEventInterface, StartElementSAXEventInterface, TextSAXEventInterface, ProcessingInstructionSAXEventInterface, StartDocumentSAXEventInterface, EndDocumentSAXEventInterface } from "./event-interface/index.js";
+import { escape } from "./utils/index.js";
 
 const CDATA_PREFIX = "<![CDATA[";
 const CDATA_SUFFIX = "]]>";
@@ -173,19 +173,17 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
       if (this.#summarize === summarize.default) {
         // イベントごとに即出力
         while (this.#parts.length > 0) {
-          this.#controller.enqueue(this.#parts.shift()!);
+          this.#controller.enqueue(this.#parts.shift());
         }
       }
       else if (this.#summarize === summarize.element) {
         if (chunk.name === "endElement"
-          && this.#starts.filter(v => v.name === "startElement").length === 0
-        )
+          && this.#starts.filter(v => v.name === "startElement").length === 0)
           this.#flushParts();
       }
       else if (this.#summarize === summarize.document) {
         if (chunk.name === "endDocument"
-          && this.#starts.filter(v => v.name === "startDocument").length === 0
-        )
+          && this.#starts.filter(v => v.name === "startDocument").length === 0)
           this.#flushParts();
       }
     }

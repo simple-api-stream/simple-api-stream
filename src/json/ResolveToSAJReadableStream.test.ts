@@ -1,6 +1,6 @@
 import { describe, expect } from "vitest";
-import type { json } from "..";
-import { ResolveToSAJReadableStream } from "..";
+import type { json } from "../index.js";
+import { ResolveToSAJReadableStream } from "../index.js";
 
 type SAJEventInterface = json.eventInterfaces.SAJEventInterface;
 describe("pattern", (it) => {

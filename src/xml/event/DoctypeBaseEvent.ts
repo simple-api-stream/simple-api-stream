@@ -1,5 +1,5 @@
-import type { DoctypeSAXEventBaseInterface } from "../event-interface";
-import { SAXEvent } from "./SAXEvent";
+import type { DoctypeSAXEventBaseInterface } from "../event-interface/index.js";
+import { SAXEvent } from "./SAXEvent.js";
 
 export const SAX_DOCTYPE_EVENT_TYPE = "doctype";
 

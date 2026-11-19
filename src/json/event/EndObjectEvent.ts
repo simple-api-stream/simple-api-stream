@@ -1,4 +1,4 @@
-import { SAJEvent } from "./SAJEvent";
+import { SAJEvent } from "./SAJEvent.js";
 
 export const SAJ_END_OBJECT_EVENT_TYPE = "endObject";
 export class EndObjectEvent extends SAJEvent<typeof SAJ_END_OBJECT_EVENT_TYPE> {

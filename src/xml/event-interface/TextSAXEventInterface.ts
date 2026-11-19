@@ -1,4 +1,4 @@
-import { SAX_TEXT_EVENT_TYPE } from "../event";
+import { SAX_TEXT_EVENT_TYPE } from "../event/index.js";
 
 export interface TextSAXEventInterface {
   name: typeof SAX_TEXT_EVENT_TYPE

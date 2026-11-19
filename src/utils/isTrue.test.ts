@@ -1,5 +1,5 @@
 import { describe } from "vitest";
-import { assertIsTrue, isTrue } from ".";
+import { assertIsTrue, isTrue } from "./index.js";
 
 describe.concurrent("assertIsTrue", (test) => {
   test("parameter true", ({ expect }) => {
@@ -10,12 +10,12 @@ describe.concurrent("assertIsTrue", (test) => {
   test("parameter false and message", ({ expect }) => {
     const value = false;
     expect(() => assertIsTrue(value, "assert value is false throw"))
-      .toThrowError("assert value is false throw");
+      .toThrow("assert value is false throw");
   });
   test("parameter false", ({ expect }) => {
     const value = false;
     expect(() => assertIsTrue(value))
-      .toThrowError("assert is false");
+      .toThrow("assert is false");
   });
 });
 

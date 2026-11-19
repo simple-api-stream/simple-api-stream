@@ -1,7 +1,7 @@
-import type { SimpleApiParser } from "../interface";
-import { assertIsDefined, assertIsTrue, toErrorMessage, functionToName as toState } from "../utils";
-import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event";
-import type { SAJHandler } from "./interface";
+import type { SimpleApiParser } from "../interface/index.js";
+import { assertIsDefined, assertIsTrue, toErrorMessage, functionToName as toState } from "../utils/index.js";
+import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
+import type { SAJHandler } from "./interface/index.js";
 
 export class JSONTextToSAJParserError extends Error implements Status {
   buffer: string;
@@ -402,8 +402,14 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
         }
         else {
           const esc = {
-            "\"": "\"", "\\": "\\", "/": "/",
-            "b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t",
+            "\"": "\"",
+            "\\": "\\",
+            "/": "/",
+            "b": "\b",
+            "f": "\f",
+            "n": "\n",
+            "r": "\r",
+            "t": "\t",
           }[ch];
           if (esc === undefined) throw this.#makeSyntaxError(`Invalid escape: \\${ch}`, ch);
           this.#acc += esc;

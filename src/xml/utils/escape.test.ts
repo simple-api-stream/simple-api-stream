@@ -1,5 +1,5 @@
 import { describe } from "vitest";
-import { escape } from ".";
+import { escape } from "./index.js";
 
 describe.concurrent("escape", (test) => {
   test("null", ({ expect }) => {

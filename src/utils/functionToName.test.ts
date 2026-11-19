@@ -1,5 +1,5 @@
 import { describe } from "vitest";
-import { functionToName } from "./functionToName";
+import { functionToName } from "./functionToName.js";
 
 describe.concurrent("functionToName", (test) => {
   test("value1 function name is value", ({ expect }) => {

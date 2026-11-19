@@ -1,5 +1,5 @@
-import type { SAJ_VALUE_EVENT_TYPE } from "../event";
-import type { TypeSAJEventInterface } from "./TypeSAJEventInterface";
+import type { SAJ_VALUE_EVENT_TYPE } from "../event/index.js";
+import type { TypeSAJEventInterface } from "./TypeSAJEventInterface.js";
 type ValueType = "number" | "string" | "null" | "boolean";
 type ValueDictionary = {
   number: number

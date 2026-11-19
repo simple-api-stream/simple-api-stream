@@ -1,5 +1,5 @@
-import { SAX_XML_DECLARATION_TARGET_TYPE } from "../event";
-import type { ProcessingInstructionSAXEventInterface } from "./ProcessingInstructionSAXEventInterface";
+import { SAX_XML_DECLARATION_TARGET_TYPE } from "../event/index.js";
+import type { ProcessingInstructionSAXEventInterface } from "./ProcessingInstructionSAXEventInterface.js";
 
 export interface XMLdeclarationSAXEventInterface extends ProcessingInstructionSAXEventInterface<typeof SAX_XML_DECLARATION_TARGET_TYPE> {
   version: string

@@ -1,6 +1,6 @@
 import { describe, expect, vi } from "vitest";
-import type { json } from "..";
-import { JSONTextToSAJEventWritableStream } from "..";
+import type { json } from "../index.js";
+import { JSONTextToSAJEventWritableStream } from "../index.js";
 
 type SAJEventInterface = json.eventInterfaces.SAJEventInterface;
 describe("pattern", (it) => {
@@ -146,7 +146,7 @@ describe("pattern", (it) => {
         onValue(arg) { result.push(arg); },
         onError(arg) { reject(arg); },
       });
-      (async () => {
+      void (async () => {
         const writer = stream.getWriter();
         for (const i of input) {
           for (const chunk of i.match(/.{1,10}/g) ?? [])
@@ -166,7 +166,7 @@ describe("error onError", (it) => {
       onError: vi.fn(),
     };
     const stream = new JSONTextToSAJEventWritableStream(handler);
-    stream.abort(new Error("error"));
+    void stream.abort(new Error("error"));
     // onError 実行タイミングは queueMicrotask 後
     await (null as unknown as Promise<void>);
     expect(stream.status).toEqual({

@@ -1,5 +1,5 @@
 import { describe } from "vitest";
-import { toErrorMessage } from "./toErrorMessage";
+import { toErrorMessage } from "./toErrorMessage.js";
 
 describe.concurrent("toErrorMessage", (test) => {
   test("string", ({ expect }) => {

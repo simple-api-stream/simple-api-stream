@@ -1,6 +1,6 @@
-import { toErrorMessage } from "../utils";
-import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event";
-import type { SAJEventInterface } from "./event-interface";
+import { toErrorMessage } from "../utils/index.js";
+import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
+import type { SAJEventInterface } from "./event-interface/index.js";
 
 const unSupporteds = Object.freeze({
   ignore: "ignore",
@@ -46,7 +46,7 @@ function unSupoortedToNull() {
 }
 
 function unSupportedToError({ value }: Parameters<UnSupportedFunction>[0]) {
-  const error = new Error(`not support value ${value}`);
+  const error = new Error(`not support value ${String(value)}`);
   error.name = "UnSupportedValueError";
   (error as unknown as Record<string, unknown>).value = value;
   throw error;

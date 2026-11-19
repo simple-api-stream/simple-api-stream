@@ -1,7 +1,7 @@
-export * as interfaces from "./interface";
+export * as interfaces from "./interface/index.js";
 
 // #region xml
-import * as xml from "./xml";
+import * as xml from "./xml/index.js";
 export {
   xml as xml,
 };
@@ -12,7 +12,7 @@ export const SAXToXMLTextTransform = xml.SAXToXMLTextTransform;
 // #endregion
 
 // #region json
-import * as json from "./json";
+import * as json from "./json/index.js";
 export {
   json as json,
 };

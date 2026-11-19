@@ -1,1 +1,1 @@
-export { EndDocumentEvent } from "../../event";
+export { EndDocumentEvent } from "../../event/index.js";

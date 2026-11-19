@@ -7,7 +7,7 @@ export function toErrorMessage(message: unknown, options?: ErrorOptions): {
     message2 = message;
   else {
     (options ??= {}).cause ??= message;
-    message2 = `${(message as Error | undefined)?.message ?? message}`;
+    message2 = `${(message as Error | undefined)?.message ?? String(message)}`;
   }
   return { message: message2, options };
 }

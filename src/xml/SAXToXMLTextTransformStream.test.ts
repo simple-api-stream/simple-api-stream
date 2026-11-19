@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { SAXToXMLTextTransform } from "..";
-import type { xml } from "..";
+import { SAXToXMLTextTransform } from "../index.js";
+import type { xml } from "../index.js";
 test("empty chunks", async ({ expect }) => {
   const { readable, writable } = new SAXToXMLTextTransform();
   const response = new Response(readable
@@ -21,8 +21,8 @@ describe("error pattern", (it) => {
     const read = (async () => {
       return await Array.fromAsync(readable);
     })();
-    await expect(write).rejects.toThrowError("not complete error.");
-    await expect(read).rejects.toThrowError("not complete error.");
+    await expect(write).rejects.toThrow("not complete error.");
+    await expect(read).rejects.toThrow("not complete error.");
   });
 });
 
@@ -111,7 +111,8 @@ describe("pattern test", (it) => {
       ],
       input: [
         {
-          name: "doctype", root: "person",
+          name: "doctype",
+          root: "person",
           declarations: [
             `<!ELEMENT person (name, age, city)>`,
             `<!ELEMENT name (#PCDATA)>`,
@@ -168,7 +169,8 @@ describe("pattern test", (it) => {
         "<!---->",
         "</root>",
       ],
-    }, {
+    },
+    {
       name: "all type",
       input: [
         {
@@ -195,21 +197,26 @@ describe("pattern test", (it) => {
         {
           cdata: " hoge ",
           name: "cdata",
-        }, {
+        },
+        {
           comment: " fuga ",
           name: "comment",
-        }, {
+        },
+        {
           attrs: {},
           selfClosing: false,
           tagName: "element",
           name: "startElement",
-        }, {
+        },
+        {
           text: "piyo",
           name: "text",
-        }, {
+        },
+        {
           tagName: "element",
           name: "endElement",
-        }, {
+        },
+        {
           tagName: "root",
           name: "endElement",
         },
@@ -225,7 +232,8 @@ describe("pattern test", (it) => {
         `</element>`,
         `</root>`,
       ],
-    }, {
+    },
+    {
       name: "all type (summarize element)",
       options: { summarize: "element" },
       input: [
@@ -253,21 +261,26 @@ describe("pattern test", (it) => {
         {
           cdata: " hoge ",
           name: "cdata",
-        }, {
+        },
+        {
           comment: " fuga ",
           name: "comment",
-        }, {
+        },
+        {
           attrs: {},
           selfClosing: false,
           tagName: "element",
           name: "startElement",
-        }, {
+        },
+        {
           text: "piyo",
           name: "text",
-        }, {
+        },
+        {
           tagName: "element",
           name: "endElement",
-        }, {
+        },
+        {
           tagName: "root",
           name: "endElement",
         },
@@ -275,7 +288,8 @@ describe("pattern test", (it) => {
       output: [
         `<?xml version="1.0" encoding="UTF-8" ?><?xml-stylesheet type="text/xls" href="./style.xls" ?><root><![CDATA[ hoge ]]><!-- fuga --><element>piyo</element></root>`,
       ],
-    }, {
+    },
+    {
       name: "multi root element (summarize element)",
       options: { summarize: "element" },
       input: [
@@ -288,10 +302,12 @@ describe("pattern test", (it) => {
           selfClosing: false,
           tagName: "root",
           name: "startElement",
-        }, {
+        },
+        {
           text: "piyo",
           name: "text",
-        }, {
+        },
+        {
           tagName: "root",
           name: "endElement",
         },
@@ -300,10 +316,12 @@ describe("pattern test", (it) => {
           selfClosing: false,
           tagName: "root",
           name: "startElement",
-        }, {
+        },
+        {
           text: "hoge",
           name: "text",
-        }, {
+        },
+        {
           tagName: "root",
           name: "endElement",
         },
@@ -315,7 +333,8 @@ describe("pattern test", (it) => {
         `<root>piyo</root>`,
         `<root>hoge</root>`,
       ],
-    }, {
+    },
+    {
       name: "multi root element (summarize document)",
       options: { summarize: "document" },
       input: [
@@ -328,10 +347,12 @@ describe("pattern test", (it) => {
           selfClosing: false,
           tagName: "root",
           name: "startElement",
-        }, {
+        },
+        {
           text: "piyo",
           name: "text",
-        }, {
+        },
+        {
           tagName: "root",
           name: "endElement",
         },
@@ -340,10 +361,12 @@ describe("pattern test", (it) => {
           selfClosing: false,
           tagName: "root",
           name: "startElement",
-        }, {
+        },
+        {
           text: "hoge",
           name: "text",
-        }, {
+        },
+        {
           tagName: "root",
           name: "endElement",
         },
@@ -354,7 +377,8 @@ describe("pattern test", (it) => {
       output: [
         `<root>piyo</root><root>hoge</root>`,
       ],
-    }, {
+    },
+    {
       name: "multi document (summarize document)",
       options: { summarize: "document" },
       input: [
@@ -367,10 +391,12 @@ describe("pattern test", (it) => {
           selfClosing: false,
           tagName: "root",
           name: "startElement",
-        }, {
+        },
+        {
           text: "piyo",
           name: "text",
-        }, {
+        },
+        {
           tagName: "root",
           name: "endElement",
         },
@@ -386,10 +412,12 @@ describe("pattern test", (it) => {
           selfClosing: false,
           tagName: "root",
           name: "startElement",
-        }, {
+        },
+        {
           text: "hoge",
           name: "text",
-        }, {
+        },
+        {
           tagName: "root",
           name: "endElement",
         },
@@ -407,7 +435,7 @@ describe("pattern test", (it) => {
     `$name`,
     async ({ options, input, output }) => {
       const { readable, writable } = new SAXToXMLTextTransform(options);
-      (async (input, writer) => {
+      void (async (input, writer) => {
         for (const i of input)
           await writer.write(i);
         await writer.close();

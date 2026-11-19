@@ -1,14 +1,14 @@
-export * as events from "./event";
+export * as events from "./event/index.js";
 
-export type * as eventInterfaces from "./event-interface";
-export type * as interfaces from "./interface";
+export type * as eventInterfaces from "./event-interface/index.js";
+export type * as interfaces from "./interface/index.js";
 
-import * as JSONTextToSAJEventWritableStreamModule from "./JSONTextToSAJEventWritableStream";
-import * as ResolveToSAJReadableStreamModule from "./ResolveToSAJReadableStream";
-import * as JSONTextToSAJTransformStreamModule from "./JSONTextToSAJTransformStream";
-import * as SAJToObjectTransformStreamModule from "./SAJToObjectTransformStream";
-import * as JSONTextToSAJParserModule from "./JSONTextToSAJParser";
-import * as ObjectToSAJTransformStreamModule from "./ObjectToSAJTransformStream";
+import * as JSONTextToSAJEventWritableStreamModule from "./JSONTextToSAJEventWritableStream.js";
+import * as ResolveToSAJReadableStreamModule from "./ResolveToSAJReadableStream.js";
+import * as JSONTextToSAJTransformStreamModule from "./JSONTextToSAJTransformStream.js";
+import * as SAJToObjectTransformStreamModule from "./SAJToObjectTransformStream.js";
+import * as JSONTextToSAJParserModule from "./JSONTextToSAJParser.js";
+import * as ObjectToSAJTransformStreamModule from "./ObjectToSAJTransformStream.js";
 
 export const streams = {
   ...JSONTextToSAJEventWritableStreamModule,

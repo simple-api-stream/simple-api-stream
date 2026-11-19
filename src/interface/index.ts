@@ -1,1 +1,1 @@
-export * from "./SimpleApiParser";
+export * from "./SimpleApiParser.js";
