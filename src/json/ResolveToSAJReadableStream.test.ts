@@ -1,4 +1,4 @@
-import { describe, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import type * as json from "./index.js";
 import { ResolveToSAJReadableStream } from "../index.js";
 
@@ -65,4 +65,18 @@ describe("pattern", (it) => {
     })();
     expect(result).toEqual(output);
   });
+});
+
+test("dispose is safe after explicit close or consumer cancel", async ({ expect }) => {
+  {
+    using stream = new ResolveToSAJReadableStream();
+    stream.value("number", 1);
+    stream.close();
+    await expect(Array.fromAsync(stream)).resolves.toEqual([{ name: "value", type: "number", value: 1 }]);
+  }
+  {
+    using stream = new ResolveToSAJReadableStream();
+    stream.value("number", 1);
+    await stream.cancel();
+  }
 });

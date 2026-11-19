@@ -195,3 +195,17 @@ describe("pattern", (it) => {
     expect(result).toEqual(output);
   });
 });
+
+test("dispose is safe after explicit close or consumer cancel", async ({ expect }) => {
+  {
+    using stream = new ResolveToSAXReadableStream();
+    stream.text("hi");
+    stream.close();
+    await expect(Array.fromAsync(stream)).resolves.toEqual([{ name: "text", text: "hi" }]);
+  }
+  {
+    using stream = new ResolveToSAXReadableStream();
+    stream.text("hi");
+    await stream.cancel();
+  }
+});

@@ -4,6 +4,7 @@ import type { SAJResolver } from "./interface/SAJResolver.js";
 
 export class ResolveToSAJReadableStream extends ReadableStream<SAJEventInterface> implements SAJResolver {
   #controller!: ReadableStreamDefaultController<SAJEventInterface>;
+  #closed = false;
 
   constructor() {
     let controller_!: ReadableStreamDefaultController<SAJEventInterface>;
@@ -11,6 +12,9 @@ export class ResolveToSAJReadableStream extends ReadableStream<SAJEventInterface
     super({
       start: (controller) => {
         controller_ = controller;
+      },
+      cancel: () => {
+        this.#closed = true;
       },
     });
     this.#controller = controller_;
@@ -61,6 +65,8 @@ export class ResolveToSAJReadableStream extends ReadableStream<SAJEventInterface
   }
 
   close() {
+    if (this.#closed) return;
+    this.#closed = true;
     this.#controller.close();
   }
 

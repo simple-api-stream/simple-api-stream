@@ -51,6 +51,7 @@ export class ResolveToSAXReadableStreamError extends Error implements Status {
  */
 export class ResolveToSAXReadableStream extends ReadableStream<SAXEventInterface> implements SAXResolver {
   #controller!: ReadableStreamDefaultController<SAXEventInterface>;
+  #closed = false;
 
   constructor() {
     let controller_!: ReadableStreamDefaultController<SAXEventInterface>;
@@ -59,6 +60,9 @@ export class ResolveToSAXReadableStream extends ReadableStream<SAXEventInterface
     super({
       start: (controller) => {
         controller_ = controller;
+      },
+      cancel: () => {
+        this.#closed = true;
       },
     });
     this.#controller = controller_;
@@ -136,6 +140,8 @@ export class ResolveToSAXReadableStream extends ReadableStream<SAXEventInterface
   }
 
   close() {
+    if (this.#closed) return;
+    this.#closed = true;
     this.#controller.close();
   }
 
