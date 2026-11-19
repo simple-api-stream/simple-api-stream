@@ -154,10 +154,9 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
     assertIsTrue(num >= 0, "num is required 0 or later");
     const indent = this.#options?.indent;
     if (indent === undefined) return "";
-    return (typeof indent === "string"
-      ? (num == 0 ? this.#starts : Array.from({ length: this.#starts.length + num })).map(() => indent)
-      : Array.from({ length: indent + num }, () => " ")
-    ).join("");
+    const depth = this.#starts.filter(v => v.name === "startElement").length + num;
+    const unit = typeof indent === "string" ? indent : " ".repeat(indent);
+    return unit.repeat(depth);
   }
 
   #flush() {
@@ -272,7 +271,7 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
     const indent = this.#prefix;
     this.#starts.push(chunk);
     if (chunk.selfClosing) {
-      return `${this.#prefix}${joins.join(" ")}/${BLOCK_SUFFIX}`;
+      return `${indent}${joins.join(" ")}/${BLOCK_SUFFIX}${this.#suffix}`;
     }
     this.#prefix = this.#makeIndent();
     return `${indent}${joins.join(" ")}${BLOCK_SUFFIX}${this.#suffix}`;
