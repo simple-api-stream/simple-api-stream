@@ -154,9 +154,10 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
     }
   }
 
-  #endDocument(ch?: Ch) {
+  #endDocument(ch: Ch) {
+    if (ch !== EOL && /\s/.test(ch)) return;
     assertIsTrue(this.#startDocumented, "mismatch not start document");
-    if (ch !== EOL && ch !== undefined) {
+    if (ch !== EOL) {
       this.#pos--;
     }
     if (!this.#skipDocument)

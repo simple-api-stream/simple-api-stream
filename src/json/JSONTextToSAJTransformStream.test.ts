@@ -115,6 +115,50 @@ describe("pattern", (it) => {
       ],
     },
     {
+      name: "standalone number with trailing whitespace",
+      input: [
+        `123\n`,
+      ],
+      output: [
+        { name: "startDocument", kind: "json" },
+        { name: "value", type: "number", value: 123 },
+        { name: "endDocument" },
+      ],
+    },
+    {
+      name: "standalone string with trailing whitespace",
+      input: [
+        `"hello"  \r\n`,
+      ],
+      output: [
+        { name: "startDocument", kind: "json" },
+        { name: "value", type: "string", value: "hello" },
+        { name: "endDocument" },
+      ],
+    },
+    {
+      name: "standalone boolean with trailing whitespace",
+      input: [
+        `true `,
+      ],
+      output: [
+        { name: "startDocument", kind: "json" },
+        { name: "value", type: "boolean", value: true },
+        { name: "endDocument" },
+      ],
+    },
+    {
+      name: "standalone null with trailing whitespace",
+      input: [
+        `null\n`,
+      ],
+      output: [
+        { name: "startDocument", kind: "json" },
+        { name: "value", type: "null", value: null },
+        { name: "endDocument" },
+      ],
+    },
+    {
       name: "crlf array",
       input: [
         `\t
