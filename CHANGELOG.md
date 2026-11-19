@@ -29,5 +29,5 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 - Documentation:
   - Architecture overview, feature matrix, usage examples, option tables, event format references, error classes, and subpath export guide in `README.md`.
 
-[Unreleased]: https://github.com/juner/simple-api-stream/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/juner/simple-api-stream/releases/tag/v1.0.0
+[Unreleased]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/simple-api-stream/simple-api-stream/releases/tag/v1.0.0
