@@ -246,7 +246,7 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
     joins.push(chunk.root);
     if (chunk.dtdType === "PUBLIC") {
       joins.push("PUBLIC");
-      joins.push(`"${chunk.identifer}"`);
+      joins.push(`"${chunk.identifier}"`);
       if (chunk.uri !== undefined)
         joins.push(`"${chunk.uri}"`);
     }

@@ -5,7 +5,7 @@ type SAJHandler = Required<ConstructorParameters<typeof JSONTextToSAJParser>[0][
 
 export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEventInterface> {
   #parser: JSONTextToSAJParser;
-  constructor({ skipDocument, multiple, ...handler_ }: { skipDocument?: boolean, multiple?: boolean } & Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseRoopAfter" | "onParseRoopBefore">> = {}) {
+  constructor({ skipDocument, multiple, ...handler_ }: { skipDocument?: boolean, multiple?: boolean } & Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseLoopAfter" | "onParseLoopBefore">> = {}) {
     let buffer!: JSONTextToSAJParser;
     super({
 
@@ -46,7 +46,7 @@ export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEve
  * @param controller
  * @returns
  */
-function toHandler(controller: TransformStreamDefaultController<SAJEventInterface>, handler: Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseRoopAfter" | "onParseRoopBefore">>): Partial<SAJHandler> {
+function toHandler(controller: TransformStreamDefaultController<SAJEventInterface>, handler: Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseLoopAfter" | "onParseLoopBefore">>): Partial<SAJHandler> {
   const enqueue = controller.enqueue.bind<typeof controller.enqueue>(controller);
   const error = (err: unknown) => {
     controller.error(err);
@@ -64,8 +64,8 @@ function toHandler(controller: TransformStreamDefaultController<SAJEventInterfac
     makeEntry("onError", error),
     ...(handler.onParseAfter ? [makeEntry("onParseAfter", arg => handler.onParseAfter!(arg))] : []),
     ...(handler.onParseBefore ? [makeEntry("onParseBefore", arg => handler.onParseBefore!(arg))] : []),
-    ...(handler.onParseRoopAfter ? [makeEntry("onParseRoopAfter", arg => handler.onParseRoopAfter!(arg))] : []),
-    ...(handler.onParseRoopBefore ? [makeEntry("onParseRoopBefore", arg => handler.onParseRoopBefore!(arg))] : []),
+    ...(handler.onParseLoopAfter ? [makeEntry("onParseLoopAfter", arg => handler.onParseLoopAfter!(arg))] : []),
+    ...(handler.onParseLoopBefore ? [makeEntry("onParseLoopBefore", arg => handler.onParseLoopBefore!(arg))] : []),
   ] as const;
   return Object.fromEntries(iterable) as Partial<SAJHandler>;
   function makeEntry<T extends keyof SAJHandler>(key: T, func: SAJHandler[T]) {

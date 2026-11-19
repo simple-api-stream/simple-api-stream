@@ -4,15 +4,15 @@ import { DoctypeBaseEvent } from "./DoctypeBaseEvent.js";
 export class DoctypePublicEvent extends DoctypeBaseEvent implements DoctypeSAXEventPublicInterface {
   dtdType: "PUBLIC";
   uri?: string;
-  identifer: string;
+  identifier: string;
   constructor(root: string, options: {
     dtdType: "PUBLIC"
     uri?: string
-    identifer: string
+    identifier: string
   } & ConstructorParameters<typeof DoctypeBaseEvent>[1]) {
     super(root, options);
     this.dtdType = options.dtdType;
     this.uri = options.uri;
-    this.identifer = options.identifer;
+    this.identifier = options.identifier;
   }
 }

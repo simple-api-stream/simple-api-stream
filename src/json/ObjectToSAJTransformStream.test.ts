@@ -114,7 +114,7 @@ describe.concurrent("pattern", (test) => {
     {
       name: "not support to null",
       options: {
-        unSupported: ObjectToSAJTransformStream.unSupoortedToNull,
+        unSupported: ObjectToSAJTransformStream.unSupportedToNull,
       },
       input: [
         {

@@ -158,7 +158,7 @@ describe("pattern test", (it) => {
     {
       name: "DOCTYPE HTML 4.01 Strict",
       input: [
-        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifer: "-//W3C//DTD HTML 4.01//EN", uri: "http://www.w3.org/TR/html4/strict.dtd" },
+        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifier: "-//W3C//DTD HTML 4.01//EN", uri: "http://www.w3.org/TR/html4/strict.dtd" },
       ],
       output: [
         `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">`,
@@ -167,7 +167,7 @@ describe("pattern test", (it) => {
     {
       name: "DOCTYPE HTML 4.01 Transitional",
       input: [
-        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifer: "-//W3C//DTD HTML 4.01 Transitional//EN", uri: "http://www.w3.org/TR/html4/loose.dtd" },
+        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifier: "-//W3C//DTD HTML 4.01 Transitional//EN", uri: "http://www.w3.org/TR/html4/loose.dtd" },
       ],
       output: [
         `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">`,
@@ -568,7 +568,7 @@ describe("pattern test", (it) => {
     {
       name: "DOCTYPE PUBLIC without uri",
       input: [
-        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifer: "-//W3C//DTD HTML 4.01//EN" },
+        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifier: "-//W3C//DTD HTML 4.01//EN" },
       ],
       output: [
         `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">`,

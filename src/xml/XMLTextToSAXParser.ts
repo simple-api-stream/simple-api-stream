@@ -109,8 +109,8 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     this.#parseBuffer(true);
   }
 
-  error(reasone: unknown) {
-    this.#handler?.onError?.(reasone);
+  error(reason: unknown) {
+    this.#handler?.onError?.(reason);
   }
 
   /**
@@ -210,7 +210,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     this.#acc = "";
 
     const remaining = this.#buffer.slice(this.#cursor);
-    const remaingin_upper = remaining.toUpperCase();
+    const remainingUpper = remaining.toUpperCase();
 
     if (remaining.startsWith(COMMENT_PREFIX)) {
       this.#setFactor(this.#comment, "comment");
@@ -218,7 +218,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     else if (remaining.startsWith(CDATA_PREFIX)) {
       this.#setFactor(this.#cdata, "cdata");
     }
-    else if (remaingin_upper.startsWith(DOCTYPE_PREFIX)) {
+    else if (remainingUpper.startsWith(DOCTYPE_PREFIX)) {
       this.#setFactor(this.#doctype, "doctype");
     }
     else if (remaining.startsWith(PROCESSING_INSTRUCTION_PREFIX)) {
@@ -226,7 +226,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     }
     else if (
       CDATA_PREFIX.startsWith(remaining)
-      || DOCTYPE_PREFIX.startsWith(remaingin_upper)
+      || DOCTYPE_PREFIX.startsWith(remainingUpper)
       || COMMENT_PREFIX.startsWith(remaining)
       || PROCESSING_INSTRUCTION_PREFIX.startsWith(remaining)
     ) {
@@ -431,7 +431,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     if (dtdType === "PUBLIC")
       return new DoctypePublicEvent(root, {
         dtdType,
-        identifer: uri1,
+        identifier: uri1,
         uri: uri2,
         declarations,
       });

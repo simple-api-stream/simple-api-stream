@@ -37,11 +37,11 @@ export class ObjectToSAJTransformStreamError extends Error implements Status {
 function toUnsupported(unSupported: UnSupportedFunction | typeof skip) {
   if (unSupported === skip) return [unSupporteds.ignore, unSupported] as const;
   if (unSupported === unSupportedToError) return [unSupporteds.error, unSupported] as const;
-  if (unSupported === unSupoortedToNull) return [unSupporteds.null, unSupported] as const;
+  if (unSupported === unSupportedToNull) return [unSupporteds.null, unSupported] as const;
   return ["custom", unSupported] as const;
 };
 
-function unSupoortedToNull() {
+function unSupportedToNull() {
   return null;
 }
 
@@ -68,17 +68,17 @@ export class ObjectToSAJTransformStream<T = unknown> extends TransformStream<T, 
     });
     this.#controller = controller_;
     this.#makeDocument = makeDocument ?? true;
-    this.#unSupported = this.#toUnspported(unSupported);
+    this.#unSupported = this.#toUnsupported(unSupported);
   }
 
-  #toUnspported(unSupported?: UnSupporteds | UnSupportedFunction): UnSupportedFunction | typeof skip {
+  #toUnsupported(unSupported?: UnSupporteds | UnSupportedFunction): UnSupportedFunction | typeof skip {
     unSupported ??= unSupporteds.ignore;
     if (unSupported === unSupporteds.ignore)
       return skip;
     if (unSupported === unSupporteds.error)
       return unSupportedToError;
     if (unSupported === unSupporteds.null)
-      return unSupoortedToNull;
+      return unSupportedToNull;
     return unSupported;
   }
 
@@ -93,7 +93,7 @@ export class ObjectToSAJTransformStream<T = unknown> extends TransformStream<T, 
     return this.#status();
   }
 
-  static readonly unSupoortedToNull = unSupoortedToNull;
+  static readonly unSupportedToNull = unSupportedToNull;
   static readonly unSupportedToError = unSupportedToError;
   #makeError(message: string | Error, options?: ErrorOptions) {
     ({ message, options } = toErrorMessage(message, options));

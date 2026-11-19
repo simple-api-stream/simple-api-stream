@@ -26,7 +26,7 @@ function makeStringListHandlerAndArray() {
     },
     onDoctype({ root, ...args }) {
       if (args.dtdType === "PUBLIC")
-        events.push(`doctype:${root}:${args.dtdType}:${args.identifer}:${args.uri ?? ""}:${args.declarations?.join(",") ?? ""}`);
+        events.push(`doctype:${root}:${args.dtdType}:${args.identifier}:${args.uri ?? ""}:${args.declarations?.join(",") ?? ""}`);
       else if (args.dtdType === "SYSTEM")
         events.push(`doctype:${root}:${args.dtdType}:${args.uri}:${args.declarations?.join(",") ?? ""}`);
       else

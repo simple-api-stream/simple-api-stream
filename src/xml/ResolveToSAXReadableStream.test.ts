@@ -163,12 +163,12 @@ describe("pattern", (it) => {
       input: [
         stream => stream.doctype("HTML", {
           dtdType: "PUBLIC",
-          identifer: "-//W3C//DTD HTML 4.01//EN",
+          identifier: "-//W3C//DTD HTML 4.01//EN",
           uri: "http://www.w3.org/TR/html4/strict.dtd",
         }),
       ],
       output: [
-        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifer: "-//W3C//DTD HTML 4.01//EN", uri: "http://www.w3.org/TR/html4/strict.dtd" },
+        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifier: "-//W3C//DTD HTML 4.01//EN", uri: "http://www.w3.org/TR/html4/strict.dtd" },
       ],
     },
     {

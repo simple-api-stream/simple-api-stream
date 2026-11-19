@@ -36,8 +36,8 @@ type Status = {
 
 export type JSONTextToSAJParserAdditionalHandler = {
   onParseBefore(arg: Status): void
-  onParseRoopBefore(arg: Status): void
-  onParseRoopAfter(arg: Status): void
+  onParseLoopBefore(arg: Status): void
+  onParseLoopAfter(arg: Status): void
   onParseAfter(arg: Status): void
 };
 const EOL = Symbol.for("JSONTextToSAJParser.EOL");
@@ -136,10 +136,10 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
     this.#handler.onParseBefore?.(this.#status());
     try {
       while (this.#pos < this.#buffer.length) {
-        this.#handler.onParseRoopBefore?.(this.#status());
+        this.#handler.onParseLoopBefore?.(this.#status());
         const ch = this.#buffer[this.#pos++];
         this.#state(ch);
-        this.#handler.onParseRoopAfter?.(this.#status());
+        this.#handler.onParseLoopAfter?.(this.#status());
       }
       this.#buffer = "";
       this.#pos = 0;

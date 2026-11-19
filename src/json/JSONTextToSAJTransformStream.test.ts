@@ -1089,8 +1089,8 @@ test("debug", async ({ expect }) => {
   const handler: Handler = {
     onParseAfter: vi.fn(),
     onParseBefore: vi.fn(),
-    onParseRoopAfter: vi.fn(),
-    onParseRoopBefore: vi.fn(),
+    onParseLoopAfter: vi.fn(),
+    onParseLoopBefore: vi.fn(),
   };
   const { readable, writable, status } = new JSONTextToSAJTransformStream(handler);
   const readed = Array.fromAsync(readable);
@@ -1124,8 +1124,8 @@ test("debug", async ({ expect }) => {
   await expect(writed).resolves.toBeUndefined();
   expect(handler.onParseAfter).toHaveBeenCalledTimes(2);
   expect(handler.onParseBefore).toHaveBeenCalledTimes(2);
-  expect(handler.onParseRoopAfter).toHaveBeenCalledTimes(7);
-  expect(handler.onParseRoopBefore).toHaveBeenCalledTimes(7);
+  expect(handler.onParseLoopAfter).toHaveBeenCalledTimes(7);
+  expect(handler.onParseLoopBefore).toHaveBeenCalledTimes(7);
 });
 
 test("clears consumed buffer after each chunk to avoid unbounded growth", async ({ expect }) => {
@@ -1148,7 +1148,7 @@ test("clears consumed buffer after each chunk to avoid unbounded growth", async 
 test("reports explicit state names during parsing and on error", async ({ expect }) => {
   const states: string[] = [];
   const stream = new JSONTextToSAJTransformStream({
-    onParseRoopAfter: (status) => {
+    onParseLoopAfter: (status) => {
       states.push(status.state);
     },
   });

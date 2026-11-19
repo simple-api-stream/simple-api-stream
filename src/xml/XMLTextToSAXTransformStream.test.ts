@@ -35,7 +35,7 @@ function collectEvents(stream: TransformStream<string, xml.eventInterfaces.SAXEv
           break;
         case "doctype":
           if (value.dtdType === "PUBLIC")
-            output.push(`doctype:${value.root}:${value.dtdType}:${value.identifer}:${value.uri}:${value.declarations?.join(",") ?? ""}`);
+            output.push(`doctype:${value.root}:${value.dtdType}:${value.identifier}:${value.uri}:${value.declarations?.join(",") ?? ""}`);
           else if (value.dtdType === "SYSTEM")
             output.push(`doctype:${value.root}:${value.dtdType}:${value.uri}:${value.declarations?.join(",") ?? ""}`);
           else
@@ -115,7 +115,7 @@ describe("pattern test", (it) => {
         `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">`,
       ],
       output: [
-        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifer: "-//W3C//DTD HTML 4.01//EN", uri: "http://www.w3.org/TR/html4/strict.dtd" },
+        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifier: "-//W3C//DTD HTML 4.01//EN", uri: "http://www.w3.org/TR/html4/strict.dtd" },
       ],
     },
     {
@@ -125,7 +125,7 @@ describe("pattern test", (it) => {
         `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">`,
       ],
       output: [
-        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifer: "-//W3C//DTD HTML 4.01 Transitional//EN", uri: "http://www.w3.org/TR/html4/loose.dtd" },
+        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifier: "-//W3C//DTD HTML 4.01 Transitional//EN", uri: "http://www.w3.org/TR/html4/loose.dtd" },
       ],
     },
     {
