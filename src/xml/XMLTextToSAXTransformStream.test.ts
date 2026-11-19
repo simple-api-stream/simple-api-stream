@@ -405,3 +405,21 @@ test("rejects invalid attribute before valid attribute and invalid closing tag",
     await expect(readed).rejects.toThrow();
   }
 });
+
+test("rejects mismatched, stray, and unclosed tags", async ({ expect }) => {
+  for (const [badXml, expectedMessage] of [
+    [`<a></b>`, `Mismatched closing tag: expected </a>, got </b>`],
+    [`<a><b></a></b>`, `Mismatched closing tag: expected </b>, got </a>`],
+    [`</a>`, `Unexpected closing tag </a>`],
+    [`<a><b></b>`, `not complete syntax error`],
+  ] as const) {
+    const stream = new XMLTextToSAXTransformStream();
+    const writer = stream.writable.getWriter();
+    const readed = Array.fromAsync(stream.readable);
+    void (async () => {
+      await writer.write(badXml);
+      await writer.close().catch(() => undefined);
+    })();
+    await expect(readed).rejects.toThrow(expectedMessage);
+  }
+});

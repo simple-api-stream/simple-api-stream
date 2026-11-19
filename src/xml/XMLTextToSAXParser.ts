@@ -60,6 +60,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
   #cursor: number = 0;
   #openDocumented: boolean = false;
   #skipDocument: boolean;
+  #tagStack: string[] = [];
   #factor!: (flush: boolean) => { required?: true };
   #stateName: string = "text";
 
@@ -173,6 +174,9 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
         this.#acc = "";
       }
       if (flush) {
+        if (this.#tagStack.length > 0) {
+          throw this.#makeNotCompleteError();
+        }
         this.#acc = "";
         this.#endDocument();
       }
@@ -376,9 +380,25 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
       const { start, end } = this.#parseTag(acc);
       if (start) {
         this.#startDocument();
+        if (!start.selfClosing) {
+          this.#tagStack.push(start.tagName);
+        }
         this.#handler.onStartElement?.(start);
       }
-      if (end) this.#handler.onEndElement?.(end);
+      if (end) {
+        if (!start) {
+          const expected = this.#tagStack.pop();
+          if (expected !== end.tagName) {
+            throw this.#makeSyntaxError(
+              expected === undefined
+                ? `Unexpected closing tag </${end.tagName}>`
+                : `Mismatched closing tag: expected </${expected}>, got </${end.tagName}>`,
+              acc,
+            );
+          }
+        }
+        this.#handler.onEndElement?.(end);
+      }
     }
     this.#cursor = end + BLOCK_SUFFIX.length;
     this.#setFactor(this.#text, "text");
