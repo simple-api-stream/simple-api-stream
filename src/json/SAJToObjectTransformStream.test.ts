@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type * as json from "./index.js";
-import { SAJToObjectTransformStream } from "../index.js";
+import { JSONTextToSAJTransformStream, SAJToObjectTransformStream } from "../index.js";
 import { SAJToObjectTransformStreamError } from "./SAJToObjectTransformStream.js";
 import type { SAJToObjectTransformStreamOptions } from "./SAJToObjectTransformStream.js";
 
@@ -181,6 +181,20 @@ describe("pattern", (it) => {
       ],
     },
     {
+      name: "with startDocument and endDocument",
+      input: [
+        { name: "startDocument", kind: "json" },
+        { name: "startObject" },
+        { name: "key", key: "a" },
+        { name: "value", type: "number", value: 1 },
+        { name: "endObject" },
+        { name: "endDocument" },
+      ],
+      output: [
+        { a: 1 },
+      ],
+    },
+    {
       name: "object in object",
       input: [
         { name: "startObject" },
@@ -332,6 +346,68 @@ describe("error pattern", (it) => {
         },
       },
     },
+    {
+      name: "Unexpected nested startDocument",
+      input: [
+        { name: "startDocument", kind: "json" },
+        { name: "startDocument", kind: "json" },
+      ],
+      output: {
+        read: {
+          error: [
+            "Unexpected startDocument at root",
+            SAJToObjectTransformStreamError,
+          ],
+        },
+        write: {
+          error: [
+            "Invalid state: WritableStream is closed",
+            TypeError,
+          ],
+        },
+      },
+    },
+    {
+      name: "Unexpected endDocument at root",
+      input: [
+        { name: "endDocument" },
+      ],
+      output: {
+        read: {
+          error: [
+            "Unexpected endDocument at root",
+            SAJToObjectTransformStreamError,
+          ],
+        },
+        write: {
+          error: [
+            "Invalid state: WritableStream is closed",
+            TypeError,
+          ],
+        },
+      },
+    },
+    {
+      name: "Incomplete document without endDocument",
+      input: [
+        { name: "startDocument", kind: "json" },
+        { name: "value", type: "number", value: 1 },
+      ],
+      output: {
+        read: {
+          error: [
+            "Incomplete JSON structure",
+            SAJToObjectTransformStreamError,
+          ],
+        },
+        write: {
+          error: [
+            "Incomplete JSON structure",
+            SAJToObjectTransformStreamError,
+          ],
+        },
+      },
+    },
   ];
   it.each(entries)("$name", async ({ input, output: { read, write }, options }) => {
     const [readed, writed] = (() => {
@@ -361,4 +437,31 @@ describe("error pattern", (it) => {
           await expect(result, `${name} result`).resolves.toEqual(resultType.result);
       }
   });
+});
+
+test("pipeThrough JSONTextToSAJTransformStream -> SAJToObjectTransformStream with default options", async ({ expect }) => {
+  const source = new ReadableStream<string>({
+    start(controller) {
+      controller.enqueue(`{"hello":`);
+      controller.enqueue(`"world", "n": 42}`);
+      controller.close();
+    },
+  });
+  const objects = source
+    .pipeThrough(new JSONTextToSAJTransformStream())
+    .pipeThrough(new SAJToObjectTransformStream());
+  await expect(Array.fromAsync(objects)).resolves.toEqual([{ hello: "world", n: 42 }]);
+});
+
+test("pipeThrough JSONTextToSAJTransformStream -> SAJToObjectTransformStream with multiple: true", async ({ expect }) => {
+  const source = new ReadableStream<string>({
+    start(controller) {
+      controller.enqueue(`{"a":1}\n{"b":2}`);
+      controller.close();
+    },
+  });
+  const objects = source
+    .pipeThrough(new JSONTextToSAJTransformStream({ multiple: true }))
+    .pipeThrough(new SAJToObjectTransformStream({ multiple: true }));
+  await expect(Array.fromAsync(objects)).resolves.toEqual([{ a: 1 }, { b: 2 }]);
 });

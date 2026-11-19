@@ -354,14 +354,15 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   };
 
   #parseAfterValue(ch: Ch) {
-    if (ch === EOL) {
-      if (this.#stack.length > 0)
-        // まだ未閉じの構造がある → 不完全エラー
-        throw this.#makeNotCompleteError();
-      this.#state = this.#endDocument;
+    if (ch !== EOL && /\s/.test(ch)) return;
+    if (this.#stack.length === 0) {
+      this.#endDocument(ch);
       return;
     }
-    if (/\s/.test(ch)) return;
+    if (ch === EOL) {
+      // まだ未閉じの構造がある → 不完全エラー
+      throw this.#makeNotCompleteError();
+    }
     const parent = this.#stack.at(-1);
     assertIsDefined(parent, "not have parent");
     if (parent === "object") {

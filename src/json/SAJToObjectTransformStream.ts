@@ -33,6 +33,7 @@ export type SAJToObjectTransformStreamOptions = {
 export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInterface, T> {
   #controller!: TransformStreamDefaultController<T>;
   #multiple: boolean;
+  #inDocument: boolean = false;
 
   constructor(options?: Partial<SAJToObjectTransformStreamOptions>) {
     let controller_!: TransformStreamDefaultController<T>;
@@ -44,7 +45,7 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
         this.#next(chunk);
       },
       flush: () => {
-        if (this.#stack.length === 0) return;
+        if (this.#stack.length === 0 && !this.#inDocument) return;
         throw this.#makeError("Incomplete JSON structure");
       },
     });
@@ -91,6 +92,14 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
   // #region 状態関数
   #startEntry(event: SAJEventInterface): void {
     switch (event.name) {
+      case "startDocument":
+        if (this.#inDocument) break;
+        this.#inDocument = true;
+        return;
+      case "endDocument":
+        if (!this.#inDocument) break;
+        this.#inDocument = false;
+        return;
       case "startObject": {
         const container: unknown = {};
         this.#stack.push({ container });
@@ -224,7 +233,11 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
     throw error;
   }
 
-  #done(_: SAJEventInterface): void {
+  #done(event: SAJEventInterface): void {
+    if (this.#inDocument && event.name === "endDocument") {
+      this.#inDocument = false;
+      return;
+    }
     throw this.#makeError("Unexpected event after document complete");
   };
 
