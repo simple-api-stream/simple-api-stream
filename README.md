@@ -194,7 +194,7 @@ console.log((await Array.fromAsync(xmlText)).join(""));
 | `multiple` | `boolean` | `false` | Accept multiple top-level JSON values in one stream. When `false`, a second value is an error. |
 | `onParseBefore` / `onParseAfter` / `onParseRoopBefore` / `onParseRoopAfter` | `(status) => void` | – | Debug hooks that receive the internal parser status. |
 
-`JSONTextToSAJEventWritableStream(handler)` accepts the same debug hooks in its handler object.
+`JSONTextToSAJEventWritableStream(handler, options?)` accepts `{ skipDocument?: boolean, multiple?: boolean }` as `options` and the same debug hooks in its `handler` object.
 
 ### `SAJToObjectTransformStream(options?)`
 

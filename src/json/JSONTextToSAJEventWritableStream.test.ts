@@ -180,3 +180,24 @@ describe("error onError", (it) => {
     expect(handler.onError).toHaveBeenCalledWith(expect.any(Error));
   });
 });
+
+describe("options", (it) => {
+  it("supports skipDocument and multiple", async ({ expect }) => {
+    const events: SAJEventInterface[] = [];
+    const stream = new JSONTextToSAJEventWritableStream(
+      {
+        onStartDocument: e => events.push(e),
+        onEndDocument: e => events.push(e),
+        onValue: e => events.push(e),
+      },
+      { skipDocument: true, multiple: true },
+    );
+    const writer = stream.getWriter();
+    await writer.write("1 2");
+    await writer.close();
+    expect(events).toEqual([
+      { name: "value", type: "number", value: 1 },
+      { name: "value", type: "number", value: 2 },
+    ]);
+  });
+});
