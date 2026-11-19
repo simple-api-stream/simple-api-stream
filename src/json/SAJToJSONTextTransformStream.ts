@@ -301,7 +301,14 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
     let serialized: string;
     switch (chunk.type) {
       case "boolean":
+        serialized = String(chunk.value);
+        break;
       case "number":
+        if (!Number.isFinite(chunk.value)) {
+          const error = this.#makeError(`Invalid non-finite number: ${String(chunk.value)}`);
+          Object.assign(error as unknown as Record<string, unknown>, { chunk });
+          throw error;
+        }
         serialized = String(chunk.value);
         break;
       case "null":

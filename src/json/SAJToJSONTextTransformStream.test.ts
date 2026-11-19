@@ -475,6 +475,46 @@ describe.concurrent("error pattern", (test) => {
       },
     },
     {
+      name: "non-finite number (NaN)",
+      input: [
+        { name: "value", type: "number", value: Number.NaN },
+      ],
+      output: {
+        read: {
+          error: [
+            "Invalid non-finite number: NaN",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+        write: {
+          error: [
+            "Invalid state: WritableStream is closed",
+            TypeError,
+          ],
+        },
+      },
+    },
+    {
+      name: "non-finite number (Infinity)",
+      input: [
+        { name: "value", type: "number", value: Number.POSITIVE_INFINITY },
+      ],
+      output: {
+        read: {
+          error: [
+            "Invalid non-finite number: Infinity",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+        write: {
+          error: [
+            "Invalid state: WritableStream is closed",
+            TypeError,
+          ],
+        },
+      },
+    },
+    {
       name: "incomplete document on flush (summarize: document)",
       options: { summarize: "document" },
       input: [

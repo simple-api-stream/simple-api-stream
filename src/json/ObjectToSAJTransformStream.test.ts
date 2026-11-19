@@ -203,6 +203,62 @@ describe.concurrent("pattern", (test) => {
         { name: "endDocument" },
       ],
     },
+    {
+      name: "non-finite numbers ignored by default",
+      input: [
+        { a: NaN, b: Infinity, c: -Infinity, d: 1 },
+      ],
+      output: [
+        { name: "startDocument", kind: "json" },
+        { name: "startObject" },
+        { name: "key", key: "d" },
+        { name: "value", type: "number", value: 1 },
+        { name: "endObject" },
+        { name: "endDocument" },
+      ],
+    },
+    {
+      name: "non-finite numbers converted to null when unSupported is null",
+      options: { unSupported: "null" },
+      input: [
+        { a: NaN, b: Infinity, c: -Infinity },
+      ],
+      output: [
+        { name: "startDocument", kind: "json" },
+        { name: "startObject" },
+        { name: "key", key: "a" },
+        { name: "value", type: "null", value: null },
+        { name: "key", key: "b" },
+        { name: "value", type: "null", value: null },
+        { name: "key", key: "c" },
+        { name: "value", type: "null", value: null },
+        { name: "endObject" },
+        { name: "endDocument" },
+      ],
+    },
+    {
+      name: "shared non-circular object reference (DAG)",
+      input: (() => {
+        const shared = { x: 1 };
+        return [{ a: shared, b: shared }];
+      })(),
+      output: [
+        { name: "startDocument", kind: "json" },
+        { name: "startObject" },
+        { name: "key", key: "a" },
+        { name: "startObject" },
+        { name: "key", key: "x" },
+        { name: "value", type: "number", value: 1 },
+        { name: "endObject" },
+        { name: "key", key: "b" },
+        { name: "startObject" },
+        { name: "key", key: "x" },
+        { name: "value", type: "number", value: 1 },
+        { name: "endObject" },
+        { name: "endObject" },
+        { name: "endDocument" },
+      ],
+    },
   ];
   test.each(entries)("$name", async ({ options, input, output }) => {
     const { readable, writable } = new ObjectToSAJTransformStream(options);
@@ -321,6 +377,37 @@ test("notsupport to error", async ({ expect }) => {
   await expect(readed).rejects.toThrow("not support value 1");
   await expect(writed).rejects.toThrow(ObjectToSAJTransformStreamError);
   await expect(writed).rejects.toThrow("not support value 1");
+});
+
+test("circular reference throws ObjectToSAJTransformStreamError", async ({ expect }) => {
+  const cyclic: Record<string, unknown> = {};
+  cyclic.self = cyclic;
+
+  const { readable, writable } = new ObjectToSAJTransformStream();
+  const readed = Array.fromAsync(readable);
+  const writed = (async () => {
+    const writer = writable.getWriter();
+    await writer.write(cyclic);
+    await writer.close();
+  })();
+  await expect(readed).rejects.toThrow(ObjectToSAJTransformStreamError);
+  await expect(readed).rejects.toThrow("Circular reference detected");
+  await expect(writed).rejects.toThrow(ObjectToSAJTransformStreamError);
+});
+
+test("unSupported handler returning another unsupported value throws instead of infinite recursion", async ({ expect }) => {
+  const { readable, writable } = new ObjectToSAJTransformStream({
+    unSupported: ({ value }) => value,
+  });
+  const readed = Array.fromAsync(readable);
+  const writed = (async () => {
+    const writer = writable.getWriter();
+    await writer.write({ value: 1n });
+    await writer.close();
+  })();
+  await expect(readed).rejects.toThrow(ObjectToSAJTransformStreamError);
+  await expect(readed).rejects.toThrow("unSupported handler returned unsupported value: 1");
+  await expect(writed).rejects.toThrow(ObjectToSAJTransformStreamError);
 });
 
 describe.concurrent("status", (it) => {
