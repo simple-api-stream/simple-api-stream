@@ -4,9 +4,20 @@ Streaming utilities for **incremental JSON and XML processing** built on the [We
 
 Text is parsed chunk by chunk into a flat sequence of **events**: SAJ (Simple API for JSON) for JSON and SAX (Simple API for XML) for XML. You can consume the events directly, rebuild JavaScript objects from them, or turn them back into text. Because every component is a standard `ReadableStream` / `WritableStream` / `TransformStream`, the pieces compose with `pipeThrough()` / `pipeTo()` and respect backpressure.
 
-- Zero runtime dependencies
+- Zero external runtime dependencies
 - Works anywhere Web Streams are available (Node.js, browsers, Deno, Bun, …)
-- Ships ESM build (directly `require()`-able in Node.js >= 24) with TypeScript type definitions
+- Ships ESM builds (directly `require()`-able in Node.js >= 24) with TypeScript type definitions
+- Modular npm workspaces monorepo: install only the format packages you need
+
+---
+
+## 📦 Packages
+
+| Package | Description |
+|---------|-------------|
+| [`@simple-api-stream/core`](./packages/core) | Core event classes (`SAEvent`, `StartDocumentEvent`, `EndDocumentEvent`), parser interfaces (`SimpleApiParser`), and shared utilities |
+| [`@simple-api-stream/json`](./packages/json) | Streaming JSON (SAJ) parser, object materializer, serializer, and imperative builder |
+| [`@simple-api-stream/xml`](./packages/xml) | Streaming XML (SAX) parser, serializer, and imperative builder |
 
 ---
 
@@ -32,25 +43,32 @@ flowchart LR
 
 ## ✨ Features
 
-| Module | Class (root export) | Stream type | Input | Output |
-|--------|---------------------|-------------|-------|--------|
-| **JSON** | [`JSONTextToSAJTransformStream`](./src/json/JSONTextToSAJTransformStream.ts) | `TransformStream` | JSON text (`string` chunks) | [`SAJEventInterface`](./src/json/event-interface/SAJEventInterface.ts) objects |
-| | [`JSONTextToSAJEventWritableStream`](./src/json/JSONTextToSAJEventWritableStream.ts) | `WritableStream` | JSON text (`string` chunks) | Calls a [`SAJHandler`](./src/json/interface/SAJHandler.ts) |
-| | [`SAJToObjectTransformStream<T>`](./src/json/SAJToObjectTransformStream.ts) | `TransformStream` | SAJ events | JavaScript values of type `T` |
-| | [`ObjectToSAJTransformStream<T>`](./src/json/ObjectToSAJTransformStream.ts) | `TransformStream` | JavaScript values (incl. iterators / async iterators) | SAJ events |
-| | [`SAJToJSONTextTransformStream`](./src/json/SAJToJSONTextTransformStream.ts) | `TransformStream` | SAJ events | JSON text |
-| | [`ResolveToSAJReadableStream`](./src/json/ResolveToSAJReadableStream.ts) | `ReadableStream` | Method calls ([`SAJResolver`](./src/json/interface/SAJResolver.ts)) | SAJ events |
-| **XML** | [`XMLTextToSAXTransformStream`](./src/xml/XMLTextToSAXTransformStream.ts) | `TransformStream` | XML text (`string` chunks) | [`SAXEventInterface`](./src/xml/event-interface/SAXEventInterface.ts) objects |
-| | [`XMLTextToSAXEventWritableStream`](./src/xml/XMLTextToSAXEventWritableStream.ts) | `WritableStream` | XML text (`string` chunks) | Calls a [`SAXHandler`](./src/xml/interface/SAXHandler.ts) |
-| | [`SAXToXMLTextTransformStream`](./src/xml/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
-| | [`ResolveToSAXReadableStream`](./src/xml/ResolveToSAXReadableStream.ts) | `ReadableStream` | Method calls ([`SAXResolver`](./src/xml/interface/SAXResolver.ts)) | SAX events |
+| Package | Class | Stream type | Input | Output |
+|---------|-------|-------------|-------|--------|
+| **`@simple-api-stream/json`** | [`JSONTextToSAJTransformStream`](./packages/json/src/JSONTextToSAJTransformStream.ts) | `TransformStream` | JSON text (`string` chunks) | [`SAJEventInterface`](./packages/json/src/event-interface/SAJEventInterface.ts) objects |
+| | [`JSONTextToSAJEventWritableStream`](./packages/json/src/JSONTextToSAJEventWritableStream.ts) | `WritableStream` | JSON text (`string` chunks) | Calls a [`SAJHandler`](./packages/json/src/interface/SAJHandler.ts) |
+| | [`SAJToObjectTransformStream<T>`](./packages/json/src/SAJToObjectTransformStream.ts) | `TransformStream` | SAJ events | JavaScript values of type `T` |
+| | [`ObjectToSAJTransformStream<T>`](./packages/json/src/ObjectToSAJTransformStream.ts) | `TransformStream` | JavaScript values (incl. iterables / async iterables) | SAJ events |
+| | [`SAJToJSONTextTransformStream`](./packages/json/src/SAJToJSONTextTransformStream.ts) | `TransformStream` | SAJ events | JSON text |
+| | [`ResolveToSAJReadableStream`](./packages/json/src/ResolveToSAJReadableStream.ts) | `ReadableStream` | Method calls ([`SAJResolver`](./packages/json/src/interface/SAJResolver.ts)) | SAJ events |
+| **`@simple-api-stream/xml`** | [`XMLTextToSAXTransformStream`](./packages/xml/src/XMLTextToSAXTransformStream.ts) | `TransformStream` | XML text (`string` chunks) | [`SAXEventInterface`](./packages/xml/src/event-interface/SAXEventInterface.ts) objects |
+| | [`XMLTextToSAXEventWritableStream`](./packages/xml/src/XMLTextToSAXEventWritableStream.ts) | `WritableStream` | XML text (`string` chunks) | Calls a [`SAXHandler`](./packages/xml/src/interface/SAXHandler.ts) |
+| | [`SAXToXMLTextTransformStream`](./packages/xml/src/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
+| | [`ResolveToSAXReadableStream`](./packages/xml/src/ResolveToSAXReadableStream.ts) | `ReadableStream` | Method calls ([`SAXResolver`](./packages/xml/src/interface/SAXResolver.ts)) | SAX events |
 
 ---
 
 ## 🚀 Installation
 
 ```bash
-npm install simple-api-stream
+# Install JSON streaming utilities
+npm install @simple-api-stream/json
+
+# Install XML streaming utilities
+npm install @simple-api-stream/xml
+
+# Install core contracts directly (optional; installed automatically by json/xml)
+npm install @simple-api-stream/core
 ```
 
 ### Requirements
@@ -59,9 +77,9 @@ npm install simple-api-stream
 
 ```ts
 // ESM
-import { JSONTextToSAJTransformStream } from "simple-api-stream";
+import { JSONTextToSAJTransformStream } from "@simple-api-stream/json";
 // CommonJS
-const { JSONTextToSAJTransformStream } = require("simple-api-stream");
+const { JSONTextToSAJTransformStream } = require("@simple-api-stream/json");
 ```
 
 ---
@@ -74,7 +92,7 @@ const { JSONTextToSAJTransformStream } = require("simple-api-stream");
 import {
   JSONTextToSAJTransformStream,
   SAJToObjectTransformStream,
-} from "simple-api-stream";
+} from "@simple-api-stream/json";
 
 const response = await fetch("https://example.com/data.json");
 
@@ -99,7 +117,7 @@ const objects = textStream
 ### JSON text → handler callbacks
 
 ```ts
-import { JSONTextToSAJEventWritableStream } from "simple-api-stream";
+import { JSONTextToSAJEventWritableStream } from "@simple-api-stream/json";
 
 await textStream.pipeTo(new JSONTextToSAJEventWritableStream({
   onKey: ({ key }) => console.log("key:", key),
@@ -113,7 +131,7 @@ All handler methods are optional.
 ### JavaScript values → SAJ events
 
 ```ts
-import { ObjectToSAJTransformStream } from "simple-api-stream";
+import { ObjectToSAJTransformStream } from "@simple-api-stream/json";
 
 const events = ReadableStream.from([{ a: [1, null] }])
   .pipeThrough(new ObjectToSAJTransformStream());
@@ -124,7 +142,7 @@ Arrays, plain objects, primitives, `null`, objects with `toJSON()` (such as `Dat
 ### Building SAJ events imperatively
 
 ```ts
-import { ResolveToSAJReadableStream } from "simple-api-stream";
+import { ResolveToSAJReadableStream } from "@simple-api-stream/json";
 
 const stream = new ResolveToSAJReadableStream();
 stream.startObject();
@@ -139,7 +157,7 @@ const events = await Array.fromAsync(stream);
 ### XML text → SAX events
 
 ```ts
-import { XMLTextToSAXTransformStream } from "simple-api-stream";
+import { XMLTextToSAXTransformStream } from "@simple-api-stream/xml";
 
 const events = xmlTextStream.pipeThrough(new XMLTextToSAXTransformStream());
 
@@ -152,7 +170,7 @@ for await (const event of events) {
 ### XML text → handler callbacks
 
 ```ts
-import { XMLTextToSAXEventWritableStream } from "simple-api-stream";
+import { XMLTextToSAXEventWritableStream } from "@simple-api-stream/xml";
 
 await xmlTextStream.pipeTo(new XMLTextToSAXEventWritableStream({
   onStartElement: ({ tagName, attrs }) => console.log("start", tagName, attrs),
@@ -165,7 +183,7 @@ await xmlTextStream.pipeTo(new XMLTextToSAXEventWritableStream({
 ### Building XML imperatively
 
 ```ts
-import { ResolveToSAXReadableStream, SAXToXMLTextTransformStream } from "simple-api-stream";
+import { ResolveToSAXReadableStream, SAXToXMLTextTransformStream } from "@simple-api-stream/xml";
 
 const stream = new ResolveToSAXReadableStream();
 const xmlText = stream.pipeThrough(new SAXToXMLTextTransformStream({ summarize: true }));
@@ -237,7 +255,7 @@ Text and attribute values are escaped automatically.
 
 ## 📜 Event Formats
 
-Events are plain objects with a `name` discriminator, so they can be narrowed with `switch (event.name)` in TypeScript. Type definitions are exported as `eventInterfaces` and the event classes as `events` from `simple-api-stream/json` and `simple-api-stream/xml`.
+Events are plain objects with a `name` discriminator, so they can be narrowed with `switch (event.name)` in TypeScript. Type definitions are exported as `eventInterfaces` and the event classes as `events` from `@simple-api-stream/json` and `@simple-api-stream/xml`.
 
 ### SAJ (Simple API for JSON)
 
@@ -296,20 +314,20 @@ A self-closing tag such as `<br/>` produces a `startElement` with `selfClosing: 
 
 - Malformed input errors the stream. With `TransformStream`s, both the readable side (e.g. `for await`) and pending writes reject.
 - With the `*EventWritableStream` classes, errors are reported to the handler's `onError` callback.
-- Errors carry a snapshot of the internal state for debugging (e.g. `buffer`, `state`, `pos`). The error classes are available from `streams` on `simple-api-stream/json` and `simple-api-stream/xml`:
+- Errors carry a snapshot of the internal state for debugging (e.g. `buffer`, `state`, `pos`). The error classes are available from `streams` on `@simple-api-stream/json` and `@simple-api-stream/xml`:
 
 | Error class | Import from |
 |-------------|-------------|
-| `JSONTextToSAJParserError` | `simple-api-stream/json` (`streams.JSONTextToSAJParserError`) |
-| `SAJToObjectTransformStreamError` | `simple-api-stream/json` (`streams.SAJToObjectTransformStreamError`) |
-| `ObjectToSAJTransformStreamError` | `simple-api-stream/json` (`streams.ObjectToSAJTransformStreamError`) |
-| `SAJToJSONTextTransformStreamError` | `simple-api-stream/json` (`streams.SAJToJSONTextTransformStreamError`) |
-| `XMLTextToSAXParserError` | `simple-api-stream/xml` (`streams.XMLTextToSAXParserError`) |
-| `SAXToXMLTextTransformStreamError` | `simple-api-stream/xml` (`streams.SAXToXMLTextTransformStreamError`) |
-| `ResolveToSAXReadableStreamError` | `simple-api-stream/xml` (`streams.ResolveToSAXReadableStreamError`) |
+| `JSONTextToSAJParserError` | `@simple-api-stream/json` (`streams.JSONTextToSAJParserError`) |
+| `SAJToObjectTransformStreamError` | `@simple-api-stream/json` (`streams.SAJToObjectTransformStreamError`) |
+| `ObjectToSAJTransformStreamError` | `@simple-api-stream/json` (`streams.ObjectToSAJTransformStreamError`) |
+| `SAJToJSONTextTransformStreamError` | `@simple-api-stream/json` (`streams.SAJToJSONTextTransformStreamError`) |
+| `XMLTextToSAXParserError` | `@simple-api-stream/xml` (`streams.XMLTextToSAXParserError`) |
+| `SAXToXMLTextTransformStreamError` | `@simple-api-stream/xml` (`streams.SAXToXMLTextTransformStreamError`) |
+| `ResolveToSAXReadableStreamError` | `@simple-api-stream/xml` (`streams.ResolveToSAXReadableStreamError`) |
 
 ```ts
-import { JSONTextToSAJTransformStream, streams } from "simple-api-stream/json";
+import { JSONTextToSAJTransformStream, streams } from "@simple-api-stream/json";
 
 try {
   for await (const event of textStream.pipeThrough(new JSONTextToSAJTransformStream())) {
@@ -326,44 +344,44 @@ catch (e) {
 
 ## 📚 Exports
 
-You can import everything from the root entry point, or import only JSON / XML via subpath exports:
-
 ```ts
-// Root entry point
+// Core contracts & utilities
 import {
-  // JSON
+  SAEvent,
+  StartDocumentEvent,
+  EndDocumentEvent,
+  type SimpleApiParser,
+  type StartDocumentSAEventInterface,
+  type EndDocumentSAEventInterface,
+} from "@simple-api-stream/core";
+import { toErrorMessage, assertIsDefined, assertIsTrue } from "@simple-api-stream/core/utils";
+
+// JSON streaming utilities
+import {
   JSONTextToSAJTransformStream,
   JSONTextToSAJEventWritableStream,
   SAJToObjectTransformStream,
   ObjectToSAJTransformStream,
   SAJToJSONTextTransformStream,
   ResolveToSAJReadableStream,
-  // XML
+  streams,
+  events,
+  type eventInterfaces,
+  type interfaces,
+} from "@simple-api-stream/json";
+
+// XML streaming utilities
+import {
   XMLTextToSAXTransformStream,
   XMLTextToSAXEventWritableStream,
   SAXToXMLTextTransformStream,
   ResolveToSAXReadableStream,
-  // Common types
-  interfaces,
-} from "simple-api-stream";
-
-// Subpath entry points (tree-shakeable / load only what you need)
-import {
-  JSONTextToSAJTransformStream,
-  SAJToObjectTransformStream,
-  // also: JSONTextToSAJEventWritableStream, ObjectToSAJTransformStream, SAJToJSONTextTransformStream,
-  //       ResolveToSAJReadableStream, streams, events, eventInterfaces (types), interfaces (types)
-} from "simple-api-stream/json";
-
-import {
-  XMLTextToSAXTransformStream,
-  SAXToXMLTextTransformStream,
-  // also: XMLTextToSAXEventWritableStream, ResolveToSAXReadableStream,
-  //       streams, events, eventInterfaces (types), interfaces (types)
-} from "simple-api-stream/xml";
+  streams,
+  events,
+  type eventInterfaces,
+  type interfaces,
+} from "@simple-api-stream/xml";
 ```
-
-End users should import from `simple-api-stream`, `simple-api-stream/json`, or `simple-api-stream/xml`, not from internal source paths.
 
 ---
 
@@ -372,11 +390,11 @@ End users should import from `simple-api-stream`, `simple-api-stream/json`, or `
 ```bash
 npm install
 npm run lint     # ESLint (type-aware)
-npm test         # Vitest with coverage
-npm run build    # Vite bundle (ESM) and type declarations
+npm test         # Vitest with coverage across all packages
+npm run build    # Build @simple-api-stream/{core,json,xml} (ESM + .d.ts)
 ```
 
-- Source lives in `src/json` and `src/xml`; tests are colocated as `*.test.ts`.
+- Packages live under `packages/core`, `packages/json`, and `packages/xml`; tests are colocated as `*.test.ts`.
 - Relative imports use explicit `.js` extensions (`moduleResolution: "NodeNext"`).
 
 ## 📄 License

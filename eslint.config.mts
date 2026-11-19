@@ -8,7 +8,7 @@ import stylistic from "@stylistic/eslint-plugin";
 
 export default defineConfig([
   globalIgnores([
-    `dist/**/**.*`,
+    `**/dist/**`,
   ]),
   { files: [`**/*.{js,mjs,cjs,ts,mts,cts}`], plugins: { js }, extends: [js.configs.recommended] },
   { files: [`**/*.{js,mjs,cjs,ts,mts,cts}`], languageOptions: { globals: { ...globals.browser, ...globals.node } } },
@@ -28,8 +28,8 @@ export default defineConfig([
         projectService: {
           allowDefaultProject: [
             "eslint.config.mts",
-            "vite.config.js",
             "vitest.config.ts",
+            "packages/*/vite.config.js",
           ],
         },
       },

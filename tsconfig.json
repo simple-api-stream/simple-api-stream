@@ -1,40 +1,17 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "useDefineForClassFields": true,
-    "module": "NodeNext",
-    "lib": [
-      "ESNext",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "types": [
-      "node"
-    ],
-    "skipLibCheck": true,
-    /* Bundler mode */
-    "moduleResolution": "NodeNext",
-    "allowImportingTsExtensions": true,
-    "moduleDetection": "force",
-    "emitDeclarationOnly": true,
-    "declaration": true,
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-    "verbatimModuleSyntax": true,
-    "sourceMap": true,
-    "sourceRoot": "./src",
-    "noEmit": true
-  },
+  "extends": "./tsconfig.base.json",
   "include": [
-    "src",
     "utils"
   ],
-  "exclude": [
-
+  "references": [
+    {
+      "path": "./packages/core"
+    },
+    {
+      "path": "./packages/json"
+    },
+    {
+      "path": "./packages/xml"
+    }
   ]
 }

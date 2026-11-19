@@ -9,8 +9,10 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 
 ## [1.0.0] - 2026-11-19
 ### Added
-- Initial release of **simple-api-stream** package (ESM-only build targeting Node.js `>= 24`, also directly `require()`-able via `require(esm)`), with TypeScript declarations, `"sideEffects": false`, and zero runtime dependencies.
-- Subpath exports: `simple-api-stream`, `simple-api-stream/json`, and `simple-api-stream/xml` (re-exporting stream classes as both values and types).
+- Initial release as an npm workspaces monorepo shipping ESM-only packages (targeting Node.js `>= 24`, also directly `require()`-able via `require(esm)`), with TypeScript declarations, `"sideEffects": false`, and zero external runtime dependencies:
+  - `@simple-api-stream/core` (`@simple-api-stream/core` and `@simple-api-stream/core/utils`) — Core event base classes, parser interfaces, and shared utilities.
+  - `@simple-api-stream/json` — Streaming JSON (SAJ) utilities.
+  - `@simple-api-stream/xml` — Streaming XML (SAX) utilities.
 - Streaming JSON utilities (SAJ: Simple API for JSON):
   - `JSONTextToSAJEventWritableStream` — Executes SAJ events on a custom handler (`skipDocument`, `multiple`, and parse debug hooks `onParseBefore` / `onParseAfter` / `onParseLoopBefore` / `onParseLoopAfter`).
   - `JSONTextToSAJTransformStream` — Emits typed SAJ event objects from RFC 8259 JSON text with bounded streaming buffer (`skipDocument`, `multiple`, and parse debug hooks).

@@ -1,0 +1,52 @@
+{
+  "name": "@simple-api-stream/json",
+  "version": "1.0.0",
+  "description": "Streaming JSON (SAJ) parser and serializer built on the Web Streams API",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@simple-api-stream/core": "^1.0.0"
+  },
+  "scripts": {
+    "build": "vite build && tsc --project tsconfig.build.json",
+    "clean": "node ../../utils/remove.ts -- -f ./dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juner/simple-api-stream.git",
+    "directory": "packages/json"
+  },
+  "keywords": [
+    "JSON",
+    "SAJ",
+    "stream",
+    "web streams",
+    "TransformStream",
+    "parser"
+  ],
+  "author": "juners",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.x"
+  },
+  "bugs": {
+    "url": "https://github.com/juner/simple-api-stream/issues"
+  },
+  "homepage": "https://github.com/juner/simple-api-stream#readme"
+}

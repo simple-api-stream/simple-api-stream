@@ -1,49 +1,23 @@
 {
   "name": "simple-api-stream",
+  "private": true,
   "version": "1.0.0",
-  "description": "SimpleAPI+{Writable|Readable}Streams",
-  "files": [
-    "dist",
-    "CHANGELOG.md"
-  ],
+  "description": "SimpleAPI+{Writable|Readable}Streams monorepo",
   "type": "module",
-  "sideEffects": false,
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./json": {
-      "types": "./dist/json/index.d.ts",
-      "default": "./dist/json/index.js"
-    },
-    "./xml": {
-      "types": "./dist/xml/index.d.ts",
-      "default": "./dist/xml/index.js"
-    }
-  },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "test:watch": "vitest watch --coverage",
     "test": "vitest run --coverage --coverage.reporter=cobertura --coverage.reporter=text",
     "lint": "eslint --flag unstable_native_nodejs_ts_config",
-    "build": "vite build && tsc --project tsconfig.build.json",
-    "clean": "node utils/remove.ts -- -f ./dist -f ./TestResults"
+    "build": "npm run build -w @simple-api-stream/core && npm run build -w @simple-api-stream/json && npm run build -w @simple-api-stream/xml",
+    "clean": "npm run clean --workspaces && node utils/remove.ts -- -f ./TestResults"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/juner/simple-api-stream.git"
   },
-  "keywords": [
-    "XML",
-    "SAX",
-    "JSON",
-    "stream",
-    "web streams",
-    "TransformStream",
-    "parser"
-  ],
   "author": "juners",
   "license": "MIT",
   "engines": {
