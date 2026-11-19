@@ -130,13 +130,13 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
         this.#state(ch);
         this.#handler.onParseRoopAfter?.(this.#status());
       }
-      if (isFlush && this.#pos === this.#buffer.length) {
+      this.#buffer = "";
+      this.#pos = 0;
+      if (isFlush) {
         this.#state(EOL);
         if (this.#state === this.#endDocument) {
           this.#state(EOL);
         }
-      }
-      if (isFlush) {
         assertIsTrue(this.#state === this.#startDocument, `finish state is startDocument`);
       }
     }

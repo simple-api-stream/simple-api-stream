@@ -490,19 +490,13 @@ describe("error", (it) => {
         write: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:
-          [
-          "fuga"
-            `,
+            `not complete syntax error. buffer:`,
           ],
         },
         read: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:
-          [
-          "fuga"
-            `,
+            `not complete syntax error. buffer:`,
           ],
         },
       },
@@ -517,19 +511,13 @@ describe("error", (it) => {
         write: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:
-          {
-          "fuga":"fuga"
-            `,
+            `not complete syntax error. buffer:`,
           ],
         },
         read: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:
-          {
-          "fuga":"fuga"
-            `,
+            `not complete syntax error. buffer:`,
           ],
         },
       },
@@ -544,19 +532,13 @@ describe("error", (it) => {
         write: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:
-          {
-          "fuga":"fuga",
-            `,
+            `not complete syntax error. buffer:`,
           ],
         },
         read: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:
-          {
-          "fuga":"fuga",
-            `,
+            `not complete syntax error. buffer:`,
           ],
         },
       },
@@ -571,19 +553,13 @@ describe("error", (it) => {
         write: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:
-          {
-          "fuga":{"fuga":"fuge"}
-            `,
+            `not complete syntax error. buffer:`,
           ],
         },
         read: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:
-          {
-          "fuga":{"fuga":"fuge"}
-            `,
+            `not complete syntax error. buffer:`,
           ],
         },
       },
@@ -635,13 +611,13 @@ describe("error", (it) => {
         write: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:{ "hoge"`,
+            `not complete syntax error. buffer:`,
           ],
         },
         read: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:{ "hoge"`,
+            `not complete syntax error. buffer:`,
           ],
         },
       },
@@ -655,13 +631,13 @@ describe("error", (it) => {
         write: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:{ "hoge":`,
+            `not complete syntax error. buffer:`,
           ],
         },
         read: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:{ "hoge":`,
+            `not complete syntax error. buffer:`,
           ],
         },
       },
@@ -713,13 +689,13 @@ describe("error", (it) => {
         write: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:[`,
+            `not complete syntax error. buffer:`,
           ],
         },
         read: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:[`,
+            `not complete syntax error. buffer:`,
           ],
         },
       },
@@ -752,13 +728,13 @@ describe("error", (it) => {
         write: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:[1,`,
+            `not complete syntax error. buffer:`,
           ],
         },
         read: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:[1,`,
+            `not complete syntax error. buffer:`,
           ],
         },
       },
@@ -772,13 +748,13 @@ describe("error", (it) => {
         write: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:"hoge`,
+            `not complete syntax error. buffer:`,
           ],
         },
         read: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:"hoge`,
+            `not complete syntax error. buffer:`,
           ],
         },
       },
@@ -849,13 +825,13 @@ describe("error", (it) => {
         write: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:tru`,
+            `not complete syntax error. buffer:`,
           ],
         },
         read: {
           error: [
             json.streams.JSONTextToSAJParserError,
-            `not complete syntax error. buffer:tru`,
+            `not complete syntax error. buffer:`,
           ],
         },
       },
@@ -957,4 +933,21 @@ test("debug", async ({ expect }) => {
   expect(handler.onParseBefore).toHaveBeenCalledTimes(2);
   expect(handler.onParseRoopAfter).toHaveBeenCalledTimes(7);
   expect(handler.onParseRoopBefore).toHaveBeenCalledTimes(7);
+});
+
+test("clears consumed buffer after each chunk to avoid unbounded growth", async ({ expect }) => {
+  const stream = new JSONTextToSAJTransformStream({ multiple: true });
+  const writer = stream.writable.getWriter();
+  const readed = Array.fromAsync(stream.readable);
+
+  for (let i = 0; i < 100; i++) {
+    await writer.write(`{"i":${i}}\n`);
+    expect(stream.status.buffer).toBe("");
+    expect(stream.status.pos).toBe(0);
+  }
+  await writer.close();
+  const events = await readed;
+  expect(events.length).toBe(100 * 6);
+  expect(stream.status.buffer).toBe("");
+  expect(stream.status.pos).toBe(0);
 });
