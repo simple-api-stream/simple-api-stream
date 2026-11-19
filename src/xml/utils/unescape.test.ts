@@ -30,4 +30,19 @@ describe.concurrent("unescape", (test) => {
     const value = "&hoge;";
     expect(unescape(value)).toEqual("&hoge;");
   });
+  test("prototype properties are not resolved", ({ expect }) => {
+    expect(unescape("&toString;")).toEqual("&toString;");
+    expect(unescape("&constructor;")).toEqual("&constructor;");
+    expect(unescape("&valueOf;")).toEqual("&valueOf;");
+    expect(unescape("&__proto__;")).toEqual("&__proto__;");
+  });
+  test("invalid or out-of-range numeric character references do not throw", ({ expect }) => {
+    expect(unescape("&#abc;")).toEqual("&#abc;");
+    expect(unescape("&#123abc;")).toEqual("&#123abc;");
+    expect(unescape("&#xZZ;")).toEqual("&#xZZ;");
+    expect(unescape("&#x12g;")).toEqual("&#x12g;");
+    expect(unescape("&#99999999;")).toEqual("&#99999999;");
+    expect(unescape("&#x110000;")).toEqual("&#x110000;");
+    expect(unescape("&#x1F600;")).toEqual("😀");
+  });
 });
