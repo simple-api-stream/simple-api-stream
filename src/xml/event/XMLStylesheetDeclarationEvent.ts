@@ -12,11 +12,6 @@ export class XMLStylesheetDeclarationEvent extends ProcessingInstructionEvent<ty
   }
 
   static #makeData(contentType: string, href: string) {
-    const joins: string[] = [];
-    if (contentType)
-      joins.push(`type="${contentType}"`);
-    if (href)
-      joins.push(`href="${href}"`);
-    return joins.join(" ");
+    return `type="${contentType}" href="${href}"`;
   }
 }

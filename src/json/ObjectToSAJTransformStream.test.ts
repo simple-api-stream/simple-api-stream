@@ -129,6 +129,42 @@ describe.concurrent("pattern", (test) => {
         { name: "endDocument" },
       ],
     },
+    {
+      name: "makeDocument: false",
+      options: {
+        makeDocument: false,
+      },
+      input: [
+        1,
+      ],
+      output: [
+        { name: "value", type: "number", value: 1 },
+      ],
+    },
+    {
+      name: "top-level unsupported (ignore)",
+      input: [
+        undefined,
+      ],
+      output: [],
+    },
+    {
+      name: "object with next function but not iterator",
+      input: [
+        {
+          next: () => ({ value: 1, done: true }),
+          a: 1,
+        },
+      ],
+      output: [
+        { name: "startDocument", kind: "json" },
+        { name: "startObject" },
+        { name: "key", key: "a" },
+        { name: "value", type: "number", value: 1 },
+        { name: "endObject" },
+        { name: "endDocument" },
+      ],
+    },
   ];
   test.each(entries)("$name", async ({ options, input, output }) => {
     const { readable, writable } = new ObjectToSAJTransformStream(options);

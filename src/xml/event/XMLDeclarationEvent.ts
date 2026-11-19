@@ -14,11 +14,10 @@ export class XMLDeclarationEvent extends ProcessingInstructionEvent<typeof SAX_X
   }
 
   static #makeData(version: string, encoding: string, standalone: "yes" | "no" = "yes") {
-    const joins: string[] = [];
-    if (version)
-      joins.push(`version="${version}"`);
-    if (encoding)
-      joins.push(`encoding="${encoding}"`);
+    const joins: string[] = [
+      `version="${version}"`,
+      `encoding="${encoding}"`,
+    ];
     if (standalone !== "yes")
       joins.push(`standalone="${standalone}"`);
     return joins.join(" ");

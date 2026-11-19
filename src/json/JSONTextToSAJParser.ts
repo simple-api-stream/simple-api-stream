@@ -171,11 +171,9 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
     if (ch === EOL) return;
     if (/\s/.test(ch)) return;
 
-    if (!this.#startDocumented) {
-      if (!this.#skipDocument)
-        this.#handler.onStartDocument?.(new StartDocumentEvent());
-      this.#startDocumented = true;
-    }
+    if (!this.#skipDocument)
+      this.#handler.onStartDocument?.(new StartDocumentEvent());
+    this.#startDocumented = true;
     switch (ch) {
       case "{":
         this.#handler.onStartObject?.(new StartObjectEvent());
@@ -297,10 +295,10 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
     this.#handler.onValue?.(this.#wrapValue(val));
     this.#key = null;
     const parent = this.#stack.at(-1);
-    assertIsTrue(!!parent, "not have parent");
+    assertIsDefined(parent, "not have parent");
     if (parent === "object")
       this.#state = this.#parseCommaOrEndObject;
-    else if (parent === "array")
+    else
       this.#state = this.#parseCommaOrEndArray;
   };
 
@@ -371,11 +369,8 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
       this.#state = this.#parseCommaOrEndObject;
       return;
     }
-    if (parent === "array") {
-      this.#pos--;
-      this.#state = this.#parseCommaOrEndArray;
-      return;
-    }
+    this.#pos--;
+    this.#state = this.#parseCommaOrEndArray;
   };
 
   #parseString(onEnd: (this: typeof this, s: string) => void): StateFunction {

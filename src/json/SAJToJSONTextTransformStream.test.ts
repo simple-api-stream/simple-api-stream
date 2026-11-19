@@ -282,6 +282,15 @@ describe.concurrent("pattern", (test) => {
         `["🐈"]{"animal":"🐤"}`,
       ],
     },
+    {
+      name: "standalone value at root",
+      input: [
+        { name: "value", type: "number", value: 42 },
+      ],
+      output: [
+        "42",
+      ],
+    },
   ];
   test.each(entries)("$name", async ({ options, input, output }) => {
     const { readable, writable } = new SAJToJSONTextTransformStream(options);
@@ -361,6 +370,26 @@ describe.concurrent("error pattern", (test) => {
         read: {
           error: [
             "invalid startDocument",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+        write: {
+          error: [
+            "Invalid state: WritableStream is closed",
+            TypeError,
+          ],
+        },
+      },
+    },
+    {
+      name: "unknown value type",
+      input: [
+        { name: "value", type: "unknown" as "null", value: null },
+      ],
+      output: {
+        read: {
+          error: [
+            "Unknown value type: unknown",
             SAJToJSONTextTransformStreamError,
           ],
         },

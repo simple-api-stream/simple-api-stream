@@ -12,7 +12,16 @@ test("empty chunks", async ({ expect }) => {
 
 describe("error pattern", (it) => {
   it.concurrent("not complete", async ({ expect }) => {
-    const { readable, writable } = new SAXToXMLTextTransform();
+    const stream = new SAXToXMLTextTransform();
+    const { readable, writable } = stream;
+    expect(stream.status).toEqual({
+      options: undefined,
+      parts: [],
+      prefix: "",
+      starts: [],
+      suffix: "",
+      summarize: "default",
+    });
     const write = (async () => {
       const writer = writable.getWriter();
       await writer.write({ name: "startElement", tagName: "a" });
@@ -23,6 +32,43 @@ describe("error pattern", (it) => {
     })();
     await expect(write).rejects.toThrow("not complete error.");
     await expect(read).rejects.toThrow("not complete error.");
+  });
+
+  it.concurrent("mismatch startElement not found", async ({ expect }) => {
+    const { readable, writable } = new SAXToXMLTextTransform();
+    const write = (async () => {
+      const writer = writable.getWriter();
+      await writer.write({ name: "endElement", tagName: "a" });
+      await writer.close();
+    })();
+    const read = Array.fromAsync(readable);
+    await expect(read).rejects.toThrow("mismatch startElement not found. endTagName: a");
+    await expect(write).rejects.toThrow(TypeError);
+  });
+
+  it.concurrent("mismatch startElement tagName", async ({ expect }) => {
+    const { readable, writable } = new SAXToXMLTextTransform();
+    const write = (async () => {
+      const writer = writable.getWriter();
+      await writer.write({ name: "startElement", tagName: "a" });
+      await writer.write({ name: "endElement", tagName: "b" });
+      await writer.close();
+    })();
+    const read = Array.fromAsync(readable);
+    await expect(read).rejects.toThrow("mismatch startElement tagName a / endTagName b");
+    await expect(write).rejects.toThrow(TypeError);
+  });
+
+  it.concurrent("mismatch startDocument not found", async ({ expect }) => {
+    const { readable, writable } = new SAXToXMLTextTransform();
+    const write = (async () => {
+      const writer = writable.getWriter();
+      await writer.write({ name: "endDocument" });
+      await writer.close();
+    })();
+    const read = Array.fromAsync(readable);
+    await expect(read).rejects.toThrow("mismatch startDocument not found.");
+    await expect(write).rejects.toThrow(TypeError);
   });
 });
 
@@ -131,6 +177,50 @@ describe("pattern test", (it) => {
         { name: "text", text: "New York" },
         { name: "endElement", tagName: "city" },
         { name: "endElement", tagName: "person" },
+      ],
+    },
+    {
+      name: "DOCTYPE internal subset with string indent",
+      options: { indent: "  ", lineBreak: "\n" },
+      output: [
+        "<!DOCTYPE person [   <!ELEMENT person (name)>\n  <!ELEMENT name (#PCDATA)>]>\n",
+      ],
+      input: [
+        {
+          name: "doctype",
+          root: "person",
+          declarations: [
+            `<!ELEMENT person (name)>`,
+            `<!ELEMENT name (#PCDATA)>`,
+          ],
+        },
+      ],
+    },
+    {
+      name: "numeric indent",
+      options: { indent: 2, lineBreak: "\n" },
+      output: [
+        "  <a>\n",
+        "  </a>\n",
+      ],
+      input: [
+        { name: "startElement", tagName: "a" },
+        { name: "endElement", tagName: "a" },
+      ],
+    },
+    {
+      name: "nested startDocument with summarize: document",
+      options: { summarize: "document" },
+      output: [
+        "<a/>",
+      ],
+      input: [
+        { name: "startDocument", kind: "xml" },
+        { name: "startDocument", kind: "xml" },
+        { name: "startElement", tagName: "a", selfClosing: true },
+        { name: "endElement", tagName: "a" },
+        { name: "endDocument" },
+        { name: "endDocument" },
       ],
     },
     {

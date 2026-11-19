@@ -139,3 +139,72 @@ test("parseBuffer throws synchronously in write and handled in onError", async (
   await stream.getWriter().write("<test/>");
   expect(handler.onError).toHaveBeenCalledWith(expect.objectContaining({ message: "handler error" }));
 });
+
+test("XMLTextToSAXParser error cases and getters", ({ expect }) => {
+  const errors: unknown[] = [];
+  const parser = new xml.streams.XMLTextToSAXParser({
+    handler: {
+      onError: err => errors.push(err),
+      onComment: () => {
+        // throw non-Error
+        throw "non-error thrown" as unknown as Error;
+      },
+    },
+  });
+  expect(parser.buffer).toBe("");
+  expect(parser.acc).toBe("");
+  parser.error("custom reason");
+  expect(errors.at(-1)).toBe("custom reason");
+
+  // non-Error thrown in handler
+  parser.enqueue("<!--comment-->");
+  expect(errors.at(-1)).toBeInstanceOf(xml.streams.XMLTextToSAXParserError);
+
+  // incomplete syntax on flush
+  const parser2 = new xml.streams.XMLTextToSAXParser({
+    handler: { onError: err => errors.push(err) },
+  });
+  parser2.enqueue("<incomplete");
+  parser2.flush();
+  expect(errors.at(-1)).toBeInstanceOf(xml.streams.XMLTextToSAXParserError);
+
+  // processing instruction without space
+  const parser3 = new xml.streams.XMLTextToSAXParser({
+    handler: { onError: err => errors.push(err) },
+  });
+  parser3.enqueue("<?nospace?>");
+  expect(errors.at(-1)).toBeInstanceOf(xml.streams.XMLTextToSAXParserError);
+
+  // invalid xml-stylesheet declaration (missing href/type)
+  const parser4 = new xml.streams.XMLTextToSAXParser({
+    handler: { onError: err => errors.push(err) },
+  });
+  parser4.enqueue("<?xml-stylesheet type=\"text/xsl\"?>");
+  expect(errors.at(-1)).toBeInstanceOf(xml.streams.XMLTextToSAXParserError);
+
+  // processing instruction with single-quoted attribute
+  const events5: unknown[] = [];
+  const parser5 = new xml.streams.XMLTextToSAXParser({
+    handler: { onProcessingInstruction: ev => events5.push(ev) },
+  });
+  parser5.enqueue("<?xml version='1.0' encoding='UTF-8'?>");
+  expect(events5).toHaveLength(1);
+
+  // invalid doctype syntax
+  let doctypeErr: unknown;
+  const parser6 = new xml.streams.XMLTextToSAXParser({
+    handler: {
+      onDoctype: vi.fn(),
+      onError: err => doctypeErr = err,
+    },
+  });
+  parser6.enqueue("<!DOCTYPE root INVALID>");
+  expect(doctypeErr).toBeInstanceOf(xml.streams.XMLTextToSAXParserError);
+
+  // invalid tag syntax
+  const parser7 = new xml.streams.XMLTextToSAXParser({
+    handler: { onError: err => errors.push(err) },
+  });
+  parser7.enqueue("<>");
+  expect(errors.at(-1)).toBeInstanceOf(xml.streams.XMLTextToSAXParserError);
+});

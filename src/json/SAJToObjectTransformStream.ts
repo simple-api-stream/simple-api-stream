@@ -243,12 +243,9 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
       this.#state = this.#inArray;
       return;
     }
-    if (top.container && typeof top.container === "object") {
-      const key = top.key!;
-      this.#setPropertyValue(top.container as Record<string, unknown>, key, value);
-      top.key = undefined;
-      this.#state = this.#inObject;
-      return;
-    }
+    const key = top.key!;
+    this.#setPropertyValue(top.container as Record<string, unknown>, key, value);
+    top.key = undefined;
+    this.#state = this.#inObject;
   }
 }

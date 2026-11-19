@@ -181,7 +181,7 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
           && this.#starts.filter(v => v.name === "startElement").length === 0)
           this.#flushParts();
       }
-      else if (this.#summarize === summarize.document) {
+      else {
         if (chunk.name === "endDocument"
           && this.#starts.filter(v => v.name === "startDocument").length === 0)
           this.#flushParts();
@@ -193,11 +193,9 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
   }
 
   #flushParts() {
-    if (this.#parts.length > 0) {
-      const xml = this.#parts.join("");
-      this.#parts = [];
-      this.#controller.enqueue(xml);
-    }
+    const xml = this.#parts.join("");
+    this.#parts = [];
+    this.#controller.enqueue(xml);
   }
 
   #next(chunk: SAXEventInterface): string | undefined {

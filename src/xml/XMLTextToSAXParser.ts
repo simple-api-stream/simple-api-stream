@@ -376,14 +376,12 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     const matches = /^<![Dd][Oo][Cc][Tt][Yy][Pp][Ee]\s+(?<root>[^\s]+)(?:\s+(?<dtdType>[Pp][Uu][Bb][Ll][Ii][Cc]|[Ss][Yy][Ss][Tt][Ee][Mm]))?(?:\s+"(?<uri1>[^"]+)")?(?:\s+"(?<uri2>[^"]+)")?(?:\s+\[(?<declarations>[\S\s]+)\])?>$/m.exec(source);
     if (!matches)
       throw this.#makeSyntaxError("Invalid doctype syntax", source);
-    const { root, dtdType: dtdType_, uri1, uri2, declarations: declarations_ } = matches.groups ?? {};
+    const { root, dtdType: dtdType_, uri1, uri2, declarations: declarations_ } = matches.groups!;
     const dtdType = dtdType_?.toUpperCase();
     const declarations = ((declarations) => {
       if ((declarations?.length ?? 0) === 0) return undefined;
       return Array.from(next(/<![^>]+>/gmu, declarations), r => r[0]);
     })(declarations_);
-    if (!root)
-      throw this.#makeSyntaxError("doctype", source);
     if (dtdType === "PUBLIC")
       return new DoctypePublicEvent(root, {
         dtdType,
@@ -394,7 +392,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     if (dtdType === "SYSTEM")
       return new DoctypeSystemEvent(root, {
         dtdType,
-        uri: uri1 ?? uri2,
+        uri: uri1,
         declarations,
       });
     return new DoctypeSimpleEvent(root, {
@@ -403,9 +401,6 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
   }
 
   #parseTag(source: string): { start?: StartElementEvent, end?: EndElementEvent } {
-    if (source.startsWith("<!") || source.startsWith("<?")) {
-      return {};
-    }
     const tagMatch = /^<\/?([a-zA-Z0-9_:.-]+)([^>]*)\/?>$/.exec(source.trim());
     if (!tagMatch)
       throw this.#makeSyntaxError("tag", source);
@@ -428,7 +423,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
 
     while ((match = attrRegex.exec(attrStr))) {
       const [, key, val1, val2] = match;
-      attrs[key] = unescape(val1 ?? val2 ?? "");
+      attrs[key] = unescape(val1 ?? val2);
       prevIndex = attrRegex.lastIndex;
     }
 
