@@ -259,6 +259,43 @@ describe.concurrent("pattern", (test) => {
         { name: "endDocument" },
       ],
     },
+    {
+      name: "Set and custom Iterable / AsyncIterable",
+      input: [
+        new Set([1, 2]),
+        {
+          [Symbol.iterator]: function* () {
+            yield "a";
+            yield "b";
+          },
+        },
+        {
+          [Symbol.asyncIterator]: async function* () {
+            await (null as unknown as Promise<void>);
+            yield true;
+          },
+        },
+      ],
+      output: [
+        { name: "startDocument", kind: "json" },
+        { name: "startArray" },
+        { name: "value", type: "number", value: 1 },
+        { name: "value", type: "number", value: 2 },
+        { name: "endArray" },
+        { name: "endDocument" },
+        { name: "startDocument", kind: "json" },
+        { name: "startArray" },
+        { name: "value", type: "string", value: "a" },
+        { name: "value", type: "string", value: "b" },
+        { name: "endArray" },
+        { name: "endDocument" },
+        { name: "startDocument", kind: "json" },
+        { name: "startArray" },
+        { name: "value", type: "boolean", value: true },
+        { name: "endArray" },
+        { name: "endDocument" },
+      ],
+    },
   ];
   test.each(entries)("$name", async ({ options, input, output }) => {
     const { readable, writable } = new ObjectToSAJTransformStream(options);

@@ -190,23 +190,21 @@ export class ObjectToSAJTransformStream<T = unknown> extends TransformStream<T, 
         yield new EndArrayEvent();
         return;
       }
-      else if ("next" in value && typeof value["next"] === "function") {
-        if (Symbol.asyncIterator in value && typeof value[Symbol.asyncIterator] === "function") {
-          yield new StartArrayEvent();
-          for await (const item of value as AsyncGenerator) {
-            yield* this.#emitValue(item, "", true, true, ancestors);
-          }
-          yield new EndArrayEvent();
-          return;
+      else if (Symbol.asyncIterator in value && typeof value[Symbol.asyncIterator] === "function") {
+        yield new StartArrayEvent();
+        for await (const item of value as AsyncIterable<unknown>) {
+          yield* this.#emitValue(item, "", true, true, ancestors);
         }
-        else if (Symbol.iterator in value && typeof value[Symbol.iterator] === "function") {
-          yield new StartArrayEvent();
-          for (const item of value as Iterable<unknown, void, void>) {
-            yield* this.#emitValue(item, "", true, true, ancestors);
-          }
-          yield new EndArrayEvent();
-          return;
+        yield new EndArrayEvent();
+        return;
+      }
+      else if (Symbol.iterator in value && typeof value[Symbol.iterator] === "function") {
+        yield new StartArrayEvent();
+        for (const item of value as Iterable<unknown>) {
+          yield* this.#emitValue(item, "", true, true, ancestors);
         }
+        yield new EndArrayEvent();
+        return;
       }
       // #endregion
 
