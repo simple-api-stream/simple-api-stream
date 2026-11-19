@@ -5,7 +5,7 @@ export {
   XMLTextToSAXEventWritableStream,
   XMLTextToSAXTransformStream,
   ResolveToSAXReadableStream,
-  SAXToXMLTextTransform,
+  SAXToXMLTextTransformStream,
 } from "./xml/index.js";
 // #endregion
 

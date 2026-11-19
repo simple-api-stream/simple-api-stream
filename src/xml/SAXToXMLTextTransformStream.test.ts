@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { SAXToXMLTextTransform } from "../index.js";
+import { SAXToXMLTextTransformStream } from "../index.js";
 import type * as xml from "./index.js";
 test("empty chunks", async ({ expect }) => {
-  const { readable, writable } = new SAXToXMLTextTransform();
+  const { readable, writable } = new SAXToXMLTextTransformStream();
   const response = new Response(readable
     .pipeThrough(new TextEncoderStream()));
   await writable.close();
@@ -12,7 +12,7 @@ test("empty chunks", async ({ expect }) => {
 
 describe("error pattern", (it) => {
   it.concurrent("not complete", async ({ expect }) => {
-    const stream = new SAXToXMLTextTransform();
+    const stream = new SAXToXMLTextTransformStream();
     const { readable, writable } = stream;
     expect(stream.status).toEqual({
       options: undefined,
@@ -35,7 +35,7 @@ describe("error pattern", (it) => {
   });
 
   it.concurrent("mismatch startElement not found", async ({ expect }) => {
-    const { readable, writable } = new SAXToXMLTextTransform();
+    const { readable, writable } = new SAXToXMLTextTransformStream();
     const write = (async () => {
       const writer = writable.getWriter();
       await writer.write({ name: "endElement", tagName: "a" });
@@ -47,7 +47,7 @@ describe("error pattern", (it) => {
   });
 
   it.concurrent("mismatch startElement tagName", async ({ expect }) => {
-    const { readable, writable } = new SAXToXMLTextTransform();
+    const { readable, writable } = new SAXToXMLTextTransformStream();
     const write = (async () => {
       const writer = writable.getWriter();
       await writer.write({ name: "startElement", tagName: "a" });
@@ -60,7 +60,7 @@ describe("error pattern", (it) => {
   });
 
   it.concurrent("mismatch startDocument not found", async ({ expect }) => {
-    const { readable, writable } = new SAXToXMLTextTransform();
+    const { readable, writable } = new SAXToXMLTextTransformStream();
     const write = (async () => {
       const writer = writable.getWriter();
       await writer.write({ name: "endDocument" });
@@ -75,7 +75,7 @@ describe("error pattern", (it) => {
 describe("pattern test", (it) => {
   const entries: {
     name: string
-    options?: ConstructorParameters<typeof SAXToXMLTextTransform>[0]
+    options?: ConstructorParameters<typeof SAXToXMLTextTransformStream>[0]
     input: xml.eventInterfaces.SAXEventInterface[]
     output: string[]
   }[] = [
@@ -524,7 +524,7 @@ describe("pattern test", (it) => {
   it.each(entries)(
     `$name`,
     async ({ options, input, output }) => {
-      const { readable, writable } = new SAXToXMLTextTransform(options);
+      const { readable, writable } = new SAXToXMLTextTransformStream(options);
       void (async (input, writer) => {
         for (const i of input)
           await writer.write(i);

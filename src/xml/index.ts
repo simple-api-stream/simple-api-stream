@@ -18,4 +18,4 @@ export const streams = {
 export const XMLTextToSAXEventWritableStream = XMLTextToSAXEventWritableStreamModule.XMLTextToSAXEventWritableStream;
 export const XMLTextToSAXTransformStream = XMLTextToSAXTransformStreamModule.XMLTextToSAXTransformStream;
 export const ResolveToSAXReadableStream = ResolveToSAXReadableStreamModule.ResolveToSAXReadableStream;
-export const SAXToXMLTextTransform = SAXToXMLTextTransformModule.SAXToXMLTextTransformStream;
+export const SAXToXMLTextTransformStream = SAXToXMLTextTransformModule.SAXToXMLTextTransformStream;

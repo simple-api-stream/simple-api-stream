@@ -25,7 +25,7 @@ flowchart LR
   subgraph XML
     XT["XML text"] -- XMLTextToSAXTransformStream --> SAX["SAX events"]
     RX["ResolveToSAXReadableStream (imperative)"] --> SAX
-    SAX -- SAXToXMLTextTransform --> XT2["XML text"]
+    SAX -- SAXToXMLTextTransformStream --> XT2["XML text"]
     XT -- XMLTextToSAXEventWritableStream --> HX["SAXHandler callbacks"]
   end
 ```
@@ -42,7 +42,7 @@ flowchart LR
 | | [`ResolveToSAJReadableStream`](./src/json/ResolveToSAJReadableStream.ts) | `ReadableStream` | Method calls ([`SAJResolver`](./src/json/interface/SAJResolver.ts)) | SAJ events |
 | **XML** | [`XMLTextToSAXTransformStream`](./src/xml/XMLTextToSAXTransformStream.ts) | `TransformStream` | XML text (`string` chunks) | [`SAXEventInterface`](./src/xml/event-interface/SAXEventInterface.ts) objects |
 | | [`XMLTextToSAXEventWritableStream`](./src/xml/XMLTextToSAXEventWritableStream.ts) | `WritableStream` | XML text (`string` chunks) | Calls a [`SAXHandler`](./src/xml/interface/SAXHandler.ts) |
-| | [`SAXToXMLTextTransform`](./src/xml/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
+| | [`SAXToXMLTextTransformStream`](./src/xml/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
 | | [`ResolveToSAXReadableStream`](./src/xml/ResolveToSAXReadableStream.ts) | `ReadableStream` | Method calls ([`SAXResolver`](./src/xml/interface/SAXResolver.ts)) | SAX events |
 
 ---
@@ -165,10 +165,10 @@ await xmlTextStream.pipeTo(new XMLTextToSAXEventWritableStream({
 ### Building XML imperatively
 
 ```ts
-import { ResolveToSAXReadableStream, SAXToXMLTextTransform } from "simple-api-stream";
+import { ResolveToSAXReadableStream, SAXToXMLTextTransformStream } from "simple-api-stream";
 
 const stream = new ResolveToSAXReadableStream();
-const xmlText = stream.pipeThrough(new SAXToXMLTextTransform({ summarize: true }));
+const xmlText = stream.pipeThrough(new SAXToXMLTextTransformStream({ summarize: true }));
 
 stream.startDocument();
 stream.processingInstruction({ target: "xml", version: "1.0", encoding: "UTF-8" });
@@ -215,7 +215,7 @@ console.log((await Array.fromAsync(xmlText)).join(""));
 |--------|------|---------|-------------|
 | `skipDocument` | `boolean` | `false` | Do not emit `startDocument` / `endDocument` events. |
 
-### `SAXToXMLTextTransform(options?)`
+### `SAXToXMLTextTransformStream(options?)`
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -333,7 +333,7 @@ import {
   // XML
   XMLTextToSAXTransformStream,
   XMLTextToSAXEventWritableStream,
-  SAXToXMLTextTransform,
+  SAXToXMLTextTransformStream,
   ResolveToSAXReadableStream,
   // Common types
   interfaces,
@@ -349,7 +349,7 @@ import {
 
 import {
   XMLTextToSAXTransformStream,
-  SAXToXMLTextTransform,
+  SAXToXMLTextTransformStream,
   // also: XMLTextToSAXEventWritableStream, ResolveToSAXReadableStream,
   //       streams, events, eventInterfaces (types), interfaces (types)
 } from "simple-api-stream/xml";

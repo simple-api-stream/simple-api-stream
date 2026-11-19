@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
-import { ResolveToSAXReadableStream, SAXToXMLTextTransform } from "../index.js";
+import { ResolveToSAXReadableStream, SAXToXMLTextTransformStream } from "../index.js";
 import type * as xml from "./index.js";
 import { ResolveToSAXReadableStreamError } from "./ResolveToSAXReadableStream.js";
 
 test("empty chunks", async ({ expect }) => {
   const stream = new ResolveToSAXReadableStream();
   const response = new Response(stream
-    .pipeThrough(new SAXToXMLTextTransform())
+    .pipeThrough(new SAXToXMLTextTransformStream())
     .pipeThrough(new TextEncoderStream()));
   stream.close();
   const text = await response.text();
@@ -16,7 +16,7 @@ test("empty chunks", async ({ expect }) => {
 test("outputs correct XML chunks", async ({ expect }) => {
   const stream = new ResolveToSAXReadableStream();
   const reader = stream
-    .pipeThrough(new SAXToXMLTextTransform())
+    .pipeThrough(new SAXToXMLTextTransformStream())
     .getReader();
 
   stream.startDocument();
@@ -46,7 +46,7 @@ test("outputs correct XML chunks", async ({ expect }) => {
 test("handles empty text and attributes", async ({ expect }) => {
   const stream = new ResolveToSAXReadableStream();
   const reader = stream
-    .pipeThrough(new SAXToXMLTextTransform())
+    .pipeThrough(new SAXToXMLTextTransformStream())
     .getReader();
 
   stream.startElement("x", {}, false);

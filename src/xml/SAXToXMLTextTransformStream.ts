@@ -83,7 +83,7 @@ export class SAXToXMLTextTransformStreamError extends Error implements Status {
  *
  * ## Example:
  * ```ts
- * const transform = new SAXToXMLTextTransform({ indent: 2, lineBreak: "\n" });
+ * const transform = new SAXToXMLTextTransformStream({ indent: 2, lineBreak: "\n" });
  * readable.pipeThrough(transform).pipeTo(writable);
  * ```
  *
