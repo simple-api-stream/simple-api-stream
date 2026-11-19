@@ -14,14 +14,15 @@ import * as SAJToJSONTextTransformStreamModule from "./SAJToJSONTextTransformStr
 export const streams = {
   ...JSONTextToSAJEventWritableStreamModule,
   ...ResolveToSAJReadableStreamModule,
+  ...JSONTextToSAJTransformStreamModule,
   ...SAJToObjectTransformStreamModule,
   ...JSONTextToSAJParserModule,
   ...ObjectToSAJTransformStreamModule,
   ...SAJToJSONTextTransformStreamModule,
 };
-export const JSONTextToSAJEventWritableStream = JSONTextToSAJEventWritableStreamModule.JSONTextToSAJEventWritableStream;
-export const ResolveToSAJReadableStream = ResolveToSAJReadableStreamModule.ResolveToSAJReadableStream;
-export const JSONTextToSAJTransformStream = JSONTextToSAJTransformStreamModule.JSONTextToSAJTransformStream;
-export const SAJToObjectTransformStream = SAJToObjectTransformStreamModule.SAJToObjectTransformStream;
-export const ObjectToSAJTransformStream = ObjectToSAJTransformStreamModule.ObjectToSAJTransformStream;
-export const SAJToJSONTextTransformStream = SAJToJSONTextTransformStreamModule.SAJToJSONTextTransformStream;
+export { JSONTextToSAJEventWritableStream } from "./JSONTextToSAJEventWritableStream.js";
+export { ResolveToSAJReadableStream } from "./ResolveToSAJReadableStream.js";
+export { JSONTextToSAJTransformStream } from "./JSONTextToSAJTransformStream.js";
+export { SAJToObjectTransformStream } from "./SAJToObjectTransformStream.js";
+export { ObjectToSAJTransformStream } from "./ObjectToSAJTransformStream.js";
+export { SAJToJSONTextTransformStream } from "./SAJToJSONTextTransformStream.js";

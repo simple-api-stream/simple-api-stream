@@ -1,4 +1,4 @@
-import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueEvent } from "../event/index.js";
+import type { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueEvent } from "../event/index.js";
 
 export interface SAJResolver {
   startObject(...args: ConstructorParameters<typeof StartObjectEvent>): void

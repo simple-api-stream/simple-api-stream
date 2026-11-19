@@ -15,7 +15,7 @@ export const streams = {
   ...SAXToXMLTextTransformModule,
   ...XMLTextToSAXParserModule,
 };
-export const XMLTextToSAXEventWritableStream = XMLTextToSAXEventWritableStreamModule.XMLTextToSAXEventWritableStream;
-export const XMLTextToSAXTransformStream = XMLTextToSAXTransformStreamModule.XMLTextToSAXTransformStream;
-export const ResolveToSAXReadableStream = ResolveToSAXReadableStreamModule.ResolveToSAXReadableStream;
-export const SAXToXMLTextTransformStream = SAXToXMLTextTransformModule.SAXToXMLTextTransformStream;
+export { XMLTextToSAXEventWritableStream } from "./XMLTextToSAXEventWritableStream.js";
+export { XMLTextToSAXTransformStream } from "./XMLTextToSAXTransformStream.js";
+export { ResolveToSAXReadableStream } from "./ResolveToSAXReadableStream.js";
+export { SAXToXMLTextTransformStream } from "./SAXToXMLTextTransformStream.js";

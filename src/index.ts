@@ -1,4 +1,4 @@
-export * as interfaces from "./interface/index.js";
+export type * as interfaces from "./interface/index.js";
 
 // #region xml
 export {

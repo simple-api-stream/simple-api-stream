@@ -1017,3 +1017,9 @@ test("reports explicit state names during parsing and on error", async ({ expect
   expect(states).toContain("AfterValue");
   expect(stream.status.state).toBe("#startDocument");
 });
+
+test("re-exports stream classes as both values and types and includes JSONTextToSAJTransformStream in streams", ({ expect }) => {
+  expect(json.streams.JSONTextToSAJTransformStream).toBe(JSONTextToSAJTransformStream);
+  const stream: JSONTextToSAJTransformStream = new JSONTextToSAJTransformStream();
+  expect(stream).toBeInstanceOf(JSONTextToSAJTransformStream);
+});
