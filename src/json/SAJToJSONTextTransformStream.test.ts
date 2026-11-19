@@ -515,6 +515,97 @@ describe.concurrent("error pattern", (test) => {
       },
     },
     {
+      name: "value in object without key",
+      input: [
+        { name: "startObject" },
+        { name: "value", type: "number", value: 1 },
+        { name: "endObject" },
+      ],
+      output: {
+        read: {
+          error: [
+            "Unexpected value in object without key",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+        write: {
+          error: [
+            "Unexpected value in object without key",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+      },
+    },
+    {
+      name: "structure in object without key",
+      input: [
+        { name: "startObject" },
+        { name: "startArray" },
+        { name: "endArray" },
+        { name: "endObject" },
+      ],
+      output: {
+        read: {
+          error: [
+            "Unexpected startarray in object without key",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+        write: {
+          error: [
+            "Unexpected startarray in object without key",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+      },
+    },
+    {
+      name: "consecutive key events",
+      input: [
+        { name: "startObject" },
+        { name: "key", key: "a" },
+        { name: "key", key: "b" },
+        { name: "value", type: "number", value: 1 },
+        { name: "endObject" },
+      ],
+      output: {
+        read: {
+          error: [
+            "Unexpected key while expecting value",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+        write: {
+          error: [
+            "Unexpected key while expecting value",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+      },
+    },
+    {
+      name: "endObject immediately after key",
+      input: [
+        { name: "startObject" },
+        { name: "key", key: "a" },
+        { name: "endObject" },
+      ],
+      output: {
+        read: {
+          error: [
+            "Unexpected endobject while expecting value for key",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+        write: {
+          error: [
+            "Unexpected endobject while expecting value for key",
+            SAJToJSONTextTransformStreamError,
+          ],
+        },
+      },
+    },
+    {
       name: "incomplete document on flush (summarize: document)",
       options: { summarize: "document" },
       input: [

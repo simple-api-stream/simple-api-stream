@@ -207,6 +207,9 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
   }
 
   #startStructure(type: typeof stacks.array | typeof stacks.object): string[] {
+    if (this.#peekContainerIsObject() && !this.#pendingValueForKey) {
+      throw this.#makeError(`Unexpected start${type} in object without key`);
+    }
     const out: string[] = [];
     // オブジェクト内の key の直後ならカンマ・インデントは抑制（#pendingValueForKey が true）
     if (!this.#pendingValueForKey) {
@@ -245,6 +248,9 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
   }
 
   #endStructure(type: typeof stacks.array | typeof stacks.object): string[] {
+    if (this.#pendingValueForKey) {
+      throw this.#makeError(`Unexpected end${type} while expecting value for key`);
+    }
     const out: string[] = [];
     const top = this.#containerStack.pop();
     const wasEmpty = this.#firstItemStack.pop();
@@ -259,7 +265,7 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
     }
     out.push(type === stacks.object ? "}" : "]");
     // この構造自体が親の中の項目なので、親ではカンマを入れるべき状態にする
-    this.#markParentNotFirstItem();
+    this.#markNotFirstItem();
     // 終了後は key の直後ではない
     this.#pendingValueForKey = false;
     return out;
@@ -268,6 +274,11 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
   #key({ key }: KeySAJEventInterface): string[] {
     if (!this.#peekContainerIsObject()) {
       const error = this.#makeError("Key event outside of object");
+      Object.assign(error as unknown as Record<string, unknown>, { key });
+      throw error;
+    }
+    if (this.#pendingValueForKey) {
+      const error = this.#makeError("Unexpected key while expecting value");
       Object.assign(error as unknown as Record<string, unknown>, { key });
       throw error;
     }
@@ -286,6 +297,11 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
   }
 
   #value(chunk: ValueSAJEventInterface): string[] {
+    if (this.#peekContainerIsObject() && !this.#pendingValueForKey) {
+      const error = this.#makeError("Unexpected value in object without key");
+      Object.assign(error as unknown as Record<string, unknown>, { chunk });
+      throw error;
+    }
     const out: string[] = [];
 
     // 通常の値（配列内またはオブジェクトの value）についてカンマ・インデント処理
