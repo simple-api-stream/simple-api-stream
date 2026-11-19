@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { SAJEventInterface } from "./event-interface/index.js";
-import { ObjectToSAJTransformStream, json } from "../index.js";
+import { ObjectToSAJTransformStream } from "../index.js";
+import * as json from "./index.js";
 const ObjectToSAJTransformStreamError = json.streams.ObjectToSAJTransformStreamError;
 
 describe.concurrent("pattern", (test) => {

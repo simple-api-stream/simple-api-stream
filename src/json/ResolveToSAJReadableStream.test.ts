@@ -1,5 +1,5 @@
 import { describe, expect } from "vitest";
-import type { json } from "../index.js";
+import type * as json from "./index.js";
 import { ResolveToSAJReadableStream } from "../index.js";
 
 type SAJEventInterface = json.eventInterfaces.SAJEventInterface;

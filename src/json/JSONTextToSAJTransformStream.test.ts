@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { json } from "../index.js";
+import * as json from "./index.js";
 import { JSONTextToSAJTransformStream } from "../index.js";
 const JSONTextToSAJParserError = json.streams.JSONTextToSAJParserError;
 type SAJEventInterface = json.eventInterfaces.SAJEventInterface;

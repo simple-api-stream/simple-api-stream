@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { json } from "../index.js";
+import type * as json from "./index.js";
 import { SAJToObjectTransformStream } from "../index.js";
 import { SAJToObjectTransformStreamError } from "./SAJToObjectTransformStream.js";
 import type { SAJToObjectTransformStreamOptions } from "./SAJToObjectTransformStream.js";

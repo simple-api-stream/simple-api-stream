@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { SAXToXMLTextTransform } from "../index.js";
-import type { xml } from "../index.js";
+import type * as xml from "./index.js";
 test("empty chunks", async ({ expect }) => {
   const { readable, writable } = new SAXToXMLTextTransform();
   const response = new Response(readable

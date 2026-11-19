@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { ResolveToSAXReadableStream, SAXToXMLTextTransform } from "../index.js";
-import type { xml } from "../index.js";
+import type * as xml from "./index.js";
 import { ResolveToSAXReadableStreamError } from "./ResolveToSAXReadableStream.js";
 
 test("empty chunks", async ({ expect }) => {

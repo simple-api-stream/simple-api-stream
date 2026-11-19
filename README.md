@@ -227,7 +227,7 @@ Text and attribute values are escaped automatically.
 
 ## 📜 Event Formats
 
-Events are plain objects with a `name` discriminator, so they can be narrowed with `switch (event.name)` in TypeScript. Type definitions are exported as `json.eventInterfaces` / `xml.eventInterfaces`, and the event classes as `json.events` / `xml.events`.
+Events are plain objects with a `name` discriminator, so they can be narrowed with `switch (event.name)` in TypeScript. Type definitions are exported as `eventInterfaces` and the event classes as `events` from `simple-api-stream/json` and `simple-api-stream/xml`.
 
 ### SAJ (Simple API for JSON)
 
@@ -286,19 +286,19 @@ A self-closing tag such as `<br/>` produces a `startElement` with `selfClosing: 
 
 - Malformed input errors the stream. With `TransformStream`s, both the readable side (e.g. `for await`) and pending writes reject.
 - With the `*EventWritableStream` classes, errors are reported to the handler's `onError` callback.
-- Errors carry a snapshot of the internal state for debugging (e.g. `buffer`, `state`, `pos`). The error classes are available from the namespace exports:
+- Errors carry a snapshot of the internal state for debugging (e.g. `buffer`, `state`, `pos`). The error classes are available from `streams` on `simple-api-stream/json` and `simple-api-stream/xml`:
 
-| Error class | Access |
-|-------------|--------|
-| `JSONTextToSAJParserError` | `json.streams.JSONTextToSAJParserError` |
-| `SAJToObjectTransformStreamError` | `json.streams.SAJToObjectTransformStreamError` |
-| `ObjectToSAJTransformStreamError` | `json.streams.ObjectToSAJTransformStreamError` |
-| `XMLTextToSAXParserError` | `xml.streams.XMLTextToSAXParserError` |
-| `SAXToXMLTextTransformStreamError` | `xml.streams.SAXToXMLTextTransformStreamError` |
-| `ResolveToSAXReadableStreamError` | `xml.streams.ResolveToSAXReadableStreamError` |
+| Error class | Import from |
+|-------------|-------------|
+| `JSONTextToSAJParserError` | `simple-api-stream/json` (`streams.JSONTextToSAJParserError`) |
+| `SAJToObjectTransformStreamError` | `simple-api-stream/json` (`streams.SAJToObjectTransformStreamError`) |
+| `ObjectToSAJTransformStreamError` | `simple-api-stream/json` (`streams.ObjectToSAJTransformStreamError`) |
+| `XMLTextToSAXParserError` | `simple-api-stream/xml` (`streams.XMLTextToSAXParserError`) |
+| `SAXToXMLTextTransformStreamError` | `simple-api-stream/xml` (`streams.SAXToXMLTextTransformStreamError`) |
+| `ResolveToSAXReadableStreamError` | `simple-api-stream/xml` (`streams.ResolveToSAXReadableStreamError`) |
 
 ```ts
-import { json, JSONTextToSAJTransformStream } from "simple-api-stream";
+import { JSONTextToSAJTransformStream, streams } from "simple-api-stream/json";
 
 try {
   for await (const event of textStream.pipeThrough(new JSONTextToSAJTransformStream())) {
@@ -306,7 +306,7 @@ try {
   }
 }
 catch (e) {
-  if (e instanceof json.streams.JSONTextToSAJParserError)
+  if (e instanceof streams.JSONTextToSAJParserError)
     console.error(e.message, e.state, e.pos);
 }
 ```
@@ -315,7 +315,10 @@ catch (e) {
 
 ## 📚 Exports
 
+You can import everything from the root entry point, or import only JSON / XML via subpath exports:
+
 ```ts
+// Root entry point
 import {
   // JSON
   JSONTextToSAJTransformStream,
@@ -328,13 +331,27 @@ import {
   XMLTextToSAXEventWritableStream,
   SAXToXMLTextTransform,
   ResolveToSAXReadableStream,
-  // Namespaces
-  json, // json.streams, json.events, json.eventInterfaces (types), json.interfaces (types)
-  xml,  // xml.streams,  xml.events,  xml.eventInterfaces (types),  xml.interfaces (types)
+  // Common types
+  interfaces,
 } from "simple-api-stream";
+
+// Subpath entry points (tree-shakeable / load only what you need)
+import {
+  JSONTextToSAJTransformStream,
+  SAJToObjectTransformStream,
+  // also: JSONTextToSAJEventWritableStream, ObjectToSAJTransformStream, ResolveToSAJReadableStream,
+  //       streams, events, eventInterfaces (types), interfaces (types)
+} from "simple-api-stream/json";
+
+import {
+  XMLTextToSAXTransformStream,
+  SAXToXMLTextTransform,
+  // also: XMLTextToSAXEventWritableStream, ResolveToSAXReadableStream,
+  //       streams, events, eventInterfaces (types), interfaces (types)
+} from "simple-api-stream/xml";
 ```
 
-End users should import from the package root (`simple-api-stream`), not from internal paths.
+End users should import from `simple-api-stream`, `simple-api-stream/json`, or `simple-api-stream/xml`, not from internal source paths.
 
 ---
 

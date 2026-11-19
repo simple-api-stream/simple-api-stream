@@ -1,5 +1,6 @@
 import { test, vi, describe, expect } from "vitest";
-import { XMLTextToSAXEventWritableStream, xml } from "../index.js";
+import { XMLTextToSAXEventWritableStream } from "../index.js";
+import * as xml from "./index.js";
 import { toErrorMessage } from "../utils/index.js";
 
 function makeStringListHandlerAndArray() {

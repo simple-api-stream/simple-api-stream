@@ -1,6 +1,6 @@
 import { test, describe, expect } from "vitest";
 import { XMLTextToSAXTransformStream } from "../index.js";
-import type { xml } from "../index.js";
+import type * as xml from "./index.js";
 function collectEvents(stream: TransformStream<string, xml.eventInterfaces.SAXEventInterface>, xml: string) {
   const reader = stream.readable.getReader();
   const writer = stream.writable.getWriter();
