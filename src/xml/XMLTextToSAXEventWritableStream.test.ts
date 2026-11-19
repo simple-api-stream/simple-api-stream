@@ -169,11 +169,11 @@ test("XMLTextToSAXParser error cases and getters", ({ expect }) => {
   parser2.flush();
   expect(errors.at(-1)).toBeInstanceOf(xml.streams.XMLTextToSAXParserError);
 
-  // processing instruction without space
+  // invalid processing instruction (empty target)
   const parser3 = new xml.streams.XMLTextToSAXParser({
     handler: { onError: err => errors.push(err) },
   });
-  parser3.enqueue("<?nospace?>");
+  parser3.enqueue("<??>");
   expect(errors.at(-1)).toBeInstanceOf(xml.streams.XMLTextToSAXParserError);
 
   // invalid xml-stylesheet declaration (missing href/type)
@@ -182,6 +182,7 @@ test("XMLTextToSAXParser error cases and getters", ({ expect }) => {
   });
   parser4.enqueue("<?xml-stylesheet type=\"text/xsl\"?>");
   expect(errors.at(-1)).toBeInstanceOf(xml.streams.XMLTextToSAXParserError);
+  expect((errors.at(-1) as Error).message).toContain("xml-stylesheet");
 
   // processing instruction with single-quoted attribute
   const events5: unknown[] = [];

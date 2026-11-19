@@ -275,6 +275,84 @@ describe("pattern test", (it) => {
         { name: "endDocument" },
       ],
     },
+    {
+      name: "empty input",
+      input: [
+        ``,
+      ],
+      output: [],
+    },
+    {
+      name: "greater-than inside quoted attribute values",
+      input: [
+        `<a title="1 > 0" data-expr='a => b'>hi</a>`,
+      ],
+      output: [
+        { name: "startDocument", kind: "xml" },
+        { name: "startElement", tagName: "a", attrs: { "title": "1 > 0", "data-expr": "a => b" }, selfClosing: false },
+        { name: "text", text: "hi" },
+        { name: "endElement", tagName: "a" },
+        { name: "endDocument" },
+      ],
+    },
+    {
+      name: "unicode tag and attribute names with whitespace around =",
+      input: [
+        `<日本語 属性 = "値">テスト</日本語>`,
+      ],
+      output: [
+        { name: "startDocument", kind: "xml" },
+        { name: "startElement", tagName: "日本語", attrs: { 属性: "値" }, selfClosing: false },
+        { name: "text", text: "テスト" },
+        { name: "endElement", tagName: "日本語" },
+        { name: "endDocument" },
+      ],
+    },
+    {
+      name: "leading comment emits startDocument first and does not unescape comment",
+      input: [
+        `<!-- &lt;tag&gt; --><root></root>\n`,
+      ],
+      output: [
+        { name: "startDocument", kind: "xml" },
+        { name: "comment", comment: " &lt;tag&gt; " },
+        { name: "startElement", tagName: "root", attrs: {}, selfClosing: false },
+        { name: "endElement", tagName: "root" },
+        { name: "endDocument" },
+      ],
+    },
+    {
+      name: "processing instruction without data and with newline separator",
+      input: [
+        `<?mypi?><?xml\nversion="1.0"?><a/>`,
+      ],
+      output: [
+        { name: "startDocument", kind: "xml" },
+        { name: "processingInstruction", target: "mypi", data: "" },
+        {
+          name: "processingInstruction",
+          target: "xml",
+          data: `version="1.0" encoding="UTF-8"`,
+          version: "1.0",
+          encoding: "UTF-8",
+          standalone: "yes",
+        },
+        { name: "startElement", tagName: "a", attrs: {}, selfClosing: true },
+        { name: "endElement", tagName: "a" },
+        { name: "endDocument" },
+      ],
+    },
+    {
+      name: "trailing text is unescaped on flush",
+      input: [
+        `a &amp; b`,
+      ],
+      output: [
+        { name: "startDocument", kind: "xml" },
+        { name: "text", text: "a & b" },
+        { name: "endDocument" },
+      ],
+    },
   ];
   it.each(entries)(
     `$name`,
@@ -282,7 +360,7 @@ describe("pattern test", (it) => {
       const { readable, writable } = new XMLTextToSAXTransformStream(options);
       void (async (xml, writer) => {
         for (const x of xml)
-          for (const chunk of x.match(/.{1,10}/g) ?? []) {
+          for (const chunk of x.match(/[\s\S]{1,10}/g) ?? []) {
             await writer.write(chunk);
           }
         await writer.close();
@@ -308,4 +386,22 @@ test("reports explicit state names during incomplete chunks", async ({ expect })
   await writer.close();
   await readed;
   expect(stream.status.state).toBe("text");
+});
+
+test("rejects invalid attribute before valid attribute and invalid closing tag", async ({ expect }) => {
+  for (const badXml of [
+    `<a invalid foo="1"/>`,
+    `<a foo="1"bar="2"/>`,
+    `<a></a foo="1">`,
+    `<123/>`,
+  ]) {
+    const stream = new XMLTextToSAXTransformStream();
+    const writer = stream.writable.getWriter();
+    const readed = Array.fromAsync(stream.readable);
+    void (async () => {
+      await writer.write(badXml);
+      await writer.close().catch(() => undefined);
+    })();
+    await expect(readed).rejects.toThrow();
+  }
 });

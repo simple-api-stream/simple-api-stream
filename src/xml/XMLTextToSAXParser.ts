@@ -166,12 +166,16 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
           if (flush) throw this.#makeNotCompleteError();
           else return;
       }
-      if (flush && this.#acc.length > 0) {
-        const text = this.#acc;
+      if (flush && this.#acc.trim() !== "") {
+        const text = unescape(this.#acc);
+        this.#startDocument();
         this.#handler.onText?.(new TextEvent(text));
         this.#acc = "";
       }
-      if (flush) this.#endDocument();
+      if (flush) {
+        this.#acc = "";
+        this.#endDocument();
+      }
       this.#buffer = "";
       return;
     }
@@ -194,6 +198,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
 
     this.#acc += this.#buffer.slice(this.#cursor, nextOpen);
     if (this.#acc.trim() !== "") {
+      this.#startDocument();
       this.#handler.onText?.(new TextEvent(unescape(this.#acc)));
     }
 
@@ -237,7 +242,8 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
       return { required: true };
     }
     const content = this.#buffer.slice(this.#cursor + COMMENT_PREFIX.length, end);
-    this.#handler.onComment?.(new CommentEvent(unescape(content)));
+    this.#startDocument();
+    this.#handler.onComment?.(new CommentEvent(content));
     this.#cursor = end + COMMENT_SUFFIX.length;
     this.#setFactor(this.#text, "text");
     return {};
@@ -250,6 +256,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
       return { required: true };
     }
     const content = this.#buffer.slice(this.#cursor + CDATA_PREFIX.length, end);
+    this.#startDocument();
     this.#handler.onCdata?.(new CdataEvent(content));
     this.#cursor = end + CDATA_SUFFIX.length;
     this.#setFactor(this.#text, "text");
@@ -294,13 +301,9 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
       return { required: true };
     }
     const acc = this.#buffer.slice(this.#cursor, end);
-    const [target, data] = ((acc) => {
-      const indexOf = acc.indexOf(" ");
-      if (indexOf < 0) throw this.#makeSyntaxError(`syntax error processing instruction: ${acc}`, acc);
-      const target = acc.substring(PROCESSING_INSTRUCTION_PREFIX.length, indexOf);
-      const orlater = acc.substring(indexOf + " ".length, acc.length);
-      return [target, orlater];
-    })(acc);
+    const piMatch = /^<\?([\p{L}_:][\p{L}\p{N}_:.-]*)(?:\s+([\s\S]*))?$/u.exec(acc);
+    if (!piMatch) throw this.#makeSyntaxError(`syntax error processing instruction: ${acc}`, acc);
+    const [, target, data = ""] = piMatch;
     const event = ((target, data) => {
       if (target === "xml" || target === "xml-stylesheet") {
         const attrs = this.#parseAttributes(data);
@@ -325,7 +328,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
               href,
             });
           }
-          throw this.#makeSyntaxError(`Invalid xml-stylesheet declaration: ${this.#acc}`, this.#acc);
+          throw this.#makeSyntaxError(`Invalid xml-stylesheet declaration: ${acc}`, acc);
         }
       }
       else {
@@ -345,8 +348,25 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     return {};
   }
 
+  #findTagEnd(start: number): number {
+    let quote: "\"" | "'" | null = null;
+    for (let i = start + 1; i < this.#buffer.length; i++) {
+      const ch = this.#buffer[i];
+      if (quote !== null) {
+        if (ch === quote) quote = null;
+      }
+      else if (ch === "\"" || ch === "'") {
+        quote = ch;
+      }
+      else if (ch === BLOCK_SUFFIX) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
   #tag(): { required?: true } {
-    const end = this.#buffer.indexOf(BLOCK_SUFFIX, this.#cursor);
+    const end = this.#findTagEnd(this.#cursor);
     if (end === -1) {
       this.#buffer = this.#buffer.slice(this.#cursor);
       return { required: true };
@@ -369,7 +389,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
 
   #parseAttributes(source: string): Record<string, string> {
     const attrs: Record<string, string> = {};
-    const attrRegex = /\s*([a-zA-Z0-9_:.-]+)=(?:"([^"]*)"|'([^']*)')/g;
+    const attrRegex = /\s*([\p{L}_:][\p{L}\p{N}_:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/gu;
     let match: RegExpExecArray | null;
     while ((match = attrRegex.exec(source))) {
       const [, key, val1, val2] = match;
@@ -407,33 +427,38 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
   }
 
   #parseTag(source: string): { start?: StartElementEvent, end?: EndElementEvent } {
-    const tagMatch = /^<\/?([a-zA-Z0-9_:.-]+)([^>]*)\/?>$/.exec(source.trim());
-    if (!tagMatch)
-      throw this.#makeSyntaxError("tag", source);
-
-    const [, tagName, attrStrRaw] = tagMatch;
-    const isClosing = source.startsWith("</");
-    const isSelfClosing
-      = source.endsWith("/>") || attrStrRaw.trimEnd().endsWith("/");
-
-    if (isClosing) {
-      const end = new EndElementEvent(tagName);
-      return { end };
+    const trimmed = source.trim();
+    if (trimmed.startsWith("</")) {
+      const closeMatch = /^<\/([\p{L}_:][\p{L}\p{N}_:.-]*)\s*>$/u.exec(trimmed);
+      if (!closeMatch)
+        throw this.#makeSyntaxError("tag", source);
+      return { end: new EndElementEvent(closeMatch[1]) };
     }
 
-    const attrStr = attrStrRaw.trim().replace(/\/$/, "").trim();
+    const openMatch = /^<([\p{L}_:][\p{L}\p{N}_:.-]*)([\s\S]*?)(\/?)>$/u.exec(trimmed);
+    if (!openMatch)
+      throw this.#makeSyntaxError("tag", source);
+
+    const [, tagName, attrStrRaw, selfCloseSlash] = openMatch;
+    const isSelfClosing = selfCloseSlash === "/";
+
     const attrs: Record<string, string> = {};
     let match: RegExpExecArray | null;
-    const attrRegex = /\s*([a-zA-Z0-9_:.-]+)=(?:"([^"]*)"|'([^']*)')/g;
+    const attrRegex = /\s+([\p{L}_:][\p{L}\p{N}_:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/uy;
     let prevIndex = 0;
 
-    while ((match = attrRegex.exec(attrStr))) {
+    while ((match = attrRegex.exec(attrStrRaw))) {
       const [, key, val1, val2] = match;
-      attrs[key] = unescape(val1 ?? val2);
+      Reflect.defineProperty(attrs, key, {
+        value: unescape(val1 ?? val2),
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
       prevIndex = attrRegex.lastIndex;
     }
 
-    const remaining = attrStr.slice(prevIndex).trim();
+    const remaining = attrStrRaw.slice(prevIndex).trim();
     if (remaining.length > 0) {
       throw this.#makeSyntaxError("Invalid or unquoted attribute syntax near", remaining);
     }
