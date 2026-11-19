@@ -45,7 +45,7 @@ type Status = {
 export class SAXToXMLTextTransformStreamError extends Error implements Status {
   constructor(message: string, status: Status, options?: ErrorOptions) {
     super(message, options);
-    this.name = "SAXToXMLTextTransformError";
+    this.name = "SAXToXMLTextTransformStreamError";
     this.options = status.options;
     this.starts = status.starts;
     this.prefix = status.prefix;
@@ -155,12 +155,17 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
     const indent = this.#options?.indent;
     if (indent === undefined) return "";
     const depth = this.#starts.filter(v => v.name === "startElement").length + num;
-    const unit = typeof indent === "string" ? indent : " ".repeat(indent);
+    const unit = typeof indent === "string" ? indent : indent > 0 ? " ".repeat(indent) : "";
     return unit.repeat(depth);
   }
 
   #flush() {
-    if (this.#starts.length === 0 && this.#parts.length === 0) return;
+    if (this.#starts.length === 0) {
+      if (this.#summarize === summarize.element && this.#parts.length > 0) {
+        this.#flushParts();
+      }
+      if (this.#parts.length === 0) return;
+    }
     throw this.#makeNotCompleteError();
   }
 
@@ -222,10 +227,16 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
   }
 
   #cdata(chunk: CdataSAXEventInterface) {
+    if (chunk.cdata.includes(CDATA_SUFFIX)) {
+      throw this.#makeError("CDATA content cannot contain ]]>");
+    }
     return `${this.#prefix}${CDATA_PREFIX}${chunk.cdata}${CDATA_SUFFIX}${this.#suffix}`;
   }
 
   #comment(chunk: CommentSAXEventInterface) {
+    if (chunk.comment.includes("--") || chunk.comment.endsWith("-")) {
+      throw this.#makeError("Comment content cannot contain -- or end with -");
+    }
     return `${this.#prefix}${COMMENT_PREFIX}${chunk.comment}${COMMENT_SUFFIX}${this.#suffix}`;
   }
 
@@ -236,7 +247,8 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
     if (chunk.dtdType === "PUBLIC") {
       joins.push("PUBLIC");
       joins.push(`"${chunk.identifer}"`);
-      joins.push(`"${chunk.uri}"`);
+      if (chunk.uri !== undefined)
+        joins.push(`"${chunk.uri}"`);
     }
     else if (chunk.dtdType === "SYSTEM") {
       joins.push("SYSTEM");
@@ -256,6 +268,9 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
   }
 
   #processingInstruction(chunk: ProcessingInstructionSAXEventInterface) {
+    if (chunk.data.includes(PROCESSING_INSTRUCTION_SUFFIX)) {
+      throw this.#makeError("Processing instruction data cannot contain ?>");
+    }
     const joins: string[] = [];
     joins.push(`${PROCESSING_INSTRUCTION_PREFIX}${chunk.target}`);
     joins.push(`${chunk.data}`);

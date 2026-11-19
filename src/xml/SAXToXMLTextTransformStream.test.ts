@@ -69,6 +69,40 @@ describe("error pattern", (it) => {
     const read = Array.fromAsync(readable);
     await expect(read).rejects.toThrow("mismatch startDocument not found.");
     await expect(write).rejects.toThrow("mismatch startDocument not found.");
+    const err = await read.catch((e: unknown) => e);
+    expect((err as Error).name).toBe("SAXToXMLTextTransformStreamError");
+  });
+
+  it.concurrent("rejects invalid CDATA, comment, and PI content", async ({ expect }) => {
+    for (const [event, expectedMessage] of [
+      [{ name: "cdata", cdata: "a]]>b" }, "CDATA content cannot contain ]]>"],
+      [{ name: "comment", comment: "a--b" }, "Comment content cannot contain -- or end with -"],
+      [{ name: "comment", comment: "a-" }, "Comment content cannot contain -- or end with -"],
+      [{ name: "processingInstruction", target: "pi", data: "a?>b" }, "Processing instruction data cannot contain ?>"],
+    ] as [xml.eventInterfaces.SAXEventInterface, string][]) {
+      const { readable, writable } = new SAXToXMLTextTransformStream();
+      const write = (async () => {
+        const writer = writable.getWriter();
+        await writer.write(event);
+        await writer.close();
+      })();
+      const read = Array.fromAsync(readable);
+      await expect(read).rejects.toThrow(expectedMessage);
+      await expect(write).rejects.toThrow(expectedMessage);
+    }
+  });
+
+  it.concurrent("summarize: document without startDocument fails on flush", async ({ expect }) => {
+    const { readable, writable } = new SAXToXMLTextTransformStream({ summarize: "document" });
+    const write = (async () => {
+      const writer = writable.getWriter();
+      await writer.write({ name: "startElement", tagName: "a", selfClosing: true });
+      await writer.write({ name: "endElement", tagName: "a" });
+      await writer.close();
+    })();
+    const read = Array.fromAsync(readable);
+    await expect(read).rejects.toThrow("not complete error.");
+    await expect(write).rejects.toThrow("not complete error.");
   });
 });
 
@@ -529,6 +563,42 @@ describe("pattern test", (it) => {
       output: [
         `<root>piyo</root>`,
         `<root>hoge</root>`,
+      ],
+    },
+    {
+      name: "DOCTYPE PUBLIC without uri",
+      input: [
+        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifer: "-//W3C//DTD HTML 4.01//EN" },
+      ],
+      output: [
+        `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">`,
+      ],
+    },
+    {
+      name: "negative numeric indent is treated as no indent",
+      options: { indent: -2 },
+      input: [
+        { name: "startElement", tagName: "a" },
+        { name: "text", text: "x" },
+        { name: "endElement", tagName: "a" },
+      ],
+      output: [
+        "<a>",
+        "x",
+        "</a>",
+      ],
+    },
+    {
+      name: "summarize: element flushes trailing comment on close",
+      options: { summarize: "element" },
+      input: [
+        { name: "startElement", tagName: "root", selfClosing: true },
+        { name: "endElement", tagName: "root" },
+        { name: "comment", comment: " tail " },
+      ],
+      output: [
+        "<root/>",
+        "<!-- tail -->",
       ],
     },
   ];
