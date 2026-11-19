@@ -50,7 +50,7 @@ describe("pattern", (it) => {
     {
       name: "space and object",
       input: [
-        `       {    "value": 1,   }         `,
+        `       {    "value": 1   }         `,
       ],
       output: [
         { name: "startObject" },

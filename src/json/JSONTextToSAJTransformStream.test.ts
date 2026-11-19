@@ -52,10 +52,22 @@ describe("pattern", (it) => {
       ],
     },
     {
+      name: "empty object",
+      input: [
+        `{}`,
+      ],
+      output: [
+        { name: "startDocument", kind: "json" },
+        { name: "startObject" },
+        { name: "endObject" },
+        { name: "endDocument" },
+      ],
+    },
+    {
       name: "space and object",
       options: { skipDocument: true },
       input: [
-        `       {    "value": 1,   }         `,
+        `       {    "value": 1   }         `,
       ],
       output: [
         { name: "startObject" },
@@ -896,6 +908,143 @@ describe("error", (it) => {
           error: [
             json.streams.JSONTextToSAJParserError,
             `Invalid number: -123e-10e`,
+          ],
+        },
+      },
+    },
+    {
+      name: "trailing comma in object",
+      input: [
+        `{"a": 1,}`,
+      ],
+      output: {
+        write: {
+          error: [
+            TypeError,
+          ],
+        },
+        read: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            `Unexpected token in object: }`,
+          ],
+        },
+      },
+    },
+    {
+      name: "unclosed empty object",
+      input: [
+        `{`,
+      ],
+      output: {
+        write: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            `not complete syntax error. buffer:`,
+          ],
+        },
+        read: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            `not complete syntax error. buffer:`,
+          ],
+        },
+      },
+    },
+    {
+      name: "leading zero number",
+      input: [
+        `01`,
+      ],
+      output: {
+        write: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            `Invalid number: 01`,
+          ],
+        },
+        read: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            `Invalid number: 01`,
+          ],
+        },
+      },
+    },
+    {
+      name: "trailing dot number",
+      input: [
+        `1.`,
+      ],
+      output: {
+        write: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            `Invalid number: 1.`,
+          ],
+        },
+        read: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            `Invalid number: 1.`,
+          ],
+        },
+      },
+    },
+    {
+      name: "leading dot negative number",
+      input: [
+        `-.5`,
+      ],
+      output: {
+        write: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            `Invalid number: -.5`,
+          ],
+        },
+        read: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            `Invalid number: -.5`,
+          ],
+        },
+      },
+    },
+    {
+      name: "unescaped control character in string",
+      input: [
+        `"a\nb"`,
+      ],
+      output: {
+        write: {
+          error: [
+            TypeError,
+          ],
+        },
+        read: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            `Unescaped control character in string`,
+          ],
+        },
+      },
+    },
+    {
+      name: "non-JSON whitespace (full-width space)",
+      input: [
+        `\u3000{}`,
+      ],
+      output: {
+        write: {
+          error: [
+            TypeError,
+          ],
+        },
+        read: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            `Unexpected token: \u3000`,
           ],
         },
       },

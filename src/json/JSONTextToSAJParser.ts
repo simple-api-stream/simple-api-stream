@@ -41,6 +41,11 @@ export type JSONTextToSAJParserAdditionalHandler = {
   onParseAfter(arg: Status): void
 };
 const EOL = Symbol.for("JSONTextToSAJParser.EOL");
+const JSON_NUMBER_REGEX = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/;
+
+function isJsonWhitespace(ch: string): boolean {
+  return ch === " " || ch === "\t" || ch === "\n" || ch === "\r";
+}
 
 type Ch = string | typeof EOL;
 
@@ -155,7 +160,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   }
 
   #endDocument(ch: Ch) {
-    if (ch !== EOL && /\s/.test(ch)) return;
+    if (ch !== EOL && isJsonWhitespace(ch)) return;
     assertIsTrue(this.#startDocumented, "mismatch not start document");
     if (ch !== EOL) {
       this.#pos--;
@@ -176,7 +181,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
 
   #startDocument(ch: Ch) {
     if (ch === EOL) return;
-    if (/\s/.test(ch)) return;
+    if (isJsonWhitespace(ch)) return;
 
     if (!this.#skipDocument)
       this.#handler.onStartDocument?.(new StartDocumentEvent());
@@ -232,16 +237,10 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
     return new ValueNullEvent("null");
   }
 
-  #parseKeyOrEndObject(ch: Ch) {
+  #parseKey(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
-    if (/\s/.test(ch)) return;
-    if (ch === "}") {
-      this.#handler.onEndObject?.(new EndObjectEvent());
-      this.#stack.pop();
-      this.#setState(this.#parseAfterValue, "AfterValue");
-      return;
-    }
-    else if (ch === "\"") {
+    if (isJsonWhitespace(ch)) return;
+    if (ch === "\"") {
       this.#acc = "";
       this.#setState(this.#parseString((key) => {
         this.#key = key;
@@ -253,9 +252,21 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
     throw this.#makeSyntaxError(`Unexpected token in object`, ch);
   };
 
+  #parseKeyOrEndObject(ch: Ch) {
+    if (ch === EOL) throw this.#makeNotCompleteError();
+    if (isJsonWhitespace(ch)) return;
+    if (ch === "}") {
+      this.#handler.onEndObject?.(new EndObjectEvent());
+      this.#stack.pop();
+      this.#setState(this.#parseAfterValue, "AfterValue");
+      return;
+    }
+    this.#parseKey(ch);
+  };
+
   #parseColon(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
-    if (/\s/.test(ch)) return;
+    if (isJsonWhitespace(ch)) return;
     if (ch === ":") {
       this.#setState(this.#parseValue, "Value");
       return;
@@ -265,7 +276,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
 
   #parseValue(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
-    if (/\s/.test(ch)) return;
+    if (isJsonWhitespace(ch)) return;
 
     switch (ch) {
       case "\"":
@@ -311,9 +322,9 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
 
   #parseCommaOrEndObject(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
-    if (/\s/.test(ch)) return;
+    if (isJsonWhitespace(ch)) return;
     if (ch === ",") {
-      this.#setState(this.#parseKeyOrEndObject, "KeyOrEndObject");
+      this.#setState(this.#parseKey, "Key");
       return;
     }
     else if (ch === "}") {
@@ -327,7 +338,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
 
   #parseValueOrEndArray(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
-    if (/\s/.test(ch)) return;
+    if (isJsonWhitespace(ch)) return;
     if (ch === "]") {
       this.#handler.onEndArray?.(new EndArrayEvent());
       this.#stack.pop();
@@ -346,7 +357,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
 
   #parseCommaOrEndArray(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
-    if (/\s/.test(ch)) return;
+    if (isJsonWhitespace(ch)) return;
     if (ch === ",") {
       this.#setState(this.#parseValueInArray, "ValueInArray");
       return;
@@ -361,7 +372,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   };
 
   #parseAfterValue(ch: Ch) {
-    if (ch !== EOL && /\s/.test(ch)) return;
+    if (ch !== EOL && isJsonWhitespace(ch)) return;
     if (this.#stack.length === 0) {
       this.#endDocument(ch);
       return;
@@ -425,6 +436,9 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
       else if (ch === "\"") {
         onEnd.call(this, this.#acc);
       }
+      else if (ch.charCodeAt(0) < 0x20) {
+        throw this.#makeSyntaxError(`Unescaped control character in string`, ch);
+      }
       else {
         this.#acc += ch;
       }
@@ -458,10 +472,10 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
       else {
         if (ch !== EOL)
           this.#pos--; // unread
-        const num = Number(this.#acc);
-        if (Number.isNaN(num)) {
+        if (!JSON_NUMBER_REGEX.test(this.#acc)) {
           throw this.#makeSyntaxError(`Invalid number`, this.#acc);
         }
+        const num = Number(this.#acc);
         this.#setState(this.#endDocument, "#endDocument");
         onEnd.call(this, num);
       }
