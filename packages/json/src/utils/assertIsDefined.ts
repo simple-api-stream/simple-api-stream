@@ -7,7 +7,3 @@ export function assertIsDefined<T>(value: T, message?: string): asserts value is
   if (value === undefined || value === null)
     throw new Error(message ?? "Value is undefined");
 }
-
-export function isDefined<T>(value: T): value is NonNullable<T> {
-  return !(value === undefined || value === null);
-}

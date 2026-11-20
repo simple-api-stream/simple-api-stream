@@ -1,4 +1,4 @@
-import { toErrorMessage } from "@simple-api-stream/core/utils";
+import { toErrorMessage } from "./utils/index.js";
 import type {
   KeySAJEventInterface,
   SAJEventInterface,

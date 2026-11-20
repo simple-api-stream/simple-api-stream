@@ -1,5 +1,4 @@
 import type { SimpleApiParser } from "@simple-api-stream/core";
-import { assertIsTrue, toErrorMessage } from "@simple-api-stream/core/utils";
 import {
   CdataEvent,
   CommentEvent,
@@ -16,7 +15,7 @@ import {
   EndDocumentEvent,
 } from "./event/index.js";
 import type { SAXHandler } from "./interface/index.js";
-import { unescape } from "./utils/index.js";
+import { assertIsTrue, toErrorMessage, unescape } from "./utils/index.js";
 
 const CDATA_PREFIX = "<![CDATA[";
 const CDATA_SUFFIX = "]]>";

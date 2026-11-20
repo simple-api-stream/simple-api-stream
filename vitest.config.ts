@@ -5,10 +5,6 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: "@simple-api-stream/core/utils",
-        replacement: resolve(import.meta.dirname, "packages/core/src/utils/index.ts"),
-      },
-      {
         find: "@simple-api-stream/core",
         replacement: resolve(import.meta.dirname, "packages/core/src/index.ts"),
       },

@@ -1,4 +1,4 @@
-import { toErrorMessage } from "@simple-api-stream/core/utils";
+import { toErrorMessage } from "./utils/index.js";
 import { CdataEvent, CommentEvent, DoctypePublicEvent, DoctypeSimpleEvent, DoctypeSystemEvent, EndElementEvent, StartElementEvent, TextEvent, ProcessingInstructionEvent, XMLStylesheetDeclarationEvent, XMLDeclarationEvent, StartDocumentEvent, EndDocumentEvent } from "./event/index.js";
 import type { SAXEventInterface } from "./event-interface/index.js";
 import type { SAXResolver } from "./interface/index.js";

@@ -1,4 +1,4 @@
-import { assertIsDefined, toErrorMessage } from "@simple-api-stream/core/utils";
+import { assertIsDefined, toErrorMessage } from "./utils/index.js";
 import type { SAJEventInterface } from "./event-interface/index.js";
 
 type SAJStateFn = (event: SAJEventInterface) => void;

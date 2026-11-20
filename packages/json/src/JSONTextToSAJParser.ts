@@ -1,5 +1,5 @@
 import type { SimpleApiParser } from "@simple-api-stream/core";
-import { assertIsDefined, assertIsTrue, toErrorMessage } from "@simple-api-stream/core/utils";
+import { assertIsDefined, assertIsTrue, toErrorMessage } from "./utils/index.js";
 import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
 import type { SAJHandler } from "./interface/index.js";
 

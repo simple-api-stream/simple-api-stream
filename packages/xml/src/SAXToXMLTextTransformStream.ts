@@ -1,6 +1,5 @@
-import { assertIsTrue, toErrorMessage } from "@simple-api-stream/core/utils";
 import type { CdataSAXEventInterface, CommentSAXEventInterface, DoctypeSAXEventInterface, EndElementSAXEventInterface, SAXEventInterface, StartElementSAXEventInterface, TextSAXEventInterface, ProcessingInstructionSAXEventInterface, StartDocumentSAXEventInterface, EndDocumentSAXEventInterface } from "./event-interface/index.js";
-import { escape } from "./utils/index.js";
+import { assertIsTrue, escape, toErrorMessage } from "./utils/index.js";
 
 const CDATA_PREFIX = "<![CDATA[";
 const CDATA_SUFFIX = "]]>";

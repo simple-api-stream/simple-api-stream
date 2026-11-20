@@ -1,4 +1,4 @@
-import { toErrorMessage } from "@simple-api-stream/core/utils";
+import { toErrorMessage } from "./utils/index.js";
 import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
 import type { SAJEventInterface } from "./event-interface/index.js";
 

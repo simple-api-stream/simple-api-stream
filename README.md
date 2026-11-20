@@ -345,7 +345,7 @@ catch (e) {
 ## 📚 Exports
 
 ```ts
-// Core contracts & utilities
+// Core contracts
 import {
   SAEvent,
   StartDocumentEvent,
@@ -354,7 +354,6 @@ import {
   type StartDocumentSAEventInterface,
   type EndDocumentSAEventInterface,
 } from "@simple-api-stream/core";
-import { toErrorMessage, assertIsDefined, assertIsTrue } from "@simple-api-stream/core/utils";
 
 // JSON streaming utilities
 import {
