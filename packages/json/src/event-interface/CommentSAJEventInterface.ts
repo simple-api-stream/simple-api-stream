@@ -1,10 +1,8 @@
-import type { SAJ_COMMENT_EVENT_TYPE } from "../event/index.js";
+import type { CommentSAEventInterface } from "@simple-api-stream/core";
 
 /**
  * Interface representing a JSONC comment event.
  */
-export interface CommentSAJEventInterface {
-  name: typeof SAJ_COMMENT_EVENT_TYPE
-  comment: string
+export interface CommentSAJEventInterface extends CommentSAEventInterface {
   style?: "line" | "block"
 }

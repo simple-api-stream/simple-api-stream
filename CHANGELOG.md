@@ -7,9 +7,10 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 
 **Added**:
 
+- `@simple-api-stream/core`: Added `CommentEvent` and `CommentSAEventInterface` (`name: "comment"`, `comment: string`) as shared comment event contracts across packages.
 - `@simple-api-stream/csv`: Added new streaming CSV (SAC = Simple API for CSV) package with `CSVTextToSACTransformStream`, `CSVTextToSACEventWritableStream`, `SACToCSVTextTransformStream`, `ResolveToSACReadableStream`, and `CSVTextToSACParser` (supporting `header?: boolean | string[]`, `delimiter`, `quote`, `skipDocument`, `skipEmptyLines`, `stripBom`, `quotePolicy`, and `summarize`).
 - `@simple-api-stream/json`:
-  - Added `CommentEvent` and `CommentSAJEventInterface` (`name: "comment"`, `comment: string`, `style?: "line" | "block"`), `onComment` on `SAJHandler`, and `comment()` on `SAJResolver` / `ResolveToSAJReadableStream`.
+  - Added `CommentEvent` (extending `@simple-api-stream/core`'s `CommentEvent`) and `CommentSAJEventInterface` (`name: "comment"`, `comment: string`, `style?: "line" | "block"`), `onComment` on `SAJHandler`, and `comment()` on `SAJResolver` / `ResolveToSAJReadableStream`.
   - Added `allowComments` and `allowTrailingCommas` options (both default to `false`) to `JSONTextToSAJParser`, `JSONTextToSAJTransformStream`, and `JSONTextToSAJEventWritableStream` for opt-in JSONC parsing.
   - Added `comments` option (defaults to `false`) to `SAJToJSONTextTransformStream` to optionally serialize `comment` events, and updated `SAJToObjectTransformStream` to ignore `comment` events.
 
