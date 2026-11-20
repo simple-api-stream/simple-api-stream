@@ -5,6 +5,9 @@ import type { SAXResolver } from "./interface/index.js";
 
 type Status = object;
 
+/**
+ * Error thrown by `ResolveToSAXReadableStream` when an invalid operation or argument is provided.
+ */
 export class ResolveToSAXReadableStreamError extends Error implements Status {
   constructor(message: string, _status: Status, options?: ErrorOptions) {
     super(message, options);
@@ -55,8 +58,7 @@ export class ResolveToSAXReadableStream extends ReadableStream<SAXEventInterface
 
   constructor() {
     let controller_!: ReadableStreamDefaultController<SAXEventInterface>;
-    // super() を呼ぶ前に controller にアクセスできないため、
-    // 一時的に外に取り出して参照を残す
+    // Capture the controller reference outside since `controller` cannot be accessed before calling `super()`
     super({
       start: (controller) => {
         controller_ = controller;

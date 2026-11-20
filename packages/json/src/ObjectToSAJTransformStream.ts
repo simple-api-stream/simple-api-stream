@@ -22,6 +22,9 @@ export type ObjectToSAJTransformStreamOptions = {
   unSupported?: UnSupporteds | UnSupportedFunction
 };
 
+/**
+ * Error thrown by `ObjectToSAJTransformStream` when an unsupported value or serialization error is encountered.
+ */
 export class ObjectToSAJTransformStreamError extends Error implements Status {
   constructor(message: string, status: Status, options?: ErrorOptions) {
     super(message, options);
@@ -52,6 +55,9 @@ function unSupportedToError({ value }: Parameters<UnSupportedFunction>[0]) {
   throw error;
 }
 
+/**
+ * TransformStream that converts JavaScript values/objects into a stream of SAJ events.
+ */
 export class ObjectToSAJTransformStream<T = unknown> extends TransformStream<T, SAJEventInterface> {
   #controller: TransformStreamDefaultController<SAJEventInterface>;
   #makeDocument: boolean;

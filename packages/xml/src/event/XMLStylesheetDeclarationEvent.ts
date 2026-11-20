@@ -1,7 +1,14 @@
 import type { XMLStylesheetDeclarationSAXEventInterface } from "../event-interface/index.js";
 import { ProcessingInstructionEvent } from "./ProcessingInstructionEvent.js";
 
+/**
+ * Target constant for XML stylesheet declaration processing instructions (`<?xml-stylesheet ...?>`).
+ */
 export const SAX_XML_DECLARATION_STYLESHEET_TARGET_TYPE = "xml-stylesheet";
+
+/**
+ * Event class representing an `<?xml-stylesheet ...?>` processing instruction.
+ */
 export class XMLStylesheetDeclarationEvent extends ProcessingInstructionEvent<typeof SAX_XML_DECLARATION_STYLESHEET_TARGET_TYPE> implements XMLStylesheetDeclarationSAXEventInterface {
   type: string;
   href: string;

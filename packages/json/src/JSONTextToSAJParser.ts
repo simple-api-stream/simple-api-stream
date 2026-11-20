@@ -3,6 +3,9 @@ import { assertIsDefined, assertIsTrue, toErrorMessage } from "./utils/index.js"
 import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
 import type { SAJHandler } from "./interface/index.js";
 
+/**
+ * Error thrown by `JSONTextToSAJParser` when malformed JSON syntax or an unexpected state is encountered.
+ */
 export class JSONTextToSAJParserError extends Error implements Status {
   buffer: string;
   pos: number;
@@ -49,6 +52,9 @@ function isJsonWhitespace(ch: string): boolean {
 
 type Ch = string | typeof EOL;
 
+/**
+ * Streaming JSON parser that emits SAJ events to a handler as text chunks are enqueued.
+ */
 export class JSONTextToSAJParser implements SimpleApiParser<string> {
   /** text buffer */
   #buffer = "";
@@ -378,7 +384,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
       return;
     }
     if (ch === EOL) {
-      // まだ未閉じの構造がある → 不完全エラー
+      // Unclosed structures still remain -> incomplete error
       throw this.#makeNotCompleteError();
     }
     const parent = this.#stack.at(-1);
@@ -399,7 +405,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
       if (ch === EOL) throw this.#makeNotCompleteError();
       if (escape) {
         if (unicode !== null) {
-          // unicode モード中
+          // Inside unicode escape sequence
           if (!/[0-9a-fA-F]/.test(ch)) {
             throw this.#makeSyntaxError(`Invalid unicode escape`, ch);
           }
@@ -411,7 +417,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
           }
         }
         else if (ch === "u") {
-          // unicode エスケープ開始
+          // Start unicode escape sequence
           unicode = "";
         }
         else {

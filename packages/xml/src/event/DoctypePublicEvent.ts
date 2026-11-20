@@ -1,6 +1,9 @@
 import type { DoctypeSAXEventPublicInterface } from "../event-interface/index.js";
 import { DoctypeBaseEvent } from "./DoctypeBaseEvent.js";
 
+/**
+ * Event class representing an XML `<!DOCTYPE root PUBLIC "...">` declaration.
+ */
 export class DoctypePublicEvent extends DoctypeBaseEvent implements DoctypeSAXEventPublicInterface {
   dtdType: "PUBLIC";
   uri?: string;

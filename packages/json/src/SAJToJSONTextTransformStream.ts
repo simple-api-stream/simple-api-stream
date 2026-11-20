@@ -24,6 +24,9 @@ type Status = {
   get parts(): string[]
 };
 
+/**
+ * Error thrown by `SAJToJSONTextTransformStream` when an invalid SAJ event sequence is encountered during serialization.
+ */
 export class SAJToJSONTextTransformStreamError extends Error implements Status {
   constructor(message: string, status: Status, options?: ErrorOptions) {
     super(message, options);
@@ -71,6 +74,9 @@ const summarize = Object.freeze({
 /** JSON Text summarize unit types */
 type Summarize = typeof summarize[keyof typeof summarize];
 
+/**
+ * TransformStream that serializes a stream of SAJ events into JSON text chunks.
+ */
 export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterface, string> {
   #controller!: TransformStreamDefaultController<string>;
 
@@ -211,7 +217,7 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
       throw this.#makeError(`Unexpected start${type} in object without key`);
     }
     const out: string[] = [];
-    // オブジェクト内の key の直後ならカンマ・インデントは抑制（#pendingValueForKey が true）
+    // Suppress comma and indentation immediately after an object key (#pendingValueForKey is true)
     if (!this.#pendingValueForKey) {
       if (!this.#isFirstItem()) {
         out.push(",");
@@ -222,13 +228,13 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
       }
     }
     out.push(type === stacks.object ? "{" : "[");
-    // 新しいコンテナに入る
+    // Enter new container
     this.#containerStack.push(type);
     this.#firstItemStack.push(true);
-    // 直後の要素（内部）は最初なので firstItem = true のまま
-    // この構造自体を出したので親側では項目を出した状態になる
+    // Keep firstItem = true for the first element inside the new container
+    // Mark the parent container as having emitted an item
     this.#markParentNotFirstItem();
-    // key の直後の構造を消化したのでリセット
+    // Reset since the structure following the key has been consumed
     this.#pendingValueForKey = false;
     return out;
   }
@@ -264,9 +270,9 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
       if (prefix) out.push(prefix);
     }
     out.push(type === stacks.object ? "}" : "]");
-    // この構造自体が親の中の項目なので、親ではカンマを入れるべき状態にする
+    // This structure is an item in its parent, so the parent will need a comma before the next item
     this.#markNotFirstItem();
-    // 終了後は key の直後ではない
+    // Not immediately after a key once the structure ends
     this.#pendingValueForKey = false;
     return out;
   }
@@ -289,9 +295,9 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
     const prefix = this.#makeIndentPrefix();
     if (prefix) out.push(prefix);
     out.push(JSON.stringify(key) + (this.#indent ? ": " : ":"));
-    // key の直後の値／構造ではカンマを抑制する
+    // Suppress comma for the value/structure immediately following a key
     this.#pendingValueForKey = true;
-    // この key:value ペア全体で最初の部分（key）を出したので current container はもう first item ではない
+    // The key starts a key:value pair, so the current container is no longer on its first item
     this.#markNotFirstItem();
     return out;
   }
@@ -304,7 +310,7 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
     }
     const out: string[] = [];
 
-    // 通常の値（配列内またはオブジェクトの value）についてカンマ・インデント処理
+    // Handle comma and indentation for regular values (inside an array or as an object value)
     if (!this.#pendingValueForKey) {
       if (!this.#isFirstItem()) {
         out.push(",");
@@ -341,9 +347,9 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
       }
     }
     out.push(serialized);
-    // この値を出したので次はカンマが必要になる
+    // A value has been emitted, so a comma will be needed before the next item
     this.#markNotFirstItem();
-    // key の直後の値を消化したのでリセット
+    // Reset since the value following the key has been consumed
     this.#pendingValueForKey = false;
     return out;
   }
@@ -358,7 +364,7 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
     this.#firstItemStack[this.#firstItemStack.length - 1] = false;
   }
 
-  // 親コンテナがあるならそれを「最初の要素ではなくなった」とマーク（構造や値を出したときに呼ぶ）
+  // Mark the parent container as no longer on its first item (called when emitting a structure or value)
   #markParentNotFirstItem() {
     if (this.#firstItemStack.length < 2) return;
     this.#firstItemStack[this.#firstItemStack.length - 2] = false;

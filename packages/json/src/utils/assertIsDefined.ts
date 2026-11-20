@@ -1,7 +1,7 @@
 /**
- * パラメータ `value` が null / undefined でないことを強制する。もしも null / undefined であるなら throw する
- * @param value 対象となる値
- * @param message
+ * Asserts that `value` is neither `null` nor `undefined`, throwing an `Error` otherwise.
+ * @param value Target value to check
+ * @param message Optional error message
  */
 export function assertIsDefined<T>(value: T, message?: string): asserts value is NonNullable<T> {
   if (value === undefined || value === null)

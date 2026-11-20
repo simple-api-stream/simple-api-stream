@@ -3,6 +3,9 @@ import { JSONTextToSAJParser } from "./JSONTextToSAJParser.js";
 
 type SAJHandler = Required<ConstructorParameters<typeof JSONTextToSAJParser>[0]["handler"]>;
 
+/**
+ * TransformStream that parses incoming JSON text chunks into SAJ event objects.
+ */
 export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEventInterface> {
   #parser: JSONTextToSAJParser;
   constructor({ skipDocument, multiple, ...handler_ }: { skipDocument?: boolean, multiple?: boolean } & Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseLoopAfter" | "onParseLoopBefore">> = {}) {
