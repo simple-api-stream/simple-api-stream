@@ -5,7 +5,13 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 
 ## [Unreleased]
 
+**Added**:
 
+- `@simple-api-stream/csv`: Added new streaming CSV (SAC = Simple API for CSV) package with `CSVTextToSACTransformStream`, `CSVTextToSACEventWritableStream`, `SACToCSVTextTransformStream`, `ResolveToSACReadableStream`, and `CSVTextToSACParser` (supporting `header?: boolean | string[]`, `delimiter`, `quote`, `skipDocument`, `skipEmptyLines`, `stripBom`, `quotePolicy`, and `summarize`).
+- `@simple-api-stream/json`:
+  - Added `CommentEvent` and `CommentSAJEventInterface` (`name: "comment"`, `comment: string`, `style?: "line" | "block"`), `onComment` on `SAJHandler`, and `comment()` on `SAJResolver` / `ResolveToSAJReadableStream`.
+  - Added `allowComments` and `allowTrailingCommas` options (both default to `false`) to `JSONTextToSAJParser`, `JSONTextToSAJTransformStream`, and `JSONTextToSAJEventWritableStream` for opt-in JSONC parsing.
+  - Added `comments` option (defaults to `false`) to `SAJToJSONTextTransformStream` to optionally serialize `comment` events, and updated `SAJToObjectTransformStream` to ignore `comment` events.
 
 ## [1.0.1] - 2026-11-20
 
