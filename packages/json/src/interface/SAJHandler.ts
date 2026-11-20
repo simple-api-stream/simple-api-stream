@@ -1,4 +1,4 @@
-import type { EndArraySAJEventInterface, EndDocumentSAJEventInterface, EndObjectSAJEventInterface, ErrorSAJEventInterface, KeySAJEventInterface, StartArraySAJEventInterface, StartDocumentSAJEventInterface, StartObjectSAJEventInterface, ValueBooleanSAJEventInterface, ValueNullSAJEventInterface, ValueNumberSAJEventInterface, ValueStringSAJEventInterface } from "../event-interface/index.js";
+import type { CommentSAJEventInterface, EndArraySAJEventInterface, EndDocumentSAJEventInterface, EndObjectSAJEventInterface, ErrorSAJEventInterface, KeySAJEventInterface, StartArraySAJEventInterface, StartDocumentSAJEventInterface, StartObjectSAJEventInterface, ValueBooleanSAJEventInterface, ValueNullSAJEventInterface, ValueNumberSAJEventInterface, ValueStringSAJEventInterface } from "../event-interface/index.js";
 
 export interface SAJHandler {
   onStartObject: (arg: StartObjectSAJEventInterface) => void
@@ -7,6 +7,7 @@ export interface SAJHandler {
   onEndArray: (arg: EndArraySAJEventInterface) => void
   onKey: (arg: KeySAJEventInterface) => void
   onValue: (arg: ValueBooleanSAJEventInterface | ValueNumberSAJEventInterface | ValueStringSAJEventInterface | ValueNullSAJEventInterface) => void
+  onComment: (arg: CommentSAJEventInterface) => void
   onError: (err: unknown) => void
   onErrorEvent: (arg: ErrorSAJEventInterface) => void
   onStartDocument: (arg: StartDocumentSAJEventInterface) => void

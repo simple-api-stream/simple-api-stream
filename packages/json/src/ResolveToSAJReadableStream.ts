@@ -1,4 +1,4 @@
-import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
+import { CommentEvent, EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
 import type { SAJEventInterface } from "./event-interface/index.js";
 import type { SAJResolver } from "./interface/SAJResolver.js";
 
@@ -57,6 +57,10 @@ export class ResolveToSAJReadableStream extends ReadableStream<SAJEventInterface
       return;
     }
     this.#controller.enqueue(new ValueNullEvent(type));
+  }
+
+  comment(comment: string, style?: "line" | "block"): void {
+    this.#controller.enqueue(new CommentEvent(comment, style));
   }
 
   startDocument(): void {

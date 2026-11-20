@@ -19,3 +19,4 @@ export type * from "./ValueStringSAJEventInterface.js";
 export type * from "./StartDocumentSAJEventInterface.js";
 export type * from "./EndDocumentSAJEventInterface.js";
 export type * from "./ErrorSAJEventInterface.js";
+export type * from "./CommentSAJEventInterface.js";

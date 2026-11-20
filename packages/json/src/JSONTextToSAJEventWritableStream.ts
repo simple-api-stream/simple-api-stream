@@ -7,7 +7,7 @@ import { JSONTextToSAJParser } from "./JSONTextToSAJParser.js";
  */
 export class JSONTextToSAJEventWritableStream extends WritableStream<string> {
   #parser: JSONTextToSAJParser;
-  constructor(handler: Partial<SAJHandler & JSONTextToSAJParserAdditionalHandler>, options?: { skipDocument?: boolean } & JSONTextToSAJParserMultipleOptions) {
+  constructor(handler: Partial<SAJHandler & JSONTextToSAJParserAdditionalHandler>, options?: { skipDocument?: boolean, allowComments?: boolean, allowTrailingCommas?: boolean } & JSONTextToSAJParserMultipleOptions) {
     const buffer = new JSONTextToSAJParser({ handler, ...(options ?? {}) });
     super({
 

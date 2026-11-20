@@ -1,6 +1,6 @@
 import type { SimpleApiParser } from "@simple-api-stream/core";
 import { assertIsDefined, assertIsTrue, toErrorMessage } from "./utils/index.js";
-import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, ErrorEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
+import { CommentEvent, EndArrayEvent, EndDocumentEvent, EndObjectEvent, ErrorEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
 import type { SAJHandler } from "./interface/index.js";
 
 /**
@@ -74,6 +74,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   }
 
   #acc = "";
+  #commentAcc = "";
   #key: string | null = null;
   #stack: ("object" | "array")[] = [];
   #handler: Partial<SAJHandler & JSONTextToSAJParserAdditionalHandler>;
@@ -81,6 +82,8 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   #startDocumented: boolean = false;
   #multiple: boolean | "json-seq" = false;
   #errorToEvent: boolean = false;
+  #allowComments: boolean = false;
+  #allowTrailingCommas: boolean = false;
 
   #status(): Status {
     return {
@@ -108,11 +111,13 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
     return new JSONTextToSAJParserError(message, this.#status(), options);
   }
 
-  constructor({ handler, skipDocument, multiple, errorToEvent }: { handler: Partial<SAJHandler & JSONTextToSAJParserAdditionalHandler>, skipDocument?: boolean } & JSONTextToSAJParserMultipleOptions) {
+  constructor({ handler, skipDocument, multiple, errorToEvent, allowComments, allowTrailingCommas }: { handler: Partial<SAJHandler & JSONTextToSAJParserAdditionalHandler>, skipDocument?: boolean, allowComments?: boolean, allowTrailingCommas?: boolean } & JSONTextToSAJParserMultipleOptions) {
     this.#handler = handler;
     this.#skipDocument = skipDocument ?? false;
     this.#multiple = multiple ?? false;
     this.#errorToEvent = this.#multiple === "json-seq" && (errorToEvent ?? false);
+    this.#allowComments = allowComments ?? false;
+    this.#allowTrailingCommas = allowTrailingCommas ?? false;
   }
 
   /**
@@ -204,6 +209,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
 
   #endDocument(ch: Ch) {
     if (ch !== EOL && isJsonWhitespace(ch)) return;
+    if (this.#tryStartComment(ch, this.#endDocument, "#endDocument")) return;
     assertIsTrue(this.#startDocumented, "mismatch not start document");
     if (ch !== EOL) {
       this.#pos--;
@@ -223,13 +229,23 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   }
 
   #startDocument(ch: Ch) {
-    if (ch === EOL) return;
+    if (ch === EOL) {
+      if (this.#startDocumented) {
+        if (!this.#skipDocument)
+          this.#handler.onEndDocument?.(new EndDocumentEvent());
+        this.#startDocumented = false;
+      }
+      return;
+    }
     if (isJsonWhitespace(ch)) return;
     if (this.#multiple === "json-seq" && ch === "\x1E") return;
 
-    if (!this.#skipDocument)
-      this.#handler.onStartDocument?.(new StartDocumentEvent());
-    this.#startDocumented = true;
+    if (!this.#startDocumented) {
+      if (!this.#skipDocument)
+        this.#handler.onStartDocument?.(new StartDocumentEvent());
+      this.#startDocumented = true;
+    }
+    if (this.#tryStartComment(ch, this.#startDocument, "#startDocument")) return;
     switch (ch) {
       case "{":
         this.#handler.onStartObject?.(new StartObjectEvent());
@@ -284,6 +300,13 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   #parseKey(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
     if (isJsonWhitespace(ch)) return;
+    if (this.#tryStartComment(ch, this.#parseKey, "Key")) return;
+    if (this.#allowTrailingCommas && ch === "}") {
+      this.#handler.onEndObject?.(new EndObjectEvent());
+      this.#stack.pop();
+      this.#setState(this.#parseAfterValue, "AfterValue");
+      return;
+    }
     if (ch === "\"") {
       this.#acc = "";
       this.#setState(this.#parseString((key) => {
@@ -299,6 +322,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   #parseKeyOrEndObject(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
     if (isJsonWhitespace(ch)) return;
+    if (this.#tryStartComment(ch, this.#parseKeyOrEndObject, "KeyOrEndObject")) return;
     if (ch === "}") {
       this.#handler.onEndObject?.(new EndObjectEvent());
       this.#stack.pop();
@@ -311,6 +335,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   #parseColon(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
     if (isJsonWhitespace(ch)) return;
+    if (this.#tryStartComment(ch, this.#parseColon, "Colon")) return;
     if (ch === ":") {
       this.#setState(this.#parseValue, "Value");
       return;
@@ -321,6 +346,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   #parseValue(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
     if (isJsonWhitespace(ch)) return;
+    if (this.#tryStartComment(ch, this.#parseValue, "Value")) return;
 
     switch (ch) {
       case "\"":
@@ -367,6 +393,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   #parseCommaOrEndObject(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
     if (isJsonWhitespace(ch)) return;
+    if (this.#tryStartComment(ch, this.#parseCommaOrEndObject, "CommaOrEndObject")) return;
     if (ch === ",") {
       this.#setState(this.#parseKey, "Key");
       return;
@@ -383,6 +410,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   #parseValueOrEndArray(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
     if (isJsonWhitespace(ch)) return;
+    if (this.#tryStartComment(ch, this.#parseValueOrEndArray, "ValueOrEndArray")) return;
     if (ch === "]") {
       this.#handler.onEndArray?.(new EndArrayEvent());
       this.#stack.pop();
@@ -396,12 +424,21 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
 
   #parseValueInArray(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
+    if (isJsonWhitespace(ch)) return;
+    if (this.#tryStartComment(ch, this.#parseValueInArray, "ValueInArray")) return;
+    if (this.#allowTrailingCommas && ch === "]") {
+      this.#handler.onEndArray?.(new EndArrayEvent());
+      this.#stack.pop();
+      this.#setState(this.#parseAfterValue, "AfterValue");
+      return;
+    }
     this.#parseValue(ch);
   };
 
   #parseCommaOrEndArray(ch: Ch) {
     if (ch === EOL) throw this.#makeNotCompleteError();
     if (isJsonWhitespace(ch)) return;
+    if (this.#tryStartComment(ch, this.#parseCommaOrEndArray, "CommaOrEndArray")) return;
     if (ch === ",") {
       this.#setState(this.#parseValueInArray, "ValueInArray");
       return;
@@ -421,6 +458,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
       this.#endDocument(ch);
       return;
     }
+    if (this.#tryStartComment(ch, this.#parseAfterValue, "AfterValue")) return;
     if (ch === EOL) {
       // Unclosed structures still remain -> incomplete error
       throw this.#makeNotCompleteError();
@@ -435,6 +473,72 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
     this.#pos--;
     this.#setState(this.#parseCommaOrEndArray, "CommaOrEndArray");
   };
+
+  #tryStartComment(ch: Ch, resumeState: StateFunction, resumeStateName: string): boolean {
+    if (!this.#allowComments || ch !== "/") return false;
+    this.#setState(this.#parseCommentSlash(resumeState, resumeStateName), "parseCommentSlash");
+    return true;
+  }
+
+  #parseCommentSlash(resumeState: StateFunction, resumeStateName: string): StateFunction {
+    return (ch) => {
+      if (ch === "/") {
+        this.#commentAcc = "";
+        this.#setState(this.#parseLineComment(resumeState, resumeStateName), "parseLineComment");
+        return;
+      }
+      if (ch === "*") {
+        this.#commentAcc = "";
+        this.#setState(this.#parseBlockComment(resumeState, resumeStateName), "parseBlockComment");
+        return;
+      }
+      throw this.#makeSyntaxError("Unexpected token", `/${ch === EOL ? "" : ch}`);
+    };
+  }
+
+  #parseLineComment(resumeState: StateFunction, resumeStateName: string): StateFunction {
+    return (ch) => {
+      if (ch === EOL || ch === "\n" || ch === "\r") {
+        const comment = this.#commentAcc;
+        this.#commentAcc = "";
+        this.#setState(resumeState, resumeStateName);
+        this.#handler.onComment?.(new CommentEvent(comment, "line"));
+        if (ch === EOL) {
+          resumeState.call(this, EOL);
+        }
+        return;
+      }
+      this.#commentAcc += ch;
+    };
+  }
+
+  #parseBlockComment(resumeState: StateFunction, resumeStateName: string): StateFunction {
+    let sawStar = false;
+    return (ch) => {
+      if (ch === EOL) throw this.#makeNotCompleteError();
+      if (sawStar) {
+        if (ch === "/") {
+          const comment = this.#commentAcc;
+          this.#commentAcc = "";
+          this.#setState(resumeState, resumeStateName);
+          this.#handler.onComment?.(new CommentEvent(comment, "block"));
+          return;
+        }
+        if (ch === "*") {
+          this.#commentAcc += "*";
+          return;
+        }
+        this.#commentAcc += `*${ch}`;
+        sawStar = false;
+        return;
+      }
+      if (ch === "*") {
+        sawStar = true;
+        return;
+      }
+      this.#commentAcc += ch;
+    };
+  }
 
   #parseString(onEnd: (this: typeof this, s: string) => void): StateFunction {
     let escape = false;

@@ -84,6 +84,9 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
 
   #next(chunk: SAJEventInterface) {
     try {
+      if (chunk.name === "comment") {
+        return;
+      }
       if (chunk.name === "error") {
         this.#stack = [];
         this.#setState(this.#startEntry, "startEntry");

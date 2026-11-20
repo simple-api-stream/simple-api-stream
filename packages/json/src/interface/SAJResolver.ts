@@ -1,4 +1,4 @@
-import type { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueEvent } from "../event/index.js";
+import type { CommentEvent, EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueEvent } from "../event/index.js";
 
 export interface SAJResolver {
   startObject(...args: ConstructorParameters<typeof StartObjectEvent>): void
@@ -7,6 +7,7 @@ export interface SAJResolver {
   endArray(...args: ConstructorParameters<typeof EndArrayEvent>): void
   key(...args: ConstructorParameters<typeof KeyEvent>): void
   value<T extends "string" | "number" | "null" | "boolean">(...args: ConstructorParameters<typeof ValueEvent<T>>): void
+  comment(...args: ConstructorParameters<typeof CommentEvent>): void
   startDocument(...args: ConstructorParameters<typeof StartDocumentEvent>): void
   endDocument(...args: ConstructorParameters<typeof EndDocumentEvent>): void
 }
