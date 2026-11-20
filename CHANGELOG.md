@@ -5,7 +5,8 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 
 ## [Unreleased]
 ### Added
-- `@simple-api-stream/json`: Added `multiple: "json-seq"` option to `JSONTextToSAJParser`, `JSONTextToSAJTransformStream`, and `JSONTextToSAJEventWritableStream` to parse RFC 7464 JSON text sequences (`\x1E` Record Separator delimited).
+- `@simple-api-stream/core`: Added `ErrorEvent` and `ErrorSAEventInterface` for representing parse errors as stream events.
+- `@simple-api-stream/json`: Added `multiple: "json-seq"` and `errorToEvent` options to `JSONTextToSAJParser`, `JSONTextToSAJTransformStream`, and `JSONTextToSAJEventWritableStream` to parse RFC 7464 JSON text sequences (`\x1E` Record Separator delimited) and optionally emit `ErrorEvent` to recover at the next record.
 - `@simple-api-stream/xml`: Added `multiple` option (`boolean`, defaults to `true`; planned to change default to `false` in a future version) to `XMLTextToSAXParser`, `XMLTextToSAXTransformStream`, and `XMLTextToSAXEventWritableStream` to optionally reject multiple root elements when `multiple: false`.
 
 ## [1.0.0] - 2026-11-20

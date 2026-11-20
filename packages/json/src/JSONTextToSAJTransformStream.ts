@@ -1,4 +1,5 @@
 import type { SAJEventInterface } from "./event-interface/index.js";
+import type { JSONTextToSAJParserMultipleOptions } from "./JSONTextToSAJParser.js";
 import { JSONTextToSAJParser } from "./JSONTextToSAJParser.js";
 
 type SAJHandler = Required<ConstructorParameters<typeof JSONTextToSAJParser>[0]["handler"]>;
@@ -8,7 +9,7 @@ type SAJHandler = Required<ConstructorParameters<typeof JSONTextToSAJParser>[0][
  */
 export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEventInterface> {
   #parser: JSONTextToSAJParser;
-  constructor({ skipDocument, multiple, ...handler_ }: { skipDocument?: boolean, multiple?: boolean | "json-seq" } & Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseLoopAfter" | "onParseLoopBefore">> = {}) {
+  constructor({ skipDocument, multiple, errorToEvent, ...handler_ }: { skipDocument?: boolean } & JSONTextToSAJParserMultipleOptions & Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseLoopAfter" | "onParseLoopBefore">> = {}) {
     let buffer!: JSONTextToSAJParser;
     super({
 
@@ -18,7 +19,7 @@ export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEve
        */
       start(controller) {
         const handler = toHandler(controller, handler_);
-        buffer = new JSONTextToSAJParser({ handler, ...{ skipDocument, multiple } });
+        buffer = new JSONTextToSAJParser({ handler, skipDocument, multiple, errorToEvent } as ConstructorParameters<typeof JSONTextToSAJParser>[0]);
       },
 
       /**
@@ -64,6 +65,7 @@ function toHandler(controller: TransformStreamDefaultController<SAJEventInterfac
     makeEntry("onValue", enqueue),
     makeEntry("onStartDocument", enqueue),
     makeEntry("onEndDocument", enqueue),
+    makeEntry("onErrorEvent", enqueue),
     makeEntry("onError", error),
     ...(handler.onParseAfter ? [makeEntry("onParseAfter", arg => handler.onParseAfter!(arg))] : []),
     ...(handler.onParseBefore ? [makeEntry("onParseBefore", arg => handler.onParseBefore!(arg))] : []),

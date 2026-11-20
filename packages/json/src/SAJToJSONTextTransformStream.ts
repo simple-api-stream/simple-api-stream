@@ -194,7 +194,17 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
         return this.#key(chunk);
       case "value":
         return this.#value(chunk);
+      case "error":
+        return this.#error();
     }
+  }
+
+  #error(): undefined {
+    const inDocument = this.#containerStack.at(0) === stacks.document;
+    this.#containerStack = inDocument ? [stacks.document] : [];
+    this.#firstItemStack = [];
+    this.#pendingValueForKey = false;
+    this.#parts = [];
   }
 
   #makeError(message: string | Error, options?: ErrorOptions) {

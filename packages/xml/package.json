@@ -1,6 +1,6 @@
 {
   "name": "@simple-api-stream/xml",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Streaming XML (SAX) parser and serializer built on the Web Streams API",
   "publishConfig": {
     "access": "public"
@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@simple-api-stream/core": "^1.0.0"
+    "@simple-api-stream/core": "^1.0.1"
   },
   "scripts": {
     "build": "vite build && tsc --project tsconfig.build.json",

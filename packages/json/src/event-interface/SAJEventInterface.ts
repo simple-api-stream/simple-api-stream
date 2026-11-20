@@ -9,6 +9,7 @@ import type { ValueNumberSAJEventInterface } from "./ValueNumberSAJEventInterfac
 import type { ValueStringSAJEventInterface } from "./ValueStringSAJEventInterface.js";
 import type { StartDocumentSAJEventInterface } from "./StartDocumentSAJEventInterface.js";
 import type { EndDocumentSAJEventInterface } from "./EndDocumentSAJEventInterface.js";
+import type { ErrorSAJEventInterface } from "./ErrorSAJEventInterface.js";
 
 export type SAJEventInterface
   = StartArraySAJEventInterface
@@ -21,4 +22,5 @@ export type SAJEventInterface
     | ValueNumberSAJEventInterface
     | ValueStringSAJEventInterface
     | StartDocumentSAJEventInterface
-    | EndDocumentSAJEventInterface;
+    | EndDocumentSAJEventInterface
+    | ErrorSAJEventInterface;

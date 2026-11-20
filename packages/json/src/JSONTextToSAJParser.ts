@@ -1,6 +1,6 @@
 import type { SimpleApiParser } from "@simple-api-stream/core";
 import { assertIsDefined, assertIsTrue, toErrorMessage } from "./utils/index.js";
-import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
+import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, ErrorEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
 import type { SAJHandler } from "./interface/index.js";
 
 /**
@@ -52,6 +52,10 @@ function isJsonWhitespace(ch: string): boolean {
 
 type Ch = string | typeof EOL;
 
+export type JSONTextToSAJParserMultipleOptions =
+  | { multiple?: boolean, errorToEvent?: never }
+  | { multiple: "json-seq", errorToEvent?: boolean };
+
 /**
  * Streaming JSON parser that emits SAJ events to a handler as text chunks are enqueued.
  */
@@ -76,6 +80,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   #skipDocument: boolean;
   #startDocumented: boolean = false;
   #multiple: boolean | "json-seq" = false;
+  #errorToEvent: boolean = false;
 
   #status(): Status {
     return {
@@ -103,10 +108,11 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
     return new JSONTextToSAJParserError(message, this.#status(), options);
   }
 
-  constructor({ handler, skipDocument, multiple }: { handler: Partial<SAJHandler & JSONTextToSAJParserAdditionalHandler>, skipDocument?: boolean, multiple?: boolean | "json-seq" }) {
+  constructor({ handler, skipDocument, multiple, errorToEvent }: { handler: Partial<SAJHandler & JSONTextToSAJParserAdditionalHandler>, skipDocument?: boolean } & JSONTextToSAJParserMultipleOptions) {
     this.#handler = handler;
     this.#skipDocument = skipDocument ?? false;
     this.#multiple = multiple ?? false;
+    this.#errorToEvent = this.#multiple === "json-seq" && (errorToEvent ?? false);
   }
 
   /**
@@ -141,28 +147,59 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   #parse(isFlush = false) {
     this.#handler.onParseBefore?.(this.#status());
     try {
-      while (this.#pos < this.#buffer.length) {
-        this.#handler.onParseLoopBefore?.(this.#status());
-        const ch = this.#buffer[this.#pos++];
-        this.#state(ch);
-        this.#handler.onParseLoopAfter?.(this.#status());
-      }
-      this.#buffer = "";
-      this.#pos = 0;
-      if (isFlush) {
-        this.#state(EOL);
-        if (this.#state === this.#endDocument) {
-          this.#state(EOL);
+      while (true) {
+        try {
+          while (this.#pos < this.#buffer.length) {
+            this.#handler.onParseLoopBefore?.(this.#status());
+            const ch = this.#buffer[this.#pos++];
+            this.#state(ch);
+            this.#handler.onParseLoopAfter?.(this.#status());
+          }
+          this.#buffer = "";
+          this.#pos = 0;
+          if (isFlush) {
+            this.#state(EOL);
+            if (this.#state === this.#endDocument) {
+              this.#state(EOL);
+            }
+            assertIsTrue(this.#state === this.#startDocument, `finish state is startDocument`);
+          }
+          break;
         }
-        assertIsTrue(this.#state === this.#startDocument, `finish state is startDocument`);
+        catch (e: unknown) {
+          if (this.#errorToEvent) {
+            this.#handler.onErrorEvent?.(new ErrorEvent(e));
+            this.#acc = "";
+            this.#key = null;
+            this.#stack = [];
+            if (isFlush && this.#pos >= this.#buffer.length) {
+              this.#endDocumentOnError();
+              break;
+            }
+            this.#setState(this.#skipToNextRecord, "#skipToNextRecord");
+            continue;
+          }
+          this.#handler.onError?.(e);
+          break;
+        }
       }
-    }
-    catch (e: unknown) {
-      this.#handler.onError?.(e);
     }
     finally {
       this.#handler.onParseAfter?.(this.#status());
     }
+  }
+
+  #endDocumentOnError() {
+    assertIsTrue(this.#startDocumented, "mismatch not start document");
+    if (!this.#skipDocument)
+      this.#handler.onEndDocument?.(new EndDocumentEvent());
+    this.#startDocumented = false;
+    this.#setState(this.#startDocument, "#startDocument");
+  }
+
+  #skipToNextRecord(ch: Ch) {
+    if (ch !== EOL && ch !== "\x1E") return;
+    this.#endDocumentOnError();
   }
 
   #endDocument(ch: Ch) {

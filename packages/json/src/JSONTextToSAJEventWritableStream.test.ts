@@ -219,4 +219,28 @@ describe("options", (it) => {
       { name: "value", type: "number", value: 2 },
     ]);
   });
+
+  it("supports errorToEvent with multiple: json-seq", async ({ expect }) => {
+    const events: SAJEventInterface[] = [];
+    const stream = new JSONTextToSAJEventWritableStream(
+      {
+        onStartDocument: e => events.push(e),
+        onEndDocument: e => events.push(e),
+        onValue: e => events.push(e),
+        onErrorEvent: e => events.push(e),
+      },
+      { multiple: "json-seq", errorToEvent: true },
+    );
+    const writer = stream.getWriter();
+    await writer.write("\x1E{\"a\":bad}\n\x1E2\n");
+    await writer.close();
+    expect(events.map(e => e.name)).toEqual([
+      "startDocument",
+      "error",
+      "endDocument",
+      "startDocument",
+      "value",
+      "endDocument",
+    ]);
+  });
 });
