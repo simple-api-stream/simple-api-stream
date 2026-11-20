@@ -200,4 +200,23 @@ describe("options", (it) => {
       { name: "value", type: "number", value: 2 },
     ]);
   });
+
+  it("supports multiple: json-seq", async ({ expect }) => {
+    const events: SAJEventInterface[] = [];
+    const stream = new JSONTextToSAJEventWritableStream(
+      {
+        onStartDocument: e => events.push(e),
+        onEndDocument: e => events.push(e),
+        onValue: e => events.push(e),
+      },
+      { skipDocument: true, multiple: "json-seq" },
+    );
+    const writer = stream.getWriter();
+    await writer.write("\x1E1\n\x1E2\n");
+    await writer.close();
+    expect(events).toEqual([
+      { name: "value", type: "number", value: 1 },
+      { name: "value", type: "number", value: 2 },
+    ]);
+  });
 });

@@ -8,7 +8,7 @@ type SAJHandler = Required<ConstructorParameters<typeof JSONTextToSAJParser>[0][
  */
 export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEventInterface> {
   #parser: JSONTextToSAJParser;
-  constructor({ skipDocument, multiple, ...handler_ }: { skipDocument?: boolean, multiple?: boolean } & Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseLoopAfter" | "onParseLoopBefore">> = {}) {
+  constructor({ skipDocument, multiple, ...handler_ }: { skipDocument?: boolean, multiple?: boolean | "json-seq" } & Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseLoopAfter" | "onParseLoopBefore">> = {}) {
     let buffer!: JSONTextToSAJParser;
     super({
 

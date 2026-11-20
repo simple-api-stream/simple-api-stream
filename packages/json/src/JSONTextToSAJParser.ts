@@ -75,7 +75,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   #handler: Partial<SAJHandler & JSONTextToSAJParserAdditionalHandler>;
   #skipDocument: boolean;
   #startDocumented: boolean = false;
-  #multiple: boolean = false;
+  #multiple: boolean | "json-seq" = false;
 
   #status(): Status {
     return {
@@ -103,7 +103,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
     return new JSONTextToSAJParserError(message, this.#status(), options);
   }
 
-  constructor({ handler, skipDocument, multiple }: { handler: Partial<SAJHandler & JSONTextToSAJParserAdditionalHandler>, skipDocument?: boolean, multiple?: boolean }) {
+  constructor({ handler, skipDocument, multiple }: { handler: Partial<SAJHandler & JSONTextToSAJParserAdditionalHandler>, skipDocument?: boolean, multiple?: boolean | "json-seq" }) {
     this.#handler = handler;
     this.#skipDocument = skipDocument ?? false;
     this.#multiple = multiple ?? false;
@@ -188,6 +188,7 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
   #startDocument(ch: Ch) {
     if (ch === EOL) return;
     if (isJsonWhitespace(ch)) return;
+    if (this.#multiple === "json-seq" && ch === "\x1E") return;
 
     if (!this.#skipDocument)
       this.#handler.onStartDocument?.(new StartDocumentEvent());

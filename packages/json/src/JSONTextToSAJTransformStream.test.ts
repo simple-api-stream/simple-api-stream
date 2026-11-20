@@ -311,6 +311,61 @@ describe("pattern", (it) => {
       ],
     },
     {
+      name: "json-seq",
+      options: { multiple: "json-seq" },
+      input: [
+        "\x1E{\"a\":1}\n\x1E2\x1E\x1E3\n\x1E",
+      ],
+      output: [
+        {
+          kind: "json",
+          name: "startDocument",
+        },
+        {
+          name: "startObject",
+        },
+        {
+          name: "key",
+          key: "a",
+        },
+        {
+          name: "value",
+          type: "number",
+          value: 1,
+        },
+        {
+          name: "endObject",
+        },
+        {
+          name: "endDocument",
+        },
+        {
+          kind: "json",
+          name: "startDocument",
+        },
+        {
+          name: "value",
+          type: "number",
+          value: 2,
+        },
+        {
+          name: "endDocument",
+        },
+        {
+          kind: "json",
+          name: "startDocument",
+        },
+        {
+          name: "value",
+          type: "number",
+          value: 3,
+        },
+        {
+          name: "endDocument",
+        },
+      ],
+    },
+    {
       name: "empty",
       input: [""],
       output: [],
@@ -532,6 +587,26 @@ describe("error", (it) => {
           error: [
             json.streams.JSONTextToSAJParserError,
             `is closed document`,
+          ],
+        },
+      },
+    },
+    {
+      name: "reject json-seq RS when multiple is true",
+      options: { multiple: true },
+      input: [
+        "\x1E1\n",
+      ],
+      output: {
+        write: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+          ],
+        },
+        read: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            "Unexpected token: \x1E",
           ],
         },
       },
