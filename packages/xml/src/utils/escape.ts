@@ -6,7 +6,9 @@ const escapeRegexp = [
   [/'/g, "&#39;"],
 ] as const;
 
-// エスケープ処理
+/**
+ * Escapes special XML characters (`&`, `<`, `>`, `"`, `'`) into XML entities.
+ */
 export function escape(s?: string | null): string {
   if (!s || s.length <= 0) return "";
   for (const [searchValue, replaceValue] of escapeRegexp) {

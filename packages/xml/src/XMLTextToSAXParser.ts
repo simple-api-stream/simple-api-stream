@@ -1,5 +1,4 @@
 import type { SimpleApiParser } from "@simple-api-stream/core";
-import { assertIsTrue, toErrorMessage } from "@simple-api-stream/core/utils";
 import {
   CdataEvent,
   CommentEvent,
@@ -16,7 +15,7 @@ import {
   EndDocumentEvent,
 } from "./event/index.js";
 import type { SAXHandler } from "./interface/index.js";
-import { unescape } from "./utils/index.js";
+import { assertIsTrue, toErrorMessage, unescape } from "./utils/index.js";
 
 const CDATA_PREFIX = "<![CDATA[";
 const CDATA_SUFFIX = "]]>";
@@ -37,6 +36,9 @@ type Status = {
   get openDocumented(): boolean
 };
 
+/**
+ * Error thrown by `XMLTextToSAXParser` when malformed XML syntax or an unexpected state is encountered.
+ */
 export class XMLTextToSAXParserError extends Error implements Status {
   constructor(message: string, status: Status, options?: ErrorOptions) {
     super(message, options);
@@ -53,6 +55,9 @@ export class XMLTextToSAXParserError extends Error implements Status {
   openDocumented: boolean;
 }
 
+/**
+ * Streaming XML parser that emits SAX events to a handler as text chunks are enqueued.
+ */
 export class XMLTextToSAXParser implements SimpleApiParser<string> {
   #buffer: string = "";
   #handler: Partial<SAXHandler>;
@@ -230,7 +235,7 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
       || COMMENT_PREFIX.startsWith(remaining)
       || PROCESSING_INSTRUCTION_PREFIX.startsWith(remaining)
     ) {
-      this.#buffer = this.#buffer.slice(this.#cursor); // 不完全トークン
+      this.#buffer = this.#buffer.slice(this.#cursor); // Incomplete token
       return { required: true };
     }
     else {

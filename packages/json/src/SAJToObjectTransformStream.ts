@@ -1,4 +1,4 @@
-import { assertIsDefined, toErrorMessage } from "@simple-api-stream/core/utils";
+import { assertIsDefined, toErrorMessage } from "./utils/index.js";
 import type { SAJEventInterface } from "./event-interface/index.js";
 
 type SAJStateFn = (event: SAJEventInterface) => void;
@@ -12,6 +12,9 @@ type Status = {
   get current(): unknown
 };
 
+/**
+ * Error thrown by `SAJToObjectTransformStream` when an invalid or incomplete SAJ event sequence is encountered.
+ */
 export class SAJToObjectTransformStreamError extends Error implements Status {
   constructor(message: string, status: Status, options?: ErrorOptions) {
     super(message, options);
@@ -30,6 +33,9 @@ export type SAJToObjectTransformStreamOptions = {
   multiple: boolean
 };
 
+/**
+ * TransformStream that reconstructs JavaScript values/objects from a stream of SAJ events.
+ */
 export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInterface, T> {
   #controller!: TransformStreamDefaultController<T>;
   #multiple: boolean;
@@ -86,7 +92,7 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
     }
   }
 
-  // ========== 状態スタックと構築スタック ==========
+  // ========== State and construction stacks ==========
   #state: SAJStateFn = this.#startEntry;
   #stateName = "startEntry";
   #stack: { container: unknown, key?: string }[] = [];
@@ -96,7 +102,7 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
     this.#stateName = name;
   }
 
-  // #region 状態関数
+  // #region State functions
   #startEntry(event: SAJEventInterface): void {
     switch (event.name) {
       case "startDocument":

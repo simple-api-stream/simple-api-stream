@@ -11,6 +11,9 @@ import * as JSONTextToSAJParserModule from "./JSONTextToSAJParser.js";
 import * as ObjectToSAJTransformStreamModule from "./ObjectToSAJTransformStream.js";
 import * as SAJToJSONTextTransformStreamModule from "./SAJToJSONTextTransformStream.js";
 
+/**
+ * Namespace containing all JSON stream and parser classes.
+ */
 export const streams = {
   ...JSONTextToSAJEventWritableStreamModule,
   ...ResolveToSAJReadableStreamModule,

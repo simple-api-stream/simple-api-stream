@@ -1,7 +1,7 @@
 {
   "name": "@simple-api-stream/core",
   "version": "1.0.0",
-  "description": "Core event classes, interfaces, and utilities for simple-api-stream",
+  "description": "Core event classes and interfaces for simple-api-stream",
   "publishConfig": {
     "access": "public"
   },
@@ -18,10 +18,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./utils": {
-      "types": "./dist/utils/index.d.ts",
-      "default": "./dist/utils/index.js"
     }
   },
   "scripts": {

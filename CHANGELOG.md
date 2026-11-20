@@ -7,10 +7,10 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 ### Added
 - _No unreleased changes at this time._
 
-## [1.0.0] - 2026-11-19
+## [1.0.0] - 2026-11-20
 ### Added
 - Initial release as an npm workspaces monorepo shipping ESM-only packages (targeting Node.js `>= 24`, also directly `require()`-able via `require(esm)`), with TypeScript declarations, `"sideEffects": false`, and zero external runtime dependencies:
-  - `@simple-api-stream/core` (`@simple-api-stream/core` and `@simple-api-stream/core/utils`) — Core event base classes, parser interfaces, and shared utilities.
+  - `@simple-api-stream/core` — Core event base classes and parser interfaces.
   - `@simple-api-stream/json` — Streaming JSON (SAJ) utilities.
   - `@simple-api-stream/xml` — Streaming XML (SAX) utilities.
 - Streaming JSON utilities (SAJ: Simple API for JSON):

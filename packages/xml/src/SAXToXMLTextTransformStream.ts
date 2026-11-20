@@ -1,6 +1,5 @@
-import { assertIsTrue, toErrorMessage } from "@simple-api-stream/core/utils";
 import type { CdataSAXEventInterface, CommentSAXEventInterface, DoctypeSAXEventInterface, EndElementSAXEventInterface, SAXEventInterface, StartElementSAXEventInterface, TextSAXEventInterface, ProcessingInstructionSAXEventInterface, StartDocumentSAXEventInterface, EndDocumentSAXEventInterface } from "./event-interface/index.js";
-import { escape } from "./utils/index.js";
+import { assertIsTrue, escape, toErrorMessage } from "./utils/index.js";
 
 const CDATA_PREFIX = "<![CDATA[";
 const CDATA_SUFFIX = "]]>";
@@ -15,11 +14,11 @@ const COMMENT_PREFIX = "<!--";
 const COMMENT_SUFFIX = "-->";
 
 const summarize = Object.freeze({
-  /** default type: minimal (イベント単位で出力) */
+  /** default type: minimal (emit per event) */
   default: "default",
-  /** element 単位（startElement～endElementまで）で出力 */
+  /** Emit per element (from `startElement` to `endElement`) */
   element: "element",
-  /** document 単位（startDocument～endDocumentまで）で出力 */
+  /** Emit per document (from `startDocument` to `endDocument`) */
   document: "document",
 } as const);
 type Summarize = typeof summarize[keyof typeof summarize];
@@ -42,6 +41,9 @@ type Status = {
   get parts(): string[]
 };
 
+/**
+ * Error thrown by `SAXToXMLTextTransformStream` when an invalid SAX event sequence is encountered during serialization.
+ */
 export class SAXToXMLTextTransformStreamError extends Error implements Status {
   constructor(message: string, status: Status, options?: ErrorOptions) {
     super(message, options);
@@ -175,7 +177,7 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
       if (typeof str === "string") this.#parts.push(str);
 
       if (this.#summarize === summarize.default) {
-        // イベントごとに即出力
+        // Emit immediately for each event
         while (this.#parts.length > 0) {
           this.#controller.enqueue(this.#parts.shift());
         }

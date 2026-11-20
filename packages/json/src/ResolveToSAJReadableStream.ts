@@ -2,6 +2,9 @@ import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEv
 import type { SAJEventInterface } from "./event-interface/index.js";
 import type { SAJResolver } from "./interface/SAJResolver.js";
 
+/**
+ * ReadableStream that emits SAJ events driven imperatively via the `SAJResolver` interface.
+ */
 export class ResolveToSAJReadableStream extends ReadableStream<SAJEventInterface> implements SAJResolver {
   #controller!: ReadableStreamDefaultController<SAJEventInterface>;
   #closed = false;

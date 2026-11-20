@@ -8,6 +8,9 @@ import * as XMLTextToSAXTransformStreamModule from "./XMLTextToSAXTransformStrea
 import * as ResolveToSAXReadableStreamModule from "./ResolveToSAXReadableStream.js";
 import * as SAXToXMLTextTransformModule from "./SAXToXMLTextTransformStream.js";
 import * as XMLTextToSAXParserModule from "./XMLTextToSAXParser.js";
+/**
+ * Namespace containing all XML stream and parser classes.
+ */
 export const streams = {
   ...XMLTextToSAXEventWritableStreamModule,
   ...XMLTextToSAXTransformStreamModule,

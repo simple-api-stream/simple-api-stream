@@ -2,6 +2,9 @@ import type { SAJHandler } from "./interface/index.js";
 import type { JSONTextToSAJParserAdditionalHandler } from "./JSONTextToSAJParser.js";
 import { JSONTextToSAJParser } from "./JSONTextToSAJParser.js";
 
+/**
+ * WritableStream that parses incoming JSON text chunks and invokes SAJ handler callbacks.
+ */
 export class JSONTextToSAJEventWritableStream extends WritableStream<string> {
   #parser: JSONTextToSAJParser;
   constructor(handler: Partial<SAJHandler & JSONTextToSAJParserAdditionalHandler>, options?: { skipDocument?: boolean, multiple?: boolean }) {

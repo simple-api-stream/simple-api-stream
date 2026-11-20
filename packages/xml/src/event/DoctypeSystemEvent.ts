@@ -1,6 +1,9 @@
 import type { DoctypeSAXEventSystemInterface } from "../event-interface/index.js";
 import { DoctypeBaseEvent } from "./DoctypeBaseEvent.js";
 
+/**
+ * Event class representing an XML `<!DOCTYPE root SYSTEM "...">` declaration.
+ */
 export class DoctypeSystemEvent extends DoctypeBaseEvent implements DoctypeSAXEventSystemInterface {
   dtdType: "SYSTEM";
   uri: string;

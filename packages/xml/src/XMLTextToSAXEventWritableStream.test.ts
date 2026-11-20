@@ -1,7 +1,7 @@
 import { test, vi, describe, expect } from "vitest";
 import { XMLTextToSAXEventWritableStream } from "./index.js";
 import * as xml from "./index.js";
-import { toErrorMessage } from "@simple-api-stream/core/utils";
+import { toErrorMessage } from "./utils/index.js";
 
 function makeStringListHandlerAndArray() {
   const events: string[] = [];
