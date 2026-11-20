@@ -1,35 +1,17 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "useDefineForClassFields": true,
-    "module": "ESNext",
-    "lib": [
-      "ESNext",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "skipLibCheck": true,
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "moduleDetection": "force",
-    "emitDeclarationOnly": true,
-    "declaration": true,
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-    "sourceMap": true,
-    "sourceRoot": "./src",
-    "noEmit": true
-  },
+  "extends": "./tsconfig.base.json",
   "include": [
-    "src"
+    "utils"
   ],
-  "exclude": [
-
+  "references": [
+    {
+      "path": "./packages/core/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/json/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/xml/tsconfig.build.json"
+    }
   ]
 }

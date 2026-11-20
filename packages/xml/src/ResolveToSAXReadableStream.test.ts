@@ -1,0 +1,211 @@
+import { describe, expect, test } from "vitest";
+import { ResolveToSAXReadableStream, SAXToXMLTextTransformStream } from "./index.js";
+import type * as xml from "./index.js";
+import { ResolveToSAXReadableStreamError } from "./ResolveToSAXReadableStream.js";
+
+test("empty chunks", async ({ expect }) => {
+  const stream = new ResolveToSAXReadableStream();
+  const response = new Response(stream
+    .pipeThrough(new SAXToXMLTextTransformStream())
+    .pipeThrough(new TextEncoderStream()));
+  stream.close();
+  const text = await response.text();
+  expect(text).toHaveLength(0);
+});
+
+test("outputs correct XML chunks", async ({ expect }) => {
+  const stream = new ResolveToSAXReadableStream();
+  const reader = stream
+    .pipeThrough(new SAXToXMLTextTransformStream())
+    .getReader();
+
+  stream.startDocument();
+  stream.startElement("root", { id: "123" }, false);
+  stream.text("Hello <world> & others");
+  stream.startElement("empty", {}, true);
+  stream.endElement("empty");
+  stream.endElement("root");
+  stream.endDocument();
+  stream.close();
+
+  const chunks: string[] = [];
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+
+  expect(chunks).toEqual([
+    "<root id=\"123\">",
+    "Hello &lt;world&gt; &amp; others",
+    "<empty/>",
+    "</root>",
+  ]);
+});
+
+test("handles empty text and attributes", async ({ expect }) => {
+  const stream = new ResolveToSAXReadableStream();
+  const reader = stream
+    .pipeThrough(new SAXToXMLTextTransformStream())
+    .getReader();
+
+  stream.startElement("x", {}, false);
+  stream.text("");
+  stream.endElement("x");
+  stream.close();
+
+  const out: string[] = [];
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    out.push(value);
+  }
+
+  expect(out).toEqual(["<x>", "", "</x>"]);
+});
+
+test("error pattern", ({ expect }) => {
+  const stream = new ResolveToSAXReadableStream();
+  const fnc = () => stream.processingInstruction({ target: "hoge" as "xml" });
+  expect(fnc).toThrow(ResolveToSAXReadableStreamError);
+});
+
+describe("pattern", (it) => {
+  const entries: {
+    name: string
+    input: ((stream: InstanceType<typeof ResolveToSAXReadableStream>) => void)[]
+    output: xml.eventInterfaces.SAXEventInterface[]
+  }[] = [
+    {
+      name: "all type",
+      input: [
+        stream => stream.processingInstruction("xml", `version="1.0" encoding="UTF-8"`),
+        stream => stream.processingInstruction({ target: "xml", version: "1.0", encoding: "UTF-8" }),
+        stream => stream.processingInstruction({ target: "xml-stylesheet", contentType: `text/xls`, href: `./style.xls` }),
+        stream => stream.startElement("root"),
+        stream => stream.cdata(" hoge "),
+        stream => stream.comment(" fuga "),
+        stream => stream.startElement("element"),
+        stream => stream.text("piyo"),
+        stream => stream.endElement("element"),
+        stream => stream.endElement("root"),
+      ],
+      output: [
+        {
+          data: `version="1.0" encoding="UTF-8"`,
+          target: "xml",
+          name: "processingInstruction",
+        },
+        {
+          data: `version="1.0" encoding="UTF-8"`,
+          encoding: "UTF-8",
+          standalone: "yes",
+          target: "xml",
+          name: "processingInstruction",
+          version: "1.0",
+        },
+        {
+          type: "text/xls",
+          data: `type="text/xls" href="./style.xls"`,
+          href: "./style.xls",
+          target: "xml-stylesheet",
+          name: "processingInstruction",
+        },
+        {
+          attrs: {},
+          selfClosing: false,
+          tagName: "root",
+          name: "startElement",
+        },
+        {
+          cdata: " hoge ",
+          name: "cdata",
+        },
+        {
+          comment: " fuga ",
+          name: "comment",
+        },
+        {
+          attrs: {},
+          selfClosing: false,
+          tagName: "element",
+          name: "startElement",
+        },
+        {
+          text: "piyo",
+          name: "text",
+        },
+        {
+          tagName: "element",
+          name: "endElement",
+        },
+        {
+          tagName: "root",
+          name: "endElement",
+        },
+      ],
+    },
+    {
+      name: "doctype simple",
+      input: [
+        stream => stream.doctype("root"),
+      ],
+      output: [
+        {
+          root: "root",
+          dtdType: undefined,
+          name: "doctype",
+        },
+      ],
+    },
+    {
+      name: "doctype public",
+      input: [
+        stream => stream.doctype("HTML", {
+          dtdType: "PUBLIC",
+          identifier: "-//W3C//DTD HTML 4.01//EN",
+          uri: "http://www.w3.org/TR/html4/strict.dtd",
+        }),
+      ],
+      output: [
+        { name: "doctype", root: "HTML", dtdType: "PUBLIC", identifier: "-//W3C//DTD HTML 4.01//EN", uri: "http://www.w3.org/TR/html4/strict.dtd" },
+      ],
+    },
+    {
+      name: "doctype system",
+      input: [
+        stream => stream.doctype("html", {
+          dtdType: "SYSTEM",
+          uri: "http://www.w3.org/TR/html4/strict.dtd",
+        }),
+      ],
+      output: [
+        { name: "doctype", root: "html", dtdType: "SYSTEM", uri: "http://www.w3.org/TR/html4/strict.dtd" },
+      ],
+    },
+  ];
+  it.each(entries)("$name", async ({ input, output }) => {
+    const stream = (() => {
+      using stream = new ResolveToSAXReadableStream();
+      for (const i of input)
+        i(stream);
+      return stream;
+    })();
+    const result = await Array.fromAsync(stream);
+    expect(result).toEqual(output);
+  });
+});
+
+test("dispose is safe after explicit close or consumer cancel", async ({ expect }) => {
+  {
+    using stream = new ResolveToSAXReadableStream();
+    stream.text("hi");
+    stream.close();
+    await expect(Array.fromAsync(stream)).resolves.toEqual([{ name: "text", text: "hi" }]);
+  }
+  {
+    using stream = new ResolveToSAXReadableStream();
+    stream.text("hi");
+    await stream.cancel();
+  }
+});

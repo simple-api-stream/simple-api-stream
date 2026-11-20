@@ -23,8 +23,9 @@
             "editor.tabSize": 2
         },
 		"coverage-gutters.coverageFileNames": [
-			"TestResults/coverage/cobertura-coverage.xml",
-			"TestResults/*/coverage.cobertura.xml"
+			"cobertura-coverage.xml",
+			"coverage.cobertura.xml",
+            "coverage-final.json",
 		],
         "explorer.fileNesting.enabled": true,
         "explorer.fileNesting.patterns": {
@@ -32,6 +33,70 @@
             "tsconfig.json": "tsconfig.*.json",
             "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock"
         }
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "npm run lint -- --debug",
+                "type": "shell",
+                "command": "npm",
+                "args": [
+                    "run",
+                    "lint",
+                    "--",
+                    "--debug",
+                ],
+                "problemMatcher": [
+                    "$eslint-stylish"
+                ]
+            },
+            {
+                "label": "npm run lint -- --fix --debug",
+                "type": "shell",
+                "command": "npm",
+                "args": [
+                    "run",
+                    "lint",
+                    "--",
+                    "--fix",
+                    "--debug"
+                ],
+                "problemMatcher": [
+                    "$eslint-stylish"
+                ]
+            },
+            {
+                "label": "npm run build",
+                "type": "shell",
+                "command": "npm",
+                "args": [
+                    "run",
+                    "build",
+                ],
+                "problemMatcher": [ ],
+            },
+            {
+                "label": "npm run test",
+                "type": "shell",
+                "command": "npm",
+                "args": [
+                    "run",
+                    "test",
+                ],
+                "problemMatcher": [ ],
+            },
+            {
+                "label": "npm run test:watch",
+                "type": "shell",
+                "command": "npm",
+                "args": [
+                    "run",
+                    "test:watch",
+                ],
+                "problemMatcher": [ ],
+            },
+        ]
     },
     "extensions": {
         "recommendations": [
