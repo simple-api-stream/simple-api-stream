@@ -1,8 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "./src",
-    "sourceRoot": "./src",
     "paths": {
       "@simple-api-stream/core": [
         "../core/src/index.ts"
