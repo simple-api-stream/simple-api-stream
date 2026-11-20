@@ -485,3 +485,16 @@ test("reports explicit state names across transitions", async ({ expect }) => {
   await writer.close();
   await expect(readed).resolves.toEqual([{ arr: [] }]);
 });
+
+test("pipeThrough JSONTextToSAJTransformStream with multiple: json-seq and errorToEvent: true skips broken records", async ({ expect }) => {
+  const source = new ReadableStream<string>({
+    start(controller) {
+      controller.enqueue("\x1E{\"a\":1}\n\x1E{\"b\":bad}\n\x1E{\"c\":3}\n");
+      controller.close();
+    },
+  });
+  const objects = source
+    .pipeThrough(new JSONTextToSAJTransformStream({ multiple: "json-seq", errorToEvent: true }))
+    .pipeThrough(new SAJToObjectTransformStream({ multiple: true }));
+  await expect(Array.fromAsync(objects)).resolves.toEqual([{ a: 1 }, { c: 3 }]);
+});

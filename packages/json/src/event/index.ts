@@ -25,4 +25,5 @@ export * from "./ValueNullEvent.js";
 // #region document
 export * from "./StartDocumentEvent.js";
 export * from "./EndDocumentEvent.js";
+export * from "./ErrorEvent.js";
 // #endregion

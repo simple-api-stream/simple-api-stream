@@ -1,6 +1,6 @@
 {
   "name": "@simple-api-stream/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Core event classes and interfaces for simple-api-stream",
   "publishConfig": {
     "access": "public"

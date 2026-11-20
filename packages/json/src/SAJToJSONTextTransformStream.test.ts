@@ -653,3 +653,31 @@ describe.concurrent("error pattern", (test) => {
       }
   });
 });
+
+it("resets state on error event in SAJToJSONTextTransformStream", async () => {
+  const stream1 = new SAJToJSONTextTransformStream({ summarize: "document" });
+  const writer1 = stream1.writable.getWriter();
+  const readed1 = Array.fromAsync(stream1.readable);
+  await writer1.write({ name: "startDocument", kind: "json" });
+  await writer1.write({ name: "startObject" });
+  await writer1.write({ name: "key", key: "a" });
+  await writer1.write({ name: "error", error: new Error("bad") });
+  await writer1.write({ name: "endDocument" });
+  await writer1.write({ name: "startDocument", kind: "json" });
+  await writer1.write({ name: "startObject" });
+  await writer1.write({ name: "key", key: "b" });
+  await writer1.write({ name: "value", type: "number", value: 2 });
+  await writer1.write({ name: "endObject" });
+  await writer1.write({ name: "endDocument" });
+  await writer1.close();
+  await expect(readed1).resolves.toEqual([`{"b":2}`]);
+
+  const stream2 = new SAJToJSONTextTransformStream({ summarize: "normal" });
+  const writer2 = stream2.writable.getWriter();
+  const readed2 = Array.fromAsync(stream2.readable);
+  await writer2.write({ name: "startObject" });
+  await writer2.write({ name: "error", error: new Error("bad") });
+  await writer2.write({ name: "value", type: "number", value: 1 });
+  await writer2.close();
+  await expect(readed2).resolves.toEqual(["1"]);
+});

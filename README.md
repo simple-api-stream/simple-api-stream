@@ -209,10 +209,12 @@ console.log((await Array.fromAsync(xmlText)).join(""));
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `skipDocument` | `boolean` | `false` | Do not emit `startDocument` / `endDocument` events. |
-| `multiple` | `boolean` | `false` | Accept multiple top-level JSON values in one stream. When `false`, a second value is an error. |
+| `multiple` | `boolean` | `true` | Allow multiple root elements in one stream. When `false`, a second root element is an error. *(The default is planned to change to `false` in a future version.)* |
+| `multiple` | `boolean \| "json-seq"` | `false` | Accept multiple top-level JSON values in one stream (`true`), or parse RFC 7464 JSON text sequences (`"json-seq"`, `\x1E`-delimited). When `false`, a second value is an error. |
+| `errorToEvent` | `boolean` | `false` | Only available when `multiple: "json-seq"`. Emit an `error` event on parse error and recover at the next `\x1E` / `EOF` (`endDocument` → `startDocument`) instead of failing the stream. |
 | `onParseBefore` / `onParseAfter` / `onParseLoopBefore` / `onParseLoopAfter` | `(status) => void` | – | Debug hooks that receive the internal parser status. |
 
-`JSONTextToSAJEventWritableStream(handler, options?)` accepts `{ skipDocument?: boolean, multiple?: boolean }` as `options` and the same debug hooks in its `handler` object.
+`JSONTextToSAJEventWritableStream(handler, options?)` accepts `{ skipDocument?: boolean }` combined with `{ multiple?: boolean, errorToEvent?: never } | { multiple: "json-seq", errorToEvent?: boolean }` as `options`, and `onErrorEvent` plus the same debug hooks in its `handler` object.
 
 ### `SAJToObjectTransformStream(options?)`
 
@@ -240,6 +242,7 @@ console.log((await Array.fromAsync(xmlText)).join(""));
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `skipDocument` | `boolean` | `false` | Do not emit `startDocument` / `endDocument` events. |
+| `multiple` | `boolean` | `true` | Allow multiple root elements in one stream. When `false`, a second root element is an error. *(The default is planned to change to `false` in a future version.)* |
 
 ### `SAXToXMLTextTransformStream(options?)`
 
@@ -263,6 +266,7 @@ Events are plain objects with a `name` discriminator, so they can be narrowed wi
 |--------|--------------|
 | `startDocument` | `kind: "json"` |
 | `endDocument` | – |
+| `error` | `error: unknown` (emitted when `multiple: "json-seq"` and `errorToEvent: true`) |
 | `startObject` / `endObject` | – |
 | `startArray` / `endArray` | – |
 | `key` | `key: string` |

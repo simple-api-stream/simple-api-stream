@@ -311,6 +311,61 @@ describe("pattern", (it) => {
       ],
     },
     {
+      name: "json-seq",
+      options: { multiple: "json-seq" },
+      input: [
+        "\x1E{\"a\":1}\n\x1E2\x1E\x1E3\n\x1E",
+      ],
+      output: [
+        {
+          kind: "json",
+          name: "startDocument",
+        },
+        {
+          name: "startObject",
+        },
+        {
+          name: "key",
+          key: "a",
+        },
+        {
+          name: "value",
+          type: "number",
+          value: 1,
+        },
+        {
+          name: "endObject",
+        },
+        {
+          name: "endDocument",
+        },
+        {
+          kind: "json",
+          name: "startDocument",
+        },
+        {
+          name: "value",
+          type: "number",
+          value: 2,
+        },
+        {
+          name: "endDocument",
+        },
+        {
+          kind: "json",
+          name: "startDocument",
+        },
+        {
+          name: "value",
+          type: "number",
+          value: 3,
+        },
+        {
+          name: "endDocument",
+        },
+      ],
+    },
+    {
       name: "empty",
       input: [""],
       output: [],
@@ -532,6 +587,26 @@ describe("error", (it) => {
           error: [
             json.streams.JSONTextToSAJParserError,
             `is closed document`,
+          ],
+        },
+      },
+    },
+    {
+      name: "reject json-seq RS when multiple is true",
+      options: { multiple: true },
+      input: [
+        "\x1E1\n",
+      ],
+      output: {
+        write: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+          ],
+        },
+        read: {
+          error: [
+            json.streams.JSONTextToSAJParserError,
+            "Unexpected token: \x1E",
           ],
         },
       },
@@ -1171,4 +1246,90 @@ test("re-exports stream classes as both values and types and includes JSONTextTo
   expect(json.streams.JSONTextToSAJTransformStream).toBe(JSONTextToSAJTransformStream);
   const stream: JSONTextToSAJTransformStream = new JSONTextToSAJTransformStream();
   expect(stream).toBeInstanceOf(JSONTextToSAJTransformStream);
+});
+
+test("supports errorToEvent: true with multiple: json-seq", async ({ expect }) => {
+  // Error mid-record with trailing chars before next RS, and valid next record
+  const stream1 = new JSONTextToSAJTransformStream({ multiple: "json-seq", errorToEvent: true });
+  const writer1 = stream1.writable.getWriter();
+  const readed1 = Array.fromAsync(stream1.readable);
+  await writer1.write("\x1E{\"a\":bad}\n\x1E{\"b\":2}\n");
+  await writer1.close();
+  const events1 = await readed1;
+  expect(events1.map(e => e.name)).toEqual([
+    "startDocument",
+    "startObject",
+    "key",
+    "error",
+    "endDocument",
+    "startDocument",
+    "startObject",
+    "key",
+    "value",
+    "endObject",
+    "endDocument",
+  ]);
+  const errorEvent1 = events1.find(e => e.name === "error");
+  expect(errorEvent1?.error).toBeInstanceOf(json.streams.JSONTextToSAJParserError);
+
+  // Incomplete record on flush (EOF) and skipDocument: true
+  const stream2 = new JSONTextToSAJTransformStream({ multiple: "json-seq", errorToEvent: true, skipDocument: true });
+  const writer2 = stream2.writable.getWriter();
+  const readed2 = Array.fromAsync(stream2.readable);
+  await writer2.write("\x1E{\"a\":bad}\n\x1E{\"b\":1");
+  await writer2.close();
+  const events2 = await readed2;
+  expect(events2.map(e => e.name)).toEqual([
+    "startObject",
+    "key",
+    "error",
+    "startObject",
+    "key",
+    "value",
+    "error",
+  ]);
+
+  // Incomplete record on flush when error already transitioned to #skipToNextRecord (EOL)
+  const stream3 = new JSONTextToSAJTransformStream({ multiple: "json-seq", errorToEvent: true });
+  const writer3 = stream3.writable.getWriter();
+  const readed3 = Array.fromAsync(stream3.readable);
+  await writer3.write("\x1E{\"a\":bad");
+  await writer3.close();
+  const events3 = await readed3;
+  expect(events3.map(e => e.name)).toEqual([
+    "startDocument",
+    "startObject",
+    "key",
+    "error",
+    "endDocument",
+  ]);
+
+  // Incomplete record on flush with skipDocument: true (already in #skipToNextRecord)
+  const stream4 = new JSONTextToSAJTransformStream({ multiple: "json-seq", errorToEvent: true, skipDocument: true });
+  const writer4 = stream4.writable.getWriter();
+  const readed4 = Array.fromAsync(stream4.readable);
+  await writer4.write("\x1E{\"a\":bad");
+  await writer4.close();
+  const events4 = await readed4;
+  expect(events4.map(e => e.name)).toEqual([
+    "startObject",
+    "key",
+    "error",
+  ]);
+
+  // Incomplete record on flush with document started (normal error on EOL)
+  const stream5 = new JSONTextToSAJTransformStream({ multiple: "json-seq", errorToEvent: true });
+  const writer5 = stream5.writable.getWriter();
+  const readed5 = Array.fromAsync(stream5.readable);
+  await writer5.write("\x1E{\"a\":1");
+  await writer5.close();
+  const events5 = await readed5;
+  expect(events5.map(e => e.name)).toEqual([
+    "startDocument",
+    "startObject",
+    "key",
+    "value",
+    "error",
+    "endDocument",
+  ]);
 });

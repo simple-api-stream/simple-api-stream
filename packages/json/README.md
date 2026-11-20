@@ -47,6 +47,7 @@ for await (const obj of objects) {
 |--------|--------------|
 | `startDocument` | `kind: "json"` |
 | `endDocument` | – |
+| `error` | `error: unknown` (emitted when `multiple: "json-seq"` and `errorToEvent: true`) |
 | `startObject` / `endObject` | – |
 | `startArray` / `endArray` | – |
 | `key` | `key: string` |

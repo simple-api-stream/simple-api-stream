@@ -210,3 +210,13 @@ test("XMLTextToSAXParser error cases and getters", ({ expect }) => {
   parser7.enqueue("<>");
   expect(errors.at(-1)).toBeInstanceOf(xml.streams.XMLTextToSAXParserError);
 });
+
+test("rejects multiple root elements when multiple is false", async ({ expect }) => {
+  const onError = vi.fn();
+  const stream = new XMLTextToSAXEventWritableStream({ onError }, { multiple: false });
+  const writer = stream.getWriter();
+  await writer.write("<a/><b/>");
+  await writer.close();
+  expect(onError).toHaveBeenCalledWith(expect.any(xml.streams.XMLTextToSAXParserError));
+  expect((onError.mock.calls[0][0] as Error).message).toContain("Multiple root elements are not allowed");
+});

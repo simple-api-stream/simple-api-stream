@@ -65,6 +65,8 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
   #cursor: number = 0;
   #openDocumented: boolean = false;
   #skipDocument: boolean;
+  #multiple: boolean;
+  #hasRootElement: boolean = false;
   #tagStack: string[] = [];
   #factor!: (flush: boolean) => { required?: true };
   #stateName: string = "text";
@@ -99,10 +101,14 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     return this.#status();
   }
 
-  constructor({ handler, skipDocument }: { handler: Partial<SAXHandler>, skipDocument?: boolean }) {
+  /**
+   * @param options.multiple Whether to allow multiple root elements (defaults to `true`; will change to `false` in a future version).
+   */
+  constructor({ handler, skipDocument, multiple }: { handler: Partial<SAXHandler>, skipDocument?: boolean, multiple?: boolean }) {
     this.#handler = handler;
     this.#setFactor(this.#text, "text");
     this.#skipDocument = skipDocument ?? false;
+    this.#multiple = multiple ?? true;
   }
 
   enqueue(chunk: string) {
@@ -384,6 +390,12 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     {
       const { start, end } = this.#parseTag(acc);
       if (start) {
+        if (!this.#multiple && this.#tagStack.length === 0) {
+          if (this.#hasRootElement) {
+            throw this.#makeSyntaxError("Multiple root elements are not allowed", acc);
+          }
+          this.#hasRootElement = true;
+        }
         this.#startDocument();
         if (!start.selfClosing) {
           this.#tagStack.push(start.tagName);

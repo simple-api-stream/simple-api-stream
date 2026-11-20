@@ -4,11 +4,21 @@ All notable changes to this project will be documented in this file.
 Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
-### Added
-- _No unreleased changes at this time._
+
+
+
+## [1.0.1] - 2026-11-20
+
+**Added**:
+
+- `@simple-api-stream/core`: Added `ErrorEvent` and `ErrorSAEventInterface` for representing parse errors as stream events.
+- `@simple-api-stream/json`: Added `multiple: "json-seq"` and `errorToEvent` options to `JSONTextToSAJParser`, `JSONTextToSAJTransformStream`, and `JSONTextToSAJEventWritableStream` to parse RFC 7464 JSON text sequences (`\x1E` Record Separator delimited) and optionally emit `ErrorEvent` to recover at the next record.
+- `@simple-api-stream/xml`: Added `multiple` option (`boolean`, defaults to `true`; planned to change default to `false` in a future version) to `XMLTextToSAXParser`, `XMLTextToSAXTransformStream`, and `XMLTextToSAXEventWritableStream` to optionally reject multiple root elements when `multiple: false`.
 
 ## [1.0.0] - 2026-11-20
-### Added
+
+**Added**:
+
 - Initial release as an npm workspaces monorepo shipping ESM-only packages (targeting Node.js `>= 24`, also directly `require()`-able via `require(esm)`), with TypeScript declarations, `"sideEffects": false`, and zero external runtime dependencies:
   - `@simple-api-stream/core` — Core event base classes and parser interfaces.
   - `@simple-api-stream/json` — Streaming JSON (SAJ) utilities.
@@ -29,5 +39,6 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 - Documentation:
   - Architecture overview, feature matrix, usage examples, option tables, event format references, error classes, and subpath export guide in `README.md`.
 
-[Unreleased]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/simple-api-stream/simple-api-stream/releases/tag/v1.0.0

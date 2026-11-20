@@ -42,7 +42,11 @@ import type { SAXEventInterface } from "./event-interface/index.js";
  */
 export class XMLTextToSAXTransformStream extends TransformStream<string, SAXEventInterface> {
   #buffer: XMLTextToSAXParser;
-  constructor({ skipDocument }: { skipDocument?: boolean } = {}) {
+  /**
+   * @param options.skipDocument Whether to omit `startDocument` and `endDocument` events.
+   * @param options.multiple Whether to allow multiple root elements (defaults to `true`; will change to `false` in a future version).
+   */
+  constructor({ skipDocument, multiple }: { skipDocument?: boolean, multiple?: boolean } = {}) {
     let buffer!: XMLTextToSAXParser;
     super({
 
@@ -52,7 +56,7 @@ export class XMLTextToSAXTransformStream extends TransformStream<string, SAXEven
        */
       start(controller) {
         const handler = toHandler(controller); ;
-        buffer = new XMLTextToSAXParser({ handler, skipDocument });
+        buffer = new XMLTextToSAXParser({ handler, skipDocument, multiple });
       },
 
       /**

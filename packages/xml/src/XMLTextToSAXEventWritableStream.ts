@@ -36,7 +36,11 @@ import type { SAXHandler } from "./interface/SAXHandler.js";
  */
 export class XMLTextToSAXEventWritableStream extends WritableStream<string> {
   #buffer: XMLTextToSAXParser;
-  constructor(handler: Partial<SAXHandler>, options?: { skipDocument?: boolean }) {
+  /**
+   * @param options.skipDocument Whether to omit `startDocument` and `endDocument` events.
+   * @param options.multiple Whether to allow multiple root elements (defaults to `true`; will change to `false` in a future version).
+   */
+  constructor(handler: Partial<SAXHandler>, options?: { skipDocument?: boolean, multiple?: boolean }) {
     const buffer = new XMLTextToSAXParser({ handler, ...(options ?? {}) });
     super({
 
