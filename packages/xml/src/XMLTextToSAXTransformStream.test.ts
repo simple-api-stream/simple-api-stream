@@ -426,3 +426,37 @@ test("rejects mismatched, stray, and unclosed tags", async ({ expect }) => {
     await expect(writed).rejects.toThrow(expectedMessage);
   }
 });
+
+test("supports multiple option for root elements", async ({ expect }) => {
+  // Default (multiple: true) allows multiple root elements
+  const defaultStream = new XMLTextToSAXTransformStream();
+  expect(await collectEvents(defaultStream, "<a/><b/>")).toEqual([
+    "start:a:{}:true",
+    "end:a",
+    "start:b:{}:true",
+    "end:b",
+  ]);
+
+  // multiple: false allows a single root element with nested children and trailing comment
+  const singleStream = new XMLTextToSAXTransformStream({ multiple: false });
+  expect(await collectEvents(singleStream, "<a><b/></a><!-- trailing -->")).toEqual([
+    "start:a:{}:false",
+    "start:b:{}:true",
+    "end:b",
+    "end:a",
+    "comment: trailing ",
+  ]);
+
+  // multiple: false rejects multiple root elements
+  for (const multiXml of ["<a/><b/>", "<a><b></b></a><c/>"]) {
+    const stream = new XMLTextToSAXTransformStream({ multiple: false });
+    const writer = stream.writable.getWriter();
+    const readed = Array.fromAsync(stream.readable);
+    const writed = (async () => {
+      await writer.write(multiXml);
+      await writer.close();
+    })();
+    await expect(readed).rejects.toThrow("Multiple root elements are not allowed");
+    await expect(writed).rejects.toThrow("Multiple root elements are not allowed");
+  }
+});
