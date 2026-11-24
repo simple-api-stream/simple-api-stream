@@ -82,10 +82,12 @@ flowchart LR
   end
   subgraph TOML
     TT["TOML text"] -- TOMLTextToSATTransformStream --> SAT["SAT events"]
+    TOBJ0["JS objects"] -- ObjectToSATTransformStream --> SAT
     RT["ResolveToSATReadableStream (imperative)"] --> SAT
     SAT -- SATToObjectTransformStream --> TOBJ["JS objects"]
     SAT -- SATToTOMLTextTransformStream --> TT2["TOML text"]
     SAT -- SATToSAJTransformStream --> SAJ
+    SAJ -- SAJToSATTransformStream --> SAT
     TT -- TOMLTextToSATEventWritableStream --> HT["SATHandler callbacks"]
   end
 ```
@@ -117,9 +119,11 @@ flowchart LR
 | **`@simple-api-stream/toml`** | [`TOMLTextToSATTransformStream`](./packages/toml/src/TOMLTextToSATTransformStream.ts) | `TransformStream` | TOML text (`string` chunks) | [`SATEventInterface`](./packages/toml/src/event-interface/SATEventInterface.ts) objects |
 | | [`TOMLTextToSATEventWritableStream`](./packages/toml/src/TOMLTextToSATEventWritableStream.ts) | `WritableStream` | TOML text (`string` chunks) | Calls a [`SATHandler`](./packages/toml/src/interface/SATHandler.ts) |
 | | [`SATToObjectTransformStream<T>`](./packages/toml/src/SATToObjectTransformStream.ts) | `TransformStream` | SAT events | JavaScript objects of type `T` |
+| | [`ObjectToSATTransformStream<T>`](./packages/toml/src/ObjectToSATTransformStream.ts) | `TransformStream` | JavaScript table objects | SAT events |
 | | [`SATToTOMLTextTransformStream`](./packages/toml/src/SATToTOMLTextTransformStream.ts) | `TransformStream` | SAT events | TOML text |
 | | [`ResolveToSATReadableStream`](./packages/toml/src/ResolveToSATReadableStream.ts) | `ReadableStream` | Method calls ([`SATResolver`](./packages/toml/src/interface/SATResolver.ts)) | SAT events |
 | | [`SATToSAJTransformStream`](./packages/toml/src/SATToSAJTransformStream.ts) (`./json`) | `TransformStream` | SAT events | SAJ events |
+| | [`SAJToSATTransformStream`](./packages/toml/src/SAJToSATTransformStream.ts) (`./json`) | `TransformStream` | SAJ events | SAT events |
 
 ---
 
@@ -528,6 +532,13 @@ Text and attribute values are escaped automatically.
 | `comments` | `boolean` | `false` | Emit `comment` events as `# ...` lines. When `false`, `comment` events are omitted. |
 | `summarize` | `boolean \| "default" \| "document"` | `"default"` | Output granularity. `"default"` (`false`) emits one chunk per event, `"document"` (`true`) emits one chunk per `startDocument` … `endDocument`. |
 
+### `ObjectToSATTransformStream<T>(options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `makeDocument` | `boolean` | `true` | Wrap each written table object in `startDocument` / `endDocument`. |
+| `unSupported` | `"ignore" \| "error" \| (arg: { value, skip }) => unknown` | `"ignore"` | How to handle values that cannot be represented in TOML (`null`, `undefined`, `function`, `symbol`, `bigint`, invalid `Date`). `"ignore"` omits them, `"error"` errors the stream, and a function can return a replacement value or `skip`. |
+
 ---
 
 ## 📜 Event Formats
@@ -663,6 +674,7 @@ Example for `id,name\n1,Alice` with `{ header: true }`:
 | `TOMLTextToSATParserError` | `@simple-api-stream/toml` (`streams.TOMLTextToSATParserError`) |
 | `SATToTOMLTextTransformStreamError` | `@simple-api-stream/toml` (`streams.SATToTOMLTextTransformStreamError`) |
 | `SATToObjectTransformStreamError` | `@simple-api-stream/toml` (`streams.SATToObjectTransformStreamError`) |
+| `ObjectToSATTransformStreamError` | `@simple-api-stream/toml` (`streams.ObjectToSATTransformStreamError`) |
 
 ```ts
 import { JSONTextToSAJTransformStream, streams } from "@simple-api-stream/json";
@@ -749,6 +761,7 @@ import {
   TOMLTextToSATTransformStream,
   TOMLTextToSATEventWritableStream,
   SATToObjectTransformStream,
+  ObjectToSATTransformStream,
   SATToTOMLTextTransformStream,
   ResolveToSATReadableStream,
   streams,
@@ -757,8 +770,8 @@ import {
   type interfaces,
 } from "@simple-api-stream/toml";
 
-// Optional TOML → JSON (SAT → SAJ) bridge
-import { SATToSAJTransformStream } from "@simple-api-stream/toml/json";
+// Optional TOML ⇔ JSON (SAT ⇔ SAJ) bridge
+import { SATToSAJTransformStream, SAJToSATTransformStream } from "@simple-api-stream/toml/json";
 ```
 
 ---

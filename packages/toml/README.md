@@ -17,9 +17,11 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 | [`TOMLTextToSATTransformStream`](./src/TOMLTextToSATTransformStream.ts) | `TransformStream` | TOML text (`string` chunks) | [`SATEventInterface`](./src/event-interface/SATEventInterface.ts) objects |
 | [`TOMLTextToSATEventWritableStream`](./src/TOMLTextToSATEventWritableStream.ts) | `WritableStream` | TOML text (`string` chunks) | Calls a [`SATHandler`](./src/interface/SATHandler.ts) |
 | [`SATToObjectTransformStream<T>`](./src/SATToObjectTransformStream.ts) | `TransformStream` | SAT events | JavaScript objects of type `T` |
+| [`ObjectToSATTransformStream<T>`](./src/ObjectToSATTransformStream.ts) | `TransformStream` | JavaScript table objects | SAT events |
 | [`SATToTOMLTextTransformStream`](./src/SATToTOMLTextTransformStream.ts) | `TransformStream` | SAT events | TOML text |
 | [`ResolveToSATReadableStream`](./src/ResolveToSATReadableStream.ts) | `ReadableStream` | Method calls ([`SATResolver`](./src/interface/SATResolver.ts)) | SAT events |
 | [`SATToSAJTransformStream`](./src/SATToSAJTransformStream.ts) (`@simple-api-stream/toml/json`) | `TransformStream` | SAT events | SAJ events (`@simple-api-stream/json` optional peer) |
+| [`SAJToSATTransformStream`](./src/SAJToSATTransformStream.ts) (`@simple-api-stream/toml/json`) | `TransformStream` | SAJ events | SAT events (`@simple-api-stream/json` optional peer) |
 
 ## Usage
 
