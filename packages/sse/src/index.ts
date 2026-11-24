@@ -1,4 +1,7 @@
-export * as events from "./events.js";
+export * as events from "./event/index.js";
+
+export type * as eventInterfaces from "./event-interface/index.js";
+
 export type {
   CommentSSEEventInterface,
   EndDocumentSSEEventInterface,
@@ -6,7 +9,7 @@ export type {
   SSEEventInterface,
   SSEMessage,
   StartDocumentSSEEventInterface,
-} from "./events.js";
+} from "./event-interface/index.js";
 
 import * as SSETextToEventTransformStreamModule from "./SSETextToEventTransformStream.js";
 import * as SSEEventToTextTransformStreamModule from "./SSEEventToTextTransformStream.js";

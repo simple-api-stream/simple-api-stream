@@ -3,8 +3,8 @@ import {
   EndDocumentEvent,
   SSEMessageEvent,
   StartDocumentEvent,
-  type SSEEventInterface,
-} from "./events.js";
+} from "./event/index.js";
+import type { SSEEventInterface } from "./event-interface/index.js";
 
 /**
  * Configuration options for `SSETextToEventTransformStream`.

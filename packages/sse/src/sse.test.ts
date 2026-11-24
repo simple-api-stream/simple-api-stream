@@ -3,7 +3,9 @@ import { ResponseStreamError } from "@simple-api-stream/core";
 import {
   SSEEventToTextTransformStream,
   SSETextToEventTransformStream,
+  events as eventsNamespace,
   parseSSEResponse,
+  type eventInterfaces,
   type SSEMessage,
 } from "./index.js";
 
@@ -38,6 +40,12 @@ describe("@simple-api-stream/sse", () => {
       { name: "message", id: "42", data: "second" },
       { name: "endDocument" },
     ]);
+    expect(events[0]).toBeInstanceOf(eventsNamespace.StartDocumentEvent);
+    expect(events[1]).toBeInstanceOf(eventsNamespace.CommentEvent);
+    expect(events[2]).toBeInstanceOf(eventsNamespace.SSEMessageEvent);
+    expect(events[2]).toBeInstanceOf(eventsNamespace.SSEEvent);
+    expect(events[4]).toBeInstanceOf(eventsNamespace.EndDocumentEvent);
+    expectTypeOf(events).toEqualTypeOf<eventInterfaces.SSEEventInterface[]>();
   });
 
   it("supports skipDocument, stripBom: false, comments: false, and flushIncomplete: true", async () => {

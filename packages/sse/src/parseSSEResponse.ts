@@ -2,7 +2,7 @@ import {
   responseToTextStream,
   type ResponseToTextStreamOptions,
 } from "@simple-api-stream/core";
-import type { SSEEventInterface, SSEMessage } from "./events.js";
+import type { SSEEventInterface, SSEMessage } from "./event-interface/index.js";
 import {
   SSETextToEventTransformStream,
   type SSETextToEventTransformStreamOptions,

@@ -1,4 +1,4 @@
-import type { SSEEventInterface } from "./events.js";
+import type { SSEEventInterface } from "./event-interface/index.js";
 
 /**
  * Configuration options for `SSEEventToTextTransformStream`.
