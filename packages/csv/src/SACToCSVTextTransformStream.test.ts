@@ -81,14 +81,50 @@ describe("SACToCSVTextTransformStream", () => {
     expect(result.join("")).toBe(input);
   });
 
-  it("errors on invalid event sequences", async () => {
-    const source = new ReadableStream({
-      start(controller) {
-        controller.enqueue({ name: "column", value: "x" } as const);
-        controller.close();
-      },
-    });
-    const stream = source.pipeThrough(new SACToCSVTextTransformStream());
-    await expect(Array.fromAsync(stream)).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
+  it("errors on invalid options and invalid event sequences", async () => {
+    expect(() => new SACToCSVTextTransformStream({ delimiter: "" })).toThrow(streams.SACToCSVTextTransformStreamError);
+    expect(() => new SACToCSVTextTransformStream({ quote: "," })).toThrow(streams.SACToCSVTextTransformStreamError);
+
+    // summarize: false and empty cell emit + header row summarize: "row"
+    const sourceRow = new ResolveToSACReadableStream();
+    const rowOut = sourceRow.pipeThrough(new SACToCSVTextTransformStream({ summarize: "row", lineBreak: "\n" }));
+    sourceRow.startDocument();
+    sourceRow.startHeaderRow();
+    sourceRow.column("h1");
+    sourceRow.endHeaderRow();
+    sourceRow.endDocument();
+    sourceRow.close();
+    expect(await Array.fromAsync(rowOut)).toEqual(["h1\n"]);
+
+    const sourceEmpty = new ResolveToSACReadableStream();
+    const emptyOut = sourceEmpty.pipeThrough(new SACToCSVTextTransformStream({ summarize: false, lineBreak: "\n" }));
+    sourceEmpty.startRecordRow();
+    sourceEmpty.column("");
+    sourceEmpty.endRecordRow();
+    sourceEmpty.close();
+    expect(await Array.fromAsync(emptyOut)).toEqual(["\n"]);
+
+    const runEvents = async (events: unknown[]) => {
+      const source = new ReadableStream({
+        start(controller) {
+          for (const e of events) controller.enqueue(e);
+          controller.close();
+        },
+      });
+      await Array.fromAsync(source.pipeThrough(new SACToCSVTextTransformStream()));
+    };
+
+    await expect(runEvents([{ name: "column", value: "x" }])).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
+    await expect(runEvents([{ name: "startDocument", kind: "csv" }, { name: "startDocument", kind: "csv" }])).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
+    await expect(runEvents([{ name: "startRecordRow" }, { name: "startDocument", kind: "csv" }])).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
+    await expect(runEvents([{ name: "endDocument" }])).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
+    await expect(runEvents([{ name: "startDocument", kind: "csv" }, { name: "startRecordRow" }, { name: "endDocument" }])).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
+    await expect(runEvents([{ name: "startRecordRow" }, { name: "startHeaderRow" }])).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
+    await expect(runEvents([{ name: "endHeaderRow" }])).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
+    await expect(runEvents([{ name: "startRecordRow" }, { name: "startRecordRow" }])).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
+    await expect(runEvents([{ name: "endRecordRow" }])).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
+    await expect(runEvents([{ name: "unknown" }])).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
+    await expect(runEvents([{ name: "startRecordRow" }])).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
+    await expect(runEvents([{ name: "startDocument", kind: "csv" }])).rejects.toThrow(streams.SACToCSVTextTransformStreamError);
   });
 });

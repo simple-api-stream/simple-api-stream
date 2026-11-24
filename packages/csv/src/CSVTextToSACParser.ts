@@ -81,7 +81,6 @@ export class CSVTextToSACParser implements SimpleApiParser<string> {
   #acc = "";
   #rowIndex = 0;
   #colIndex = 0;
-  #inRow = false;
   #inHeaderRow = false;
   #headerEmitted = false;
   #headers: string[] = [];
@@ -185,7 +184,6 @@ export class CSVTextToSACParser implements SimpleApiParser<string> {
       this.#inHeaderRow = false;
       this.#handler.onStartRecordRow?.(new StartRecordRowEvent());
     }
-    this.#inRow = true;
     this.#colIndex = 0;
   }
 
@@ -210,7 +208,6 @@ export class CSVTextToSACParser implements SimpleApiParser<string> {
       this.#handler.onEndRecordRow?.(new EndRecordRowEvent());
       this.#rowIndex++;
     }
-    this.#inRow = false;
     this.#inHeaderRow = false;
   }
 
@@ -247,10 +244,8 @@ export class CSVTextToSACParser implements SimpleApiParser<string> {
 
   #fieldStart(ch: Ch) {
     if (ch === EOL) {
-      if (this.#inRow) {
-        this.#emitColumn("", false);
-        this.#endRow();
-      }
+      this.#emitColumn("", false);
+      this.#endRow();
       return;
     }
     if (ch === this.#quote) {

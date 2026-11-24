@@ -36,13 +36,17 @@ describe("ResolveToSACReadableStream", () => {
     ]);
   });
 
-  it("throws ResolveToSACReadableStreamError on invalid row nesting", () => {
+  it("throws ResolveToSACReadableStreamError on invalid row nesting", async () => {
     const stream = new ResolveToSACReadableStream();
+    stream.column("outside");
     stream.startRecordRow();
+    stream.column("val", { header: "custom" });
     expect(() => stream.startHeaderRow()).toThrow(streams.ResolveToSACReadableStreamError);
+    expect(() => stream.startRecordRow()).toThrow(streams.ResolveToSACReadableStreamError);
     expect(() => stream.endHeaderRow()).toThrow(streams.ResolveToSACReadableStreamError);
     stream.endRecordRow();
     expect(() => stream.endRecordRow()).toThrow(streams.ResolveToSACReadableStreamError);
+    await stream.cancel();
     stream.close();
   });
 });

@@ -131,4 +131,39 @@ describe("CSVTextToSACTransformStream", () => {
     expect(() => new CSVTextToSACTransformStream({ delimiter: "" })).toThrow(streams.CSVTextToSACParserError);
     expect(() => new CSVTextToSACTransformStream({ quote: "," })).toThrow(streams.CSVTextToSACParserError);
   });
+
+  it("handles empty lines, standalone CR, trailing commas, quoted EOF/LF, status, and parser edge cases", async () => {
+    // Empty lines with skipEmptyLines: false (LF, CRLF, CR) and skipEmptyLines: true (CR)
+    const emptyDefault = await parseCSV(["\n\r\na,,\r\nb,\nc\r", "d\r"]);
+    expect(emptyDefault.filter(e => e.name === "startRecordRow").length).toBe(6);
+
+    const emptySkipCr = await parseCSV(["\r\na\r\n"], { skipEmptyLines: true });
+    expect(emptySkipCr.filter(e => e.name === "startRecordRow").length).toBe(1);
+
+    // Quoted field ending at LF and at EOF
+    const quotedEnd = await parseCSV(["\"a\"\n\"b\""]);
+    expect(quotedEnd.filter(e => e.name === "column").map(e => e.value)).toEqual(["a", "b"]);
+
+    // TransformStream status getter and empty chunk
+    const transform = new CSVTextToSACTransformStream();
+    expect(transform.status.pos).toBe(0);
+    const out = await Array.fromAsync(fromChunks(["", "x\n"]).pipeThrough(transform));
+    expect(out.some(e => e.name === "column" && e.value === "x")).toBe(true);
+
+    // Direct parser: idempotent flush, enqueue after flush, and handler throwing Error
+    const parser = new streams.CSVTextToSACParser({ handler: {} });
+    parser.enqueue("a\n");
+    parser.flush();
+    parser.flush();
+    expect(() => parser.enqueue("b\n")).toThrow(streams.CSVTextToSACParserError);
+
+    const errParser = new streams.CSVTextToSACParser({
+      handler: {
+        onColumn: () => {
+          throw new Error("column boom");
+        },
+      },
+    });
+    expect(() => errParser.enqueue("a\n")).toThrow(/column boom/);
+  });
 });

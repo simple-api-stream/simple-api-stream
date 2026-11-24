@@ -108,6 +108,7 @@ describe("JSONC options (allowComments / allowTrailingCommas)", () => {
     const resolver = new ResolveToSAJReadableStream();
     resolver.startDocument();
     resolver.comment("note", "block");
+    resolver.comment("no style");
     resolver.startObject();
     resolver.endObject();
     resolver.endDocument();
@@ -116,9 +117,63 @@ describe("JSONC options (allowComments / allowTrailingCommas)", () => {
     expect(events.map(e => ({ ...e }))).toEqual([
       { name: "startDocument", kind: "json" },
       { name: "comment", comment: "note", style: "block" },
+      { name: "comment", comment: "no style" },
       { name: "startObject" },
       { name: "endObject" },
       { name: "endDocument" },
     ]);
+  });
+
+  it("handles edge cases for JSONC comments (comment-only doc, positions, stars, errors, and indentation)", async () => {
+    // Comment-only document (with and without skipDocument)
+    const commentOnly = await Array.fromAsync(
+      fromChunks(["// only comment"]).pipeThrough(new JSONTextToSAJTransformStream({ allowComments: true })),
+    );
+    expect(commentOnly.map(e => ({ ...e }))).toEqual([
+      { name: "startDocument", kind: "json" },
+      { name: "comment", comment: " only comment", style: "line" },
+      { name: "endDocument" },
+    ]);
+    const commentOnlySkip = await Array.fromAsync(
+      fromChunks(["// only comment"]).pipeThrough(new JSONTextToSAJTransformStream({ allowComments: true, skipDocument: true })),
+    );
+    expect(commentOnlySkip.map(e => ({ ...e }))).toEqual([
+      { name: "comment", comment: " only comment", style: "line" },
+    ]);
+
+    // Comments before ':', after value, after comma, after nested container, and block comments with '*' / '**'
+    const complex = "{ \"a\" /* before colon */ : 1 /* after val */ , /* after comma */ \"b\": [1 /* arr val */ , [2] /* after inner */ , /** star * text **/ 3] }";
+    const complexObjs = await Array.fromAsync(
+      fromChunks([complex])
+        .pipeThrough(new JSONTextToSAJTransformStream({ allowComments: true }))
+        .pipeThrough(new SAJToObjectTransformStream()),
+    );
+    expect(complexObjs).toEqual([{ a: 1, b: [1, [2], 3] }]);
+
+    // Comment serialization inside container with indent and without indent (lineBreak fallback)
+    const indented = await Array.fromAsync(
+      fromChunks(["{/* in obj */ \"a\": 1, // line\n \"b\": 2}"])
+        .pipeThrough(new JSONTextToSAJTransformStream({ allowComments: true }))
+        .pipeThrough(new SAJToJSONTextTransformStream({ summarize: "document", comments: true, indent: 2 })),
+    );
+    expect(indented.join("")).toContain("/* in obj */");
+
+    const compact = await Array.fromAsync(
+      fromChunks(["{// line\n \"a\": 1}"])
+        .pipeThrough(new JSONTextToSAJTransformStream({ allowComments: true }))
+        .pipeThrough(new SAJToJSONTextTransformStream({ summarize: "document", comments: true })),
+    );
+    expect(compact.join("")).toBe("{// line\n\"a\":1}");
+
+    // Invalid slash and unterminated block comment
+    await expect(
+      Array.fromAsync(fromChunks(["/x"]).pipeThrough(new JSONTextToSAJTransformStream({ allowComments: true }))),
+    ).rejects.toThrow(streams.JSONTextToSAJParserError);
+    await expect(
+      Array.fromAsync(fromChunks(["/"]).pipeThrough(new JSONTextToSAJTransformStream({ allowComments: true }))),
+    ).rejects.toThrow(streams.JSONTextToSAJParserError);
+    await expect(
+      Array.fromAsync(fromChunks(["/* unterminated"]).pipeThrough(new JSONTextToSAJTransformStream({ allowComments: true }))),
+    ).rejects.toThrow(streams.JSONTextToSAJParserError);
   });
 });
