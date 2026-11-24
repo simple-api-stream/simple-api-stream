@@ -11,7 +11,7 @@
     "test:watch": "vitest watch --coverage",
     "test": "vitest run --coverage --coverage.reporter=cobertura --coverage.reporter=text",
     "lint": "eslint --flag unstable_native_nodejs_ts_config",
-    "build": "npm run build -w @simple-api-stream/core && npm run build -w @simple-api-stream/json && npm run build -w @simple-api-stream/xml && npm run build -w @simple-api-stream/csv",
+    "build": "npm run build -w @simple-api-stream/core && npm run build -w @simple-api-stream/json && npm run build -w @simple-api-stream/xml && npm run build -w @simple-api-stream/csv && npm run build -w @simple-api-stream/toml",
     "clean": "npm run clean --workspaces && node utils/remove.ts -- -f ./TestResults"
   },
   "repository": {
