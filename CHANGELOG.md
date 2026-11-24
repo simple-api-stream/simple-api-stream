@@ -17,6 +17,7 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
   - Added `@simple-api-stream/xml/json` subpath exporting `SAXToSAJTransformStream` (O(depth) streaming SAX → SAJ in lossless `XMLDocumentNode` AST JSON form) and `SAJToSAXTransformStream` (`@simple-api-stream/json` declared as an optional peer dependency).
   - Added `parseXMLResponse<T>` helper for streaming XML/`+xml` Fetch `Response` objects.
 - `@simple-api-stream/toml`: Added `ObjectToSATTransformStream<T>` (with `makeDocument`, `unSupported`, `Date` → `offsetDateTime`, nested `[table]` / `[[arrayTable]]` ordering, inline tables, and circular reference detection), `SAJToSATTransformStream` (exported from `@simple-api-stream/toml/json` alongside `SATToSAJTransformStream`), and `parseTOMLResponse<T>` helper.
+- `@simple-api-stream/sse`: Added new streaming Server-Sent Events (`text/event-stream`) package with `SSETextToEventTransformStream`, `SSEEventToTextTransformStream`, and `parseSSEResponse<T>` (supporting `mapMessage` + `skip`, `comments`, `stripBom`, and `flushIncomplete`).
 
 ## [1.1.0] - 2026-11-24
 

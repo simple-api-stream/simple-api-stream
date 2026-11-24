@@ -49,6 +49,7 @@ for await (const obj of objects) {
 | [`@simple-api-stream/xml`](./packages/xml) | Streaming XML (SAX) parser, AST/DOM converters, serializer, and imperative builder |
 | [`@simple-api-stream/csv`](./packages/csv) | Streaming CSV (SAC) parser, row object converters, serializer, and imperative builder |
 | [`@simple-api-stream/toml`](./packages/toml) | Streaming TOML (SAT) parser, object converters, serializer, imperative builder, and optional SAJ bridge (`@simple-api-stream/toml/json`) |
+| [`@simple-api-stream/sse`](./packages/sse) | Streaming Server-Sent Events (`text/event-stream`) parser, serializer, and Fetch `Response` helper (`parseSSEResponse`) |
 
 ---
 
