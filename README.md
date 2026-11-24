@@ -35,9 +35,9 @@ for await (const obj of objects) {
 |---------|-------------|
 | [`@simple-api-stream/core`](./packages/core) | Core event classes (`SAEvent`, `StartDocumentEvent`, `EndDocumentEvent`, `ErrorEvent`, `CommentEvent`), parser interfaces (`SimpleApiParser`), and shared utilities |
 | [`@simple-api-stream/json`](./packages/json) | Streaming JSON (SAJ) parser, object materializer, serializer, and imperative builder |
-| [`@simple-api-stream/xml`](./packages/xml) | Streaming XML (SAX) parser, serializer, and imperative builder |
-| [`@simple-api-stream/csv`](./packages/csv) | Streaming CSV (SAC) parser, serializer, and imperative builder |
-| [`@simple-api-stream/toml`](./packages/toml) | Streaming TOML (SAT) parser, object materializer, serializer, imperative builder, and optional SAJ bridge (`@simple-api-stream/toml/json`) |
+| [`@simple-api-stream/xml`](./packages/xml) | Streaming XML (SAX) parser, AST/DOM converters, serializer, and imperative builder |
+| [`@simple-api-stream/csv`](./packages/csv) | Streaming CSV (SAC) parser, row object converters, serializer, and imperative builder |
+| [`@simple-api-stream/toml`](./packages/toml) | Streaming TOML (SAT) parser, object converters, serializer, imperative builder, and optional SAJ bridge (`@simple-api-stream/toml/json`) |
 
 ---
 
@@ -47,10 +47,9 @@ Every format follows the same streaming mental model:
 
 - **`*TextToSA*TransformStream`** — parses text chunks into a stream of events.
 - **`SA*To*TextTransformStream`** — serializes events back into text.
+- **`SA*ToObjectTransformStream` / `ObjectToSA*TransformStream`** — converts between events and JavaScript values/objects (XML also provides `SAXToDOMTransformStream` / `DOMToSAXTransformStream` for DOM nodes).
 - **`ResolveToSA*ReadableStream`** — an imperative builder (`ReadableStream`) that *resolves* `*Resolver` method calls (e.g. `stream.startObject()`, `stream.key("a")`) into event chunks.
 - **`*TextToSA*EventWritableStream`** — parses text and invokes callback hooks on a `SA*Handler`.
-
-> **Note on object materializers:** JSON and TOML have a 1-to-1 JavaScript object representation and include `SAJToObjectTransformStream` / `ObjectToSAJTransformStream` / `SATToObjectTransformStream`. XML and CSV intentionally stay at the event layer in v1.1.0 because their JavaScript object shape depends on schema and use case (object/DOM converters are planned for the next release).
 
 ```mermaid
 flowchart LR
