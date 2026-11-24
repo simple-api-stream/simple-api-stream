@@ -6,8 +6,26 @@ Text is parsed chunk by chunk into a flat sequence of **events**: SAJ (Simple AP
 
 - Zero external runtime dependencies
 - Works anywhere Web Streams are available (Node.js, browsers, Deno, Bun, …)
-- Ships ESM builds (directly `require()`-able in Node.js >= 24) with TypeScript type definitions
+- Ships ESM builds with TypeScript type definitions (also directly `require()`-able via Node.js's `require(esm)`, enabled by default since Node.js 22.12; `engines` targets Node.js `>= 24`)
 - Modular npm workspaces monorepo: install only the format packages you need
+
+---
+
+## ⚡ Quick Start
+
+```ts
+import { JSONTextToSAJTransformStream, SAJToObjectTransformStream } from "@simple-api-stream/json";
+
+const response = await fetch("https://example.com/data.json");
+const objects = response.body!
+  .pipeThrough(new TextDecoderStream())
+  .pipeThrough(new JSONTextToSAJTransformStream())
+  .pipeThrough(new SAJToObjectTransformStream());
+
+for await (const obj of objects) {
+  console.log(obj);
+}
+```
 
 ---
 
@@ -24,6 +42,15 @@ Text is parsed chunk by chunk into a flat sequence of **events**: SAJ (Simple AP
 ---
 
 ## 🧭 Overview
+
+Every format follows the same streaming mental model:
+
+- **`*TextToSA*TransformStream`** — parses text chunks into a stream of events.
+- **`SA*To*TextTransformStream`** — serializes events back into text.
+- **`ResolveToSA*ReadableStream`** — an imperative builder (`ReadableStream`) that *resolves* `*Resolver` method calls (e.g. `stream.startObject()`, `stream.key("a")`) into event chunks.
+- **`*TextToSA*EventWritableStream`** — parses text and invokes callback hooks on a `SA*Handler`.
+
+> **Note on object materializers:** JSON and TOML have a 1-to-1 JavaScript object representation and include `SAJToObjectTransformStream` / `ObjectToSAJTransformStream` / `SATToObjectTransformStream`. XML and CSV intentionally stay at the event layer in v1.1.0 because their JavaScript object shape depends on schema and use case (object/DOM converters are planned for the next release).
 
 ```mermaid
 flowchart LR
@@ -98,14 +125,14 @@ npm install @simple-api-stream/csv
 
 # Install TOML streaming utilities
 npm install @simple-api-stream/toml
-
-# Install core contracts directly (optional; installed automatically by json/xml/csv/toml)
-npm install @simple-api-stream/core
 ```
+
+> `@simple-api-stream/core` is listed under `dependencies` of each format package and is installed automatically — you only need to install `@simple-api-stream/core` directly if you are building a custom format parser or importing the shared base event classes directly.
 
 ### Requirements
 
-- Node.js **>= 24** (see `engines` in `package.json`), or any runtime that supports Web Streams and async iteration of `ReadableStream`.
+- **Runtime (`engines`)**: Node.js **>= 24** (see `engines` in `package.json`), or any runtime that supports Web Streams and async iteration of `ReadableStream`.
+- **Module format**: ESM-only builds. In CommonJS projects, packages can also be loaded via `require()` using Node.js's `require(esm)` (enabled by default since Node.js 22.12).
 
 ```ts
 // ESM
@@ -396,6 +423,14 @@ Text and attribute values are escaped automatically.
 ## 📜 Event Formats
 
 Events are plain objects with a `name` discriminator, so they can be narrowed with `switch (event.name)` in TypeScript. Type definitions are exported as `eventInterfaces` and the event classes as `events` from `@simple-api-stream/json`, `@simple-api-stream/xml`, `@simple-api-stream/csv`, and `@simple-api-stream/toml`.
+
+### Shared Core Events (`@simple-api-stream/core`)
+
+| Event `name` | JSON (SAJ) | XML (SAX) | CSV (SAC) | TOML (SAT) |
+|--------------|-----------|-----------|-----------|------------|
+| `startDocument` / `endDocument` | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) |
+| `comment` | Opt-in (`allowComments: true`) | Yes (always) | – | Opt-in (`comments: true`) |
+| `error` | Opt-in (`multiple: "json-seq"`, `errorToEvent: true`) | – | – | – |
 
 ### SAJ (Simple API for JSON)
 
