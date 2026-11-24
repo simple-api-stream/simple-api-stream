@@ -1160,7 +1160,7 @@ describe("error", (it) => {
   });
 });
 test("debug", async ({ expect }) => {
-  type Handler = Required<Omit<NonNullable<ConstructorParameters<typeof JSONTextToSAJTransformStream>[0]>, "multiple" | "skipDocument">>;
+  type Handler = Required<Pick<NonNullable<ConstructorParameters<typeof JSONTextToSAJTransformStream>[0]>, "onParseAfter" | "onParseBefore" | "onParseLoopAfter" | "onParseLoopBefore">>;
   const handler: Handler = {
     onParseAfter: vi.fn(),
     onParseBefore: vi.fn(),
