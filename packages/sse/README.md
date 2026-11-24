@@ -31,6 +31,12 @@ for await (const msg of parseSSEResponse(response)) {
 
 For full options and usage examples, see the [root README](../../README.md).
 
+## See Also
+
+- [WHATWG HTML Living Standard — Server-Sent Events (`text/event-stream`)](https://html.spec.whatwg.org/multipage/server-sent-events.html)
+- [WHATWG Fetch Standard](https://fetch.spec.whatwg.org/)
+- [WHATWG Streams Standard](https://streams.spec.whatwg.org/)
+
 ## License
 
 [MIT](./LICENSE)

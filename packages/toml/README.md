@@ -69,6 +69,12 @@ const jsonText = tomlTextStream
 
 For full options, error classes, and usage examples, see the [root README](../../README.md).
 
+## See Also
+
+- [TOML v1.0.0 Specification](https://toml.io/en/v1.0.0)
+- [RFC 3339 — Date and Time on the Internet: Timestamps](https://datatracker.ietf.org/doc/html/rfc3339)
+- [WHATWG Streams Standard](https://streams.spec.whatwg.org/)
+
 ## License
 
 [MIT](./LICENSE)

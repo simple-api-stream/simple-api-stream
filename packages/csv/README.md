@@ -48,6 +48,12 @@ for await (const event of events) {
 
 For full options, error classes, and usage examples, see the [root README](../../README.md).
 
+## See Also
+
+- [RFC 4180 — Common Format and MIME Type for Comma-Separated Values (CSV) Files](https://datatracker.ietf.org/doc/html/rfc4180)
+- [IANA `text/tab-separated-values` Media Type](https://www.iana.org/assignments/media-types/text/tab-separated-values)
+- [WHATWG Streams Standard](https://streams.spec.whatwg.org/)
+
 ## License
 
 [MIT](./LICENSE)

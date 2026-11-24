@@ -842,8 +842,17 @@ npm test         # Vitest with coverage across all packages
 npm run build    # Build @simple-api-stream/{core,json,xml,csv,toml} (ESM + .d.ts)
 ```
 
-- Packages live under `packages/core`, `packages/json`, `packages/xml`, `packages/csv`, and `packages/toml`; tests are colocated as `*.test.ts`.
+- Packages live under `packages/core`, `packages/json`, `packages/xml`, `packages/csv`, `packages/toml`, and `packages/sse`; tests are colocated as `*.test.ts`.
 - Relative imports use explicit `.js` extensions (`moduleResolution: "NodeNext"`).
+
+## 🔗 See Also
+
+- **Web Platform**: [WHATWG Streams Standard](https://streams.spec.whatwg.org/), [WHATWG Fetch Standard](https://fetch.spec.whatwg.org/), [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/)
+- **JSON**: [RFC 8259 (JSON)](https://datatracker.ietf.org/doc/html/rfc8259), [RFC 7464 (JSON Text Sequences)](https://datatracker.ietf.org/doc/html/rfc7464), [RFC 8142 (GeoJSON Text Sequences)](https://datatracker.ietf.org/doc/html/rfc8142), [JSON Lines](https://jsonlines.org/), [NDJSON](https://github.com/ndjson/ndjson-spec)
+- **XML**: [W3C XML 1.0 (Fifth Edition)](https://www.w3.org/TR/xml/), [W3C XML Stylesheet Processing Instruction](https://www.w3.org/TR/xml-stylesheet/), [WHATWG DOM Standard](https://dom.spec.whatwg.org/), [WHATWG HTML Named Character References](https://html.spec.whatwg.org/multipage/named-characters.html)
+- **CSV**: [RFC 4180 (CSV)](https://datatracker.ietf.org/doc/html/rfc4180), [IANA `text/tab-separated-values`](https://www.iana.org/assignments/media-types/text/tab-separated-values)
+- **TOML**: [TOML v1.0.0 Specification](https://toml.io/en/v1.0.0), [RFC 3339 (Date and Time on the Internet)](https://datatracker.ietf.org/doc/html/rfc3339)
+- **SSE**: [WHATWG HTML Living Standard — Server-Sent Events](https://html.spec.whatwg.org/multipage/server-sent-events.html)
 
 ## 📄 License
 

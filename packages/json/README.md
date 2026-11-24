@@ -56,6 +56,14 @@ for await (const obj of objects) {
 
 For full options, error classes, and usage examples, see the [root README](../../README.md).
 
+## See Also
+
+- [RFC 8259 — The JavaScript Object Notation (JSON) Data Interchange Format](https://datatracker.ietf.org/doc/html/rfc8259)
+- [RFC 7464 — JavaScript Object Notation (JSON) Text Sequences (`application/json-seq`)](https://datatracker.ietf.org/doc/html/rfc7464)
+- [RFC 8142 — GeoJSON Text Sequences (`application/geo+json-seq`)](https://datatracker.ietf.org/doc/html/rfc8142)
+- [JSON Lines](https://jsonlines.org/) / [NDJSON Specification](https://github.com/ndjson/ndjson-spec)
+- [WHATWG Streams Standard](https://streams.spec.whatwg.org/)
+
 ## License
 
 [MIT](./LICENSE)

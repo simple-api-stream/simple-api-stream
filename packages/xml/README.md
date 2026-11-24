@@ -54,6 +54,14 @@ for await (const event of events) {
 
 For full options, error classes, and usage examples, see the [root README](../../README.md).
 
+## See Also
+
+- [W3C Extensible Markup Language (XML) 1.0 (Fifth Edition)](https://www.w3.org/TR/xml/)
+- [W3C Associating Style Sheets with XML documents (`<?xml-stylesheet ...?>`)](https://www.w3.org/TR/xml-stylesheet/)
+- [WHATWG HTML Living Standard — Named Character References](https://html.spec.whatwg.org/multipage/named-characters.html)
+- [WHATWG DOM Standard](https://dom.spec.whatwg.org/)
+- [WHATWG Streams Standard](https://streams.spec.whatwg.org/)
+
 ## License
 
 [MIT](./LICENSE)
