@@ -68,6 +68,7 @@ flowchart LR
     XDOM["DOMNodeLike"] -- DOMToSAXTransformStream --> SAX
     RX["ResolveToSAXReadableStream (imperative)"] --> SAX
     SAX -- SAXToObjectTransformStream --> XOBJ2["XMLDocumentNode / T"]
+    SAX -- SAXToDOMTransformStream --> XDOM2["DOM Document / Fragment"]
     SAX -- SAXToXMLTextTransformStream --> XT2["XML text"]
     XT -- XMLTextToSAXEventWritableStream --> HX["SAXHandler callbacks"]
   end
@@ -103,6 +104,7 @@ flowchart LR
 | | [`XMLTextToSAXEventWritableStream`](./packages/xml/src/XMLTextToSAXEventWritableStream.ts) | `WritableStream` | XML text (`string` chunks) | Calls a [`SAXHandler`](./packages/xml/src/interface/SAXHandler.ts) |
 | | [`SAXToObjectTransformStream<T>`](./packages/xml/src/SAXToObjectTransformStream.ts) | `TransformStream` | SAX events | Lightweight XML AST (`XMLDocumentNode`) or mapped `T` |
 | | [`ObjectToSAXTransformStream<T>`](./packages/xml/src/ObjectToSAXTransformStream.ts) | `TransformStream` | Lightweight XML AST (`XMLNode`) or mapped `T` | SAX events |
+| | [`SAXToDOMTransformStream<T>`](./packages/xml/src/SAXToDOMTransformStream.ts) | `TransformStream` | SAX events | DOM `Document` or `DocumentFragment` |
 | | [`DOMToSAXTransformStream`](./packages/xml/src/DOMToSAXTransformStream.ts) | `TransformStream` | DOM-like nodes (`DOMNodeLike`) | SAX events |
 | | [`SAXToXMLTextTransformStream`](./packages/xml/src/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
 | | [`ResolveToSAXReadableStream`](./packages/xml/src/ResolveToSAXReadableStream.ts) | `ReadableStream` | Method calls ([`SAXResolver`](./packages/xml/src/interface/SAXResolver.ts)) | SAX events |
@@ -276,6 +278,7 @@ import {
   XMLTextToSAXTransformStream,
   SAXToObjectTransformStream,
   ObjectToSAXTransformStream,
+  SAXToDOMTransformStream,
   DOMToSAXTransformStream,
   SAXToXMLTextTransformStream,
 } from "@simple-api-stream/xml";
@@ -454,6 +457,15 @@ Text and attribute values are escaped automatically.
 |--------|------|---------|-------------|
 | `makeDocument` | `boolean` | `true` | Wrap each emitted top-level node in `startDocument` / `endDocument`. |
 | `mapNode` | `(value: T, ctx: { skip }) => XMLNode \| typeof skip` | – | Map custom input values into `XMLNode` (or return `skip` to omit them). |
+
+### `SAXToDOMTransformStream<T>(options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `document` | `DOMDocumentFactoryLike<T>` | `globalThis.document` | DOM `Document` factory used to construct nodes (browser `document`, `jsdom`, `happy-dom`, `linkedom`, `@xmldom/xmldom`, etc.). |
+| `createDocument` | `boolean` | `true` | Create a new XML `Document` via `document.implementation.createDocument(null, null)` when available; otherwise build a `DocumentFragment`. |
+| `ignoreWhitespaceText` | `boolean` | `false` | Omit whitespace-only `text` events. |
+| `ignoreComments` | `boolean` | `false` | Omit `comment` events. |
 
 ### `DOMToSAXTransformStream(options?)`
 
@@ -639,6 +651,7 @@ Example for `id,name\n1,Alice` with `{ header: true }`:
 | `XMLTextToSAXParserError` | `@simple-api-stream/xml` (`streams.XMLTextToSAXParserError`) |
 | `SAXToObjectTransformStreamError` | `@simple-api-stream/xml` (`streams.SAXToObjectTransformStreamError`) |
 | `ObjectToSAXTransformStreamError` | `@simple-api-stream/xml` (`streams.ObjectToSAXTransformStreamError`) |
+| `SAXToDOMTransformStreamError` | `@simple-api-stream/xml` (`streams.SAXToDOMTransformStreamError`) |
 | `DOMToSAXTransformStreamError` | `@simple-api-stream/xml` (`streams.DOMToSAXTransformStreamError`) |
 | `SAXToXMLTextTransformStreamError` | `@simple-api-stream/xml` (`streams.SAXToXMLTextTransformStreamError`) |
 | `ResolveToSAXReadableStreamError` | `@simple-api-stream/xml` (`streams.ResolveToSAXReadableStreamError`) |
@@ -704,6 +717,7 @@ import {
   XMLTextToSAXEventWritableStream,
   SAXToObjectTransformStream,
   ObjectToSAXTransformStream,
+  SAXToDOMTransformStream,
   DOMToSAXTransformStream,
   SAXToXMLTextTransformStream,
   ResolveToSAXReadableStream,

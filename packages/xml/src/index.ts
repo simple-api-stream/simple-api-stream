@@ -8,6 +8,7 @@ import * as ObjectToSAXTransformStreamModule from "./ObjectToSAXTransformStream.
 import * as XMLTextToSAXEventWritableStreamModule from "./XMLTextToSAXEventWritableStream.js";
 import * as XMLTextToSAXTransformStreamModule from "./XMLTextToSAXTransformStream.js";
 import * as ResolveToSAXReadableStreamModule from "./ResolveToSAXReadableStream.js";
+import * as SAXToDOMTransformStreamModule from "./SAXToDOMTransformStream.js";
 import * as SAXToObjectTransformStreamModule from "./SAXToObjectTransformStream.js";
 import * as SAXToXMLTextTransformModule from "./SAXToXMLTextTransformStream.js";
 import * as XMLTextToSAXParserModule from "./XMLTextToSAXParser.js";
@@ -20,6 +21,7 @@ export const streams = {
   ...XMLTextToSAXEventWritableStreamModule,
   ...XMLTextToSAXTransformStreamModule,
   ...ResolveToSAXReadableStreamModule,
+  ...SAXToDOMTransformStreamModule,
   ...SAXToObjectTransformStreamModule,
   ...SAXToXMLTextTransformModule,
   ...XMLTextToSAXParserModule,
@@ -29,6 +31,7 @@ export { ObjectToSAXTransformStream } from "./ObjectToSAXTransformStream.js";
 export { XMLTextToSAXEventWritableStream } from "./XMLTextToSAXEventWritableStream.js";
 export { XMLTextToSAXTransformStream } from "./XMLTextToSAXTransformStream.js";
 export { ResolveToSAXReadableStream } from "./ResolveToSAXReadableStream.js";
+export { SAXToDOMTransformStream } from "./SAXToDOMTransformStream.js";
 export { SAXToObjectTransformStream } from "./SAXToObjectTransformStream.js";
 export { SAXToXMLTextTransformStream } from "./SAXToXMLTextTransformStream.js";
 export type {
@@ -36,6 +39,13 @@ export type {
   DOMNodeLike,
   DOMToSAXTransformStreamOptions,
 } from "./DOMToSAXTransformStream.js";
+export type {
+  DOMDocumentFactoryLike,
+  DOMDocumentImplementationLike,
+  DOMMutableElementLike,
+  DOMMutableNodeLike,
+  SAXToDOMTransformStreamOptions,
+} from "./SAXToDOMTransformStream.js";
 export type {
   ObjectToSAXNodeContext,
   ObjectToSAXNodeMapper,

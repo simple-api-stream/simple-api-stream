@@ -18,6 +18,7 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 | [`XMLTextToSAXEventWritableStream`](./src/XMLTextToSAXEventWritableStream.ts) | `WritableStream` | XML text (`string` chunks) | Calls a [`SAXHandler`](./src/interface/SAXHandler.ts) |
 | [`SAXToObjectTransformStream<T>`](./src/SAXToObjectTransformStream.ts) | `TransformStream` | SAX events | Lightweight plain-object XML AST (`XMLDocumentNode`) or mapped `T` |
 | [`ObjectToSAXTransformStream<T>`](./src/ObjectToSAXTransformStream.ts) | `TransformStream` | Lightweight XML AST (`XMLNode`) or mapped `T` | SAX events |
+| [`SAXToDOMTransformStream<T>`](./src/SAXToDOMTransformStream.ts) | `TransformStream` | SAX events | DOM `Document` or `DocumentFragment` |
 | [`DOMToSAXTransformStream`](./src/DOMToSAXTransformStream.ts) | `TransformStream` | DOM-like nodes (`DOMNodeLike`) | SAX events |
 | [`SAXToXMLTextTransformStream`](./src/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
 | [`ResolveToSAXReadableStream`](./src/ResolveToSAXReadableStream.ts) | `ReadableStream` | Method calls ([`SAXResolver`](./src/interface/SAXResolver.ts)) | SAX events |
