@@ -20,6 +20,8 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 | [`ObjectToSACTransformStream<T>`](./src/ObjectToSACTransformStream.ts) | `TransformStream` | JavaScript row objects / iterables | SAC events |
 | [`SACToCSVTextTransformStream`](./src/SACToCSVTextTransformStream.ts) | `TransformStream` | SAC events | CSV text |
 | [`ResolveToSACReadableStream`](./src/ResolveToSACReadableStream.ts) | `ReadableStream` | Method calls ([`SACResolver`](./src/interface/SACResolver.ts)) | SAC events |
+| [`SACToSAJTransformStream`](./src/json/SACToSAJTransformStream.ts) (`@simple-api-stream/csv/json`) | `TransformStream` | SAC events | SAJ events (O(1) streaming JSON array / NDJSON) |
+| [`SAJToSACTransformStream`](./src/json/SAJToSACTransformStream.ts) (`@simple-api-stream/csv/json`) | `TransformStream` | SAJ events (JSON array of rows / NDJSON) | SAC events |
 
 ## Usage
 

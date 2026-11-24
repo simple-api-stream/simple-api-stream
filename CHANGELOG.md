@@ -7,7 +7,9 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 
 **Added**:
 
-- `@simple-api-stream/csv`: Added `SACToObjectTransformStream<T>` (with `mapRow`, `toObject`, `toArray`, and `skip` support) and `ObjectToSACTransformStream<T>` (with `makeDocument`, `header`, `emitHeader`, `mapRow`, `formatValue`, and `skip` support) for streaming bidirectional conversion between SAC events and JavaScript row objects/iterables.
+- `@simple-api-stream/csv`:
+  - Added `SACToObjectTransformStream<T>` (with `mapRow`, `toObject`, `toArray`, and `skip` support) and `ObjectToSACTransformStream<T>` (with `makeDocument`, `header`, `emitHeader`, `mapRow`, `formatValue`, and `skip` support) for streaming bidirectional conversion between SAC events and JavaScript row objects/iterables.
+  - Added `@simple-api-stream/csv/json` subpath exporting `SACToSAJTransformStream` (O(1) streaming SAC → SAJ with `rowFormat`, `multiple`, `makeDocument`, and `includeHeaderRow`) and `SAJToSACTransformStream` (streaming top-level JSON arrays and NDJSON row-by-row into SAC events; `@simple-api-stream/json` declared as an optional peer dependency).
 - `@simple-api-stream/xml`:
   - Added `SAXToObjectTransformStream<T>` (reconstructing lightweight plain-object `XMLDocumentNode` ASTs with `mapDocument`, `ignoreWhitespaceText`, `ignoreComments`, and `skip`), `ObjectToSAXTransformStream<T>` (converting `XMLNode` ASTs or mapped values back to SAX events), `SAXToDOMTransformStream<T>` (constructing DOM `Document` / `DocumentFragment` trees via an injected or global `DOMDocumentFactoryLike`), and `DOMToSAXTransformStream` (converting zero-dependency `DOMNodeLike` nodes such as browser DOM / `jsdom` / `@xmldom/xmldom` into SAX events).
   - Added `@simple-api-stream/xml/json` subpath exporting `SAXToSAJTransformStream` (O(depth) streaming SAX → SAJ in lossless `XMLDocumentNode` AST JSON form) and `SAJToSAXTransformStream` (`@simple-api-stream/json` declared as an optional peer dependency).
