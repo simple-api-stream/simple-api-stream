@@ -8,7 +8,8 @@
   "files": [
     "dist",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "type": "module",
   "sideEffects": false,
@@ -22,7 +23,9 @@
   },
   "scripts": {
     "build": "vite build && tsc --project tsconfig.build.json",
-    "clean": "node ../../utils/remove.ts -- -f ./dist -f ./tsconfig.build.tsbuildinfo"
+    "clean": "node ../../utils/remove.ts -- -f ./dist -f ./tsconfig.build.tsbuildinfo",
+    "prepack": "node -e \"require('node:fs').cpSync('../../CHANGELOG.md', 'CHANGELOG.md')\"",
+    "postpack": "node ../../utils/remove.ts -- -f ./CHANGELOG.md"
   },
   "repository": {
     "type": "git",

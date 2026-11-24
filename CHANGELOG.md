@@ -14,6 +14,10 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
   - Added `allowComments` and `allowTrailingCommas` options (both default to `false`) to `JSONTextToSAJParser`, `JSONTextToSAJTransformStream`, and `JSONTextToSAJEventWritableStream` for opt-in JSONC parsing.
   - Added `comments` option (defaults to `false`) to `SAJToJSONTextTransformStream` to optionally serialize `comment` events, and updated `SAJToObjectTransformStream` to ignore `comment` events.
 
+**Changed**:
+
+- Added English JSDoc comments to all remaining exported declarations (interfaces, types, and utility functions), public class methods/accessors (excluding constructors), and interface methods/callback properties across `@simple-api-stream/core`, `@simple-api-stream/csv`, `@simple-api-stream/json`, and `@simple-api-stream/xml`.
+
 ## [1.0.1] - 2026-11-20
 
 **Added**:
