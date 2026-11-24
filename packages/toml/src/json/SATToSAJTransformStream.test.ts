@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { SAJToJSONTextTransformStream } from "@simple-api-stream/json";
-import { ResolveToSATReadableStream, TOMLTextToSATTransformStream } from "./index.js";
-import { SATToSAJTransformStream } from "./json.js";
+import { ResolveToSATReadableStream, TOMLTextToSATTransformStream } from "../index.js";
+import { SATToSAJTransformStream } from "./index.js";
 
 describe("SATToSAJTransformStream (@simple-api-stream/toml/json)", () => {
   test("pipes TOML text through SAT -> SAJ -> JSON text", async () => {

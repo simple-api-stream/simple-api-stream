@@ -1,6 +1,6 @@
 import { SAJToObjectTransformStream, type eventInterfaces } from "@simple-api-stream/json";
-import type { SATEventInterface } from "./event-interface/index.js";
-import { ObjectToSATTransformStream, type ObjectToSATTransformStreamOptions } from "./ObjectToSATTransformStream.js";
+import type { SATEventInterface } from "../event-interface/index.js";
+import { ObjectToSATTransformStream, type ObjectToSATTransformStreamOptions } from "../ObjectToSATTransformStream.js";
 
 type SAJEventInterface = eventInterfaces.SAJEventInterface;
 

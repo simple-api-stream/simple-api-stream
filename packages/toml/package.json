@@ -21,8 +21,8 @@
       "default": "./dist/index.js"
     },
     "./json": {
-      "types": "./dist/json.d.ts",
-      "default": "./dist/json.js"
+      "types": "./dist/json/index.d.ts",
+      "default": "./dist/json/index.js"
     }
   },
   "dependencies": {

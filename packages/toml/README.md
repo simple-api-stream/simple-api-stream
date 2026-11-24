@@ -20,8 +20,8 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 | [`ObjectToSATTransformStream<T>`](./src/ObjectToSATTransformStream.ts) | `TransformStream` | JavaScript table objects | SAT events |
 | [`SATToTOMLTextTransformStream`](./src/SATToTOMLTextTransformStream.ts) | `TransformStream` | SAT events | TOML text |
 | [`ResolveToSATReadableStream`](./src/ResolveToSATReadableStream.ts) | `ReadableStream` | Method calls ([`SATResolver`](./src/interface/SATResolver.ts)) | SAT events |
-| [`SATToSAJTransformStream`](./src/SATToSAJTransformStream.ts) (`@simple-api-stream/toml/json`) | `TransformStream` | SAT events | SAJ events (`@simple-api-stream/json` optional peer) |
-| [`SAJToSATTransformStream`](./src/SAJToSATTransformStream.ts) (`@simple-api-stream/toml/json`) | `TransformStream` | SAJ events | SAT events (`@simple-api-stream/json` optional peer) |
+| [`SATToSAJTransformStream`](./src/json/SATToSAJTransformStream.ts) (`@simple-api-stream/toml/json`) | `TransformStream` | SAT events | SAJ events (`@simple-api-stream/json` optional peer) |
+| [`SAJToSATTransformStream`](./src/json/SAJToSATTransformStream.ts) (`@simple-api-stream/toml/json`) | `TransformStream` | SAJ events | SAT events (`@simple-api-stream/json` optional peer) |
 
 ## Usage
 
