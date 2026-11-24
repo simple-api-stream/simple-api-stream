@@ -1,4 +1,4 @@
-import { EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
+import { CommentEvent, EndArrayEvent, EndDocumentEvent, EndObjectEvent, KeyEvent, StartArrayEvent, StartDocumentEvent, StartObjectEvent, ValueBooleanEvent, ValueNullEvent, ValueNumberEvent, ValueStringEvent } from "./event/index.js";
 import type { SAJEventInterface } from "./event-interface/index.js";
 import type { SAJResolver } from "./interface/SAJResolver.js";
 
@@ -23,26 +23,44 @@ export class ResolveToSAJReadableStream extends ReadableStream<SAJEventInterface
     this.#controller = controller_;
   }
 
+  /**
+   * Enqueues a `StartObjectEvent`.
+   */
   startObject(): void {
     this.#controller.enqueue(new StartObjectEvent());
   }
 
+  /**
+   * Enqueues an `EndObjectEvent`.
+   */
   endObject(): void {
     this.#controller.enqueue(new EndObjectEvent());
   }
 
+  /**
+   * Enqueues a `StartArrayEvent`.
+   */
   startArray(): void {
     this.#controller.enqueue(new StartArrayEvent());
   }
 
+  /**
+   * Enqueues an `EndArrayEvent`.
+   */
   endArray(): void {
     this.#controller.enqueue(new EndArrayEvent());
   }
 
+  /**
+   * Enqueues a `KeyEvent` for an object property name.
+   */
   key(key: string): void {
     this.#controller.enqueue(new KeyEvent(key));
   }
 
+  /**
+   * Enqueues a typed JSON primitive value event (`boolean`, `string`, `number`, or `null`).
+   */
   value<T extends "string" | "number" | "null" | "boolean">(type: T, value: { number: number, string: string, null: null, boolean: boolean }[T]): void {
     if (type === "boolean") {
       this.#controller.enqueue(new ValueBooleanEvent(type, value as boolean));
@@ -59,20 +77,39 @@ export class ResolveToSAJReadableStream extends ReadableStream<SAJEventInterface
     this.#controller.enqueue(new ValueNullEvent(type));
   }
 
+  /**
+   * Enqueues a `CommentEvent`.
+   */
+  comment(comment: string, style?: "line" | "block"): void {
+    this.#controller.enqueue(new CommentEvent(comment, style));
+  }
+
+  /**
+   * Enqueues a `StartDocumentEvent`.
+   */
   startDocument(): void {
     this.#controller.enqueue(new StartDocumentEvent());
   }
 
+  /**
+   * Enqueues an `EndDocumentEvent`.
+   */
   endDocument(): void {
     this.#controller.enqueue(new EndDocumentEvent());
   }
 
+  /**
+   * Closes the underlying `ReadableStream` controller.
+   */
   close() {
     if (this.#closed) return;
     this.#closed = true;
     this.#controller.close();
   }
 
+  /**
+   * Disposes the stream by closing it.
+   */
   [Symbol.dispose]() {
     this.close();
   }

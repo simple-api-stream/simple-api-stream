@@ -1,5 +1,8 @@
 const unescapeRegexp = /&(?:#x([0-9a-fA-F]+)|#([0-9]+)|([a-zA-Z][a-zA-Z0-9]*));/gu;
 
+/**
+ * Unescapes XML character references (numeric and named entities) in a string.
+ */
 export function unescape(s?: string | null): string {
   if (!s || s.length <= 0) return s ?? "";
   return s.replaceAll(unescapeRegexp, replacer);

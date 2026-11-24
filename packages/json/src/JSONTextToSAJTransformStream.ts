@@ -9,7 +9,7 @@ type SAJHandler = Required<ConstructorParameters<typeof JSONTextToSAJParser>[0][
  */
 export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEventInterface> {
   #parser: JSONTextToSAJParser;
-  constructor({ skipDocument, multiple, errorToEvent, ...handler_ }: { skipDocument?: boolean } & JSONTextToSAJParserMultipleOptions & Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseLoopAfter" | "onParseLoopBefore">> = {}) {
+  constructor({ skipDocument, multiple, errorToEvent, allowComments, allowTrailingCommas, ...handler_ }: { skipDocument?: boolean, allowComments?: boolean, allowTrailingCommas?: boolean } & JSONTextToSAJParserMultipleOptions & Partial<Pick<SAJHandler, "onParseBefore" | "onParseAfter" | "onParseLoopAfter" | "onParseLoopBefore">> = {}) {
     let buffer!: JSONTextToSAJParser;
     super({
 
@@ -19,7 +19,7 @@ export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEve
        */
       start(controller) {
         const handler = toHandler(controller, handler_);
-        buffer = new JSONTextToSAJParser({ handler, skipDocument, multiple, errorToEvent } as ConstructorParameters<typeof JSONTextToSAJParser>[0]);
+        buffer = new JSONTextToSAJParser({ handler, skipDocument, multiple, errorToEvent, allowComments, allowTrailingCommas } as ConstructorParameters<typeof JSONTextToSAJParser>[0]);
       },
 
       /**
@@ -40,6 +40,9 @@ export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEve
     this.#parser = buffer;
   }
 
+  /**
+   * Returns the current parser status snapshot.
+   */
   get status() {
     return this.#parser.status;
   }
@@ -63,6 +66,7 @@ function toHandler(controller: TransformStreamDefaultController<SAJEventInterfac
     makeEntry("onEndArray", enqueue),
     makeEntry("onKey", enqueue),
     makeEntry("onValue", enqueue),
+    makeEntry("onComment", enqueue),
     makeEntry("onStartDocument", enqueue),
     makeEntry("onEndDocument", enqueue),
     makeEntry("onErrorEvent", enqueue),

@@ -1,8 +1,8 @@
 # simple-api-stream
 
-Streaming utilities for **incremental JSON and XML processing** built on the [Web Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Streams_API).
+Streaming utilities for **incremental JSON, XML, CSV, and TOML processing** built on the [Web Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Streams_API).
 
-Text is parsed chunk by chunk into a flat sequence of **events**: SAJ (Simple API for JSON) for JSON and SAX (Simple API for XML) for XML. You can consume the events directly, rebuild JavaScript objects from them, or turn them back into text. Because every component is a standard `ReadableStream` / `WritableStream` / `TransformStream`, the pieces compose with `pipeThrough()` / `pipeTo()` and respect backpressure.
+Text is parsed chunk by chunk into a flat sequence of **events**: SAJ (Simple API for JSON) for JSON, SAX (Simple API for XML) for XML, SAC (Simple API for CSV) for CSV, and SAT (Simple API for TOML) for TOML. You can consume the events directly, rebuild JavaScript objects from them, or turn them back into text. Because every component is a standard `ReadableStream` / `WritableStream` / `TransformStream`, the pieces compose with `pipeThrough()` / `pipeTo()` and respect backpressure.
 
 - Zero external runtime dependencies
 - Works anywhere Web Streams are available (Node.js, browsers, Deno, Bun, …)
@@ -15,9 +15,11 @@ Text is parsed chunk by chunk into a flat sequence of **events**: SAJ (Simple AP
 
 | Package | Description |
 |---------|-------------|
-| [`@simple-api-stream/core`](./packages/core) | Core event classes (`SAEvent`, `StartDocumentEvent`, `EndDocumentEvent`), parser interfaces (`SimpleApiParser`), and shared utilities |
+| [`@simple-api-stream/core`](./packages/core) | Core event classes (`SAEvent`, `StartDocumentEvent`, `EndDocumentEvent`, `ErrorEvent`, `CommentEvent`), parser interfaces (`SimpleApiParser`), and shared utilities |
 | [`@simple-api-stream/json`](./packages/json) | Streaming JSON (SAJ) parser, object materializer, serializer, and imperative builder |
 | [`@simple-api-stream/xml`](./packages/xml) | Streaming XML (SAX) parser, serializer, and imperative builder |
+| [`@simple-api-stream/csv`](./packages/csv) | Streaming CSV (SAC) parser, serializer, and imperative builder |
+| [`@simple-api-stream/toml`](./packages/toml) | Streaming TOML (SAT) parser, object materializer, serializer, imperative builder, and optional SAJ bridge (`@simple-api-stream/toml/json`) |
 
 ---
 
@@ -39,6 +41,20 @@ flowchart LR
     SAX -- SAXToXMLTextTransformStream --> XT2["XML text"]
     XT -- XMLTextToSAXEventWritableStream --> HX["SAXHandler callbacks"]
   end
+  subgraph CSV
+    CT["CSV text"] -- CSVTextToSACTransformStream --> SAC["SAC events"]
+    RC["ResolveToSACReadableStream (imperative)"] --> SAC
+    SAC -- SACToCSVTextTransformStream --> CT2["CSV text"]
+    CT -- CSVTextToSACEventWritableStream --> HC["SACHandler callbacks"]
+  end
+  subgraph TOML
+    TT["TOML text"] -- TOMLTextToSATTransformStream --> SAT["SAT events"]
+    RT["ResolveToSATReadableStream (imperative)"] --> SAT
+    SAT -- SATToObjectTransformStream --> TOBJ["JS objects"]
+    SAT -- SATToTOMLTextTransformStream --> TT2["TOML text"]
+    SAT -- SATToSAJTransformStream --> SAJ
+    TT -- TOMLTextToSATEventWritableStream --> HT["SATHandler callbacks"]
+  end
 ```
 
 ## ✨ Features
@@ -55,6 +71,16 @@ flowchart LR
 | | [`XMLTextToSAXEventWritableStream`](./packages/xml/src/XMLTextToSAXEventWritableStream.ts) | `WritableStream` | XML text (`string` chunks) | Calls a [`SAXHandler`](./packages/xml/src/interface/SAXHandler.ts) |
 | | [`SAXToXMLTextTransformStream`](./packages/xml/src/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
 | | [`ResolveToSAXReadableStream`](./packages/xml/src/ResolveToSAXReadableStream.ts) | `ReadableStream` | Method calls ([`SAXResolver`](./packages/xml/src/interface/SAXResolver.ts)) | SAX events |
+| **`@simple-api-stream/csv`** | [`CSVTextToSACTransformStream`](./packages/csv/src/CSVTextToSACTransformStream.ts) | `TransformStream` | CSV text (`string` chunks) | [`SACEventInterface`](./packages/csv/src/event-interface/SACEventInterface.ts) objects |
+| | [`CSVTextToSACEventWritableStream`](./packages/csv/src/CSVTextToSACEventWritableStream.ts) | `WritableStream` | CSV text (`string` chunks) | Calls a [`SACHandler`](./packages/csv/src/interface/SACHandler.ts) |
+| | [`SACToCSVTextTransformStream`](./packages/csv/src/SACToCSVTextTransformStream.ts) | `TransformStream` | SAC events | CSV text |
+| | [`ResolveToSACReadableStream`](./packages/csv/src/ResolveToSACReadableStream.ts) | `ReadableStream` | Method calls ([`SACResolver`](./packages/csv/src/interface/SACResolver.ts)) | SAC events |
+| **`@simple-api-stream/toml`** | [`TOMLTextToSATTransformStream`](./packages/toml/src/TOMLTextToSATTransformStream.ts) | `TransformStream` | TOML text (`string` chunks) | [`SATEventInterface`](./packages/toml/src/event-interface/SATEventInterface.ts) objects |
+| | [`TOMLTextToSATEventWritableStream`](./packages/toml/src/TOMLTextToSATEventWritableStream.ts) | `WritableStream` | TOML text (`string` chunks) | Calls a [`SATHandler`](./packages/toml/src/interface/SATHandler.ts) |
+| | [`SATToObjectTransformStream<T>`](./packages/toml/src/SATToObjectTransformStream.ts) | `TransformStream` | SAT events | JavaScript objects of type `T` |
+| | [`SATToTOMLTextTransformStream`](./packages/toml/src/SATToTOMLTextTransformStream.ts) | `TransformStream` | SAT events | TOML text |
+| | [`ResolveToSATReadableStream`](./packages/toml/src/ResolveToSATReadableStream.ts) | `ReadableStream` | Method calls ([`SATResolver`](./packages/toml/src/interface/SATResolver.ts)) | SAT events |
+| | [`SATToSAJTransformStream`](./packages/toml/src/SATToSAJTransformStream.ts) (`./json`) | `TransformStream` | SAT events | SAJ events |
 
 ---
 
@@ -67,7 +93,13 @@ npm install @simple-api-stream/json
 # Install XML streaming utilities
 npm install @simple-api-stream/xml
 
-# Install core contracts directly (optional; installed automatically by json/xml)
+# Install CSV streaming utilities
+npm install @simple-api-stream/csv
+
+# Install TOML streaming utilities
+npm install @simple-api-stream/toml
+
+# Install core contracts directly (optional; installed automatically by json/xml/csv/toml)
 npm install @simple-api-stream/core
 ```
 
@@ -200,6 +232,71 @@ console.log((await Array.fromAsync(xmlText)).join(""));
 // <?xml version="1.0" encoding="UTF-8" ?><a href="https://example.com">Hello &amp; welcome</a>
 ```
 
+### CSV text → SAC events
+
+```ts
+import { CSVTextToSACTransformStream } from "@simple-api-stream/csv";
+
+const events = csvTextStream.pipeThrough(new CSVTextToSACTransformStream({ header: true }));
+
+for await (const event of events) {
+  if (event.name === "column")
+    console.log(event.index, event.header, event.value);
+}
+```
+
+### CSV text → handler callbacks
+
+```ts
+import { CSVTextToSACEventWritableStream } from "@simple-api-stream/csv";
+
+await csvTextStream.pipeTo(new CSVTextToSACEventWritableStream({
+  onColumn: ({ index, header, value }) => console.log(index, header, value),
+  onError: (err) => console.error(err),
+}, { header: true }));
+```
+
+### Building CSV imperatively
+
+```ts
+import { ResolveToSACReadableStream, SACToCSVTextTransformStream } from "@simple-api-stream/csv";
+
+const stream = new ResolveToSACReadableStream();
+const csvText = stream.pipeThrough(new SACToCSVTextTransformStream({ summarize: "row" }));
+
+stream.startDocument();
+stream.startHeaderRow();
+stream.column("id");
+stream.column("name");
+stream.endHeaderRow();
+stream.startRecordRow();
+stream.column("1");
+stream.column("Alice, Bob");
+stream.endRecordRow();
+stream.endDocument();
+stream.close();
+
+console.log((await Array.fromAsync(csvText)).join(""));
+// id,name\r\n1,"Alice, Bob"\r\n
+```
+
+### TOML text → JavaScript objects / JSON text
+
+```ts
+import { TOMLTextToSATTransformStream, SATToObjectTransformStream } from "@simple-api-stream/toml";
+import { SATToSAJTransformStream } from "@simple-api-stream/toml/json";
+import { SAJToJSONTextTransformStream } from "@simple-api-stream/json";
+
+const objects = tomlTextStream
+  .pipeThrough(new TOMLTextToSATTransformStream())
+  .pipeThrough(new SATToObjectTransformStream());
+
+const jsonText = tomlTextStream
+  .pipeThrough(new TOMLTextToSATTransformStream())
+  .pipeThrough(new SATToSAJTransformStream())
+  .pipeThrough(new SAJToJSONTextTransformStream({ indent: 2 }));
+```
+
 ---
 
 ## ⚙️ Options
@@ -209,9 +306,10 @@ console.log((await Array.fromAsync(xmlText)).join(""));
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `skipDocument` | `boolean` | `false` | Do not emit `startDocument` / `endDocument` events. |
-| `multiple` | `boolean` | `true` | Allow multiple root elements in one stream. When `false`, a second root element is an error. *(The default is planned to change to `false` in a future version.)* |
 | `multiple` | `boolean \| "json-seq"` | `false` | Accept multiple top-level JSON values in one stream (`true`), or parse RFC 7464 JSON text sequences (`"json-seq"`, `\x1E`-delimited). When `false`, a second value is an error. |
 | `errorToEvent` | `boolean` | `false` | Only available when `multiple: "json-seq"`. Emit an `error` event on parse error and recover at the next `\x1E` / `EOF` (`endDocument` → `startDocument`) instead of failing the stream. |
+| `allowComments` | `boolean` | `false` | Allow JSONC line (`//`) and block (`/* ... */`) comments and emit `comment` events. |
+| `allowTrailingCommas` | `boolean` | `false` | Allow trailing commas in objects and arrays. |
 | `onParseBefore` / `onParseAfter` / `onParseLoopBefore` / `onParseLoopAfter` | `(status) => void` | – | Debug hooks that receive the internal parser status. |
 
 `JSONTextToSAJEventWritableStream(handler, options?)` accepts `{ skipDocument?: boolean }` combined with `{ multiple?: boolean, errorToEvent?: never } | { multiple: "json-seq", errorToEvent?: boolean }` as `options`, and `onErrorEvent` plus the same debug hooks in its `handler` object.
@@ -236,6 +334,7 @@ console.log((await Array.fromAsync(xmlText)).join(""));
 | `summarize` | `boolean \| "default" \| "normal" \| "document"` | `"default"` | Output granularity. `"default"` (`false`) emits one chunk per event, `"normal"` (`true`) emits one chunk per top-level JSON value, `"document"` emits one chunk per `startDocument` … `endDocument`. |
 | `indent` | `number \| string` | – | Indentation per nesting level: a number of spaces or a string such as `"\t"`. |
 | `lineBreak` | `string` | `"\n"` (when `indent` is set), `""` otherwise | Line break string used between lines. |
+| `comments` | `boolean` | `false` | Emit `comment` events as JSONC comments (`// ...` or `/* ... */`). When `false`, `comment` events are omitted. |
 
 ### `XMLTextToSAXTransformStream(options?)` / `XMLTextToSAXEventWritableStream(handler, options?)`
 
@@ -254,11 +353,49 @@ console.log((await Array.fromAsync(xmlText)).join(""));
 
 Text and attribute values are escaped automatically.
 
+### `CSVTextToSACTransformStream(options?)` / `CSVTextToSACEventWritableStream(handler, options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `header` | `boolean \| string[]` | `false` | `true`: treat the first row as `startHeaderRow` / `endHeaderRow` and attach `header` names to subsequent `column` events. `string[]`: synthesize a header row from the given names. |
+| `delimiter` | `string` | `","` | Single-character field delimiter (e.g. `"\t"` for TSV). |
+| `quote` | `string` | `'"'` | Single-character quote character. |
+| `skipDocument` | `boolean` | `false` | Do not emit `startDocument` / `endDocument` events. |
+| `skipEmptyLines` | `boolean` | `false` | Skip empty lines instead of emitting a single empty-column row. |
+| `stripBom` | `boolean` | `true` | Strip a leading UTF-8 BOM (`\uFEFF`) if present. |
+| `onParseBefore` / `onParseAfter` / `onParseLoopBefore` / `onParseLoopAfter` | `(status) => void` | – | Debug hooks that receive the internal parser status. |
+
+### `SACToCSVTextTransformStream(options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `delimiter` | `string` | `","` | Single-character field delimiter. |
+| `quote` | `string` | `'"'` | Single-character quote character. |
+| `lineBreak` | `string` | `"\r\n"` | Line break string appended after each row. |
+| `quotePolicy` | `"minimal" \| "all"` | `"minimal"` | `"minimal"` quotes only fields containing delimiters, quotes, or line breaks; `"all"` quotes every field. |
+| `summarize` | `boolean \| "default" \| "row" \| "document"` | `"default"` | Output granularity. `"default"` (`false`) emits one chunk per event, `"row"` emits one chunk per row, `"document"` (`true`) emits one chunk per `startDocument` … `endDocument`. |
+
+### `TOMLTextToSATTransformStream(options?)` / `TOMLTextToSATEventWritableStream(handler, options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `skipDocument` | `boolean` | `false` | Do not emit `startDocument` / `endDocument` events. |
+| `comments` | `boolean` | `false` | Emit `comment` events for `# ...` comments. |
+| `onParseBefore` / `onParseAfter` / `onParseLoopBefore` / `onParseLoopAfter` | `(status) => void` | – | Debug hooks that receive the internal parser status. |
+
+### `SATToTOMLTextTransformStream(options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `lineBreak` | `string` | `"\n"` | Line break string appended after each statement. |
+| `comments` | `boolean` | `false` | Emit `comment` events as `# ...` lines. When `false`, `comment` events are omitted. |
+| `summarize` | `boolean \| "default" \| "document"` | `"default"` | Output granularity. `"default"` (`false`) emits one chunk per event, `"document"` (`true`) emits one chunk per `startDocument` … `endDocument`. |
+
 ---
 
 ## 📜 Event Formats
 
-Events are plain objects with a `name` discriminator, so they can be narrowed with `switch (event.name)` in TypeScript. Type definitions are exported as `eventInterfaces` and the event classes as `events` from `@simple-api-stream/json` and `@simple-api-stream/xml`.
+Events are plain objects with a `name` discriminator, so they can be narrowed with `switch (event.name)` in TypeScript. Type definitions are exported as `eventInterfaces` and the event classes as `events` from `@simple-api-stream/json`, `@simple-api-stream/xml`, `@simple-api-stream/csv`, and `@simple-api-stream/toml`.
 
 ### SAJ (Simple API for JSON)
 
@@ -271,6 +408,7 @@ Events are plain objects with a `name` discriminator, so they can be narrowed wi
 | `startArray` / `endArray` | – |
 | `key` | `key: string` |
 | `value` | `type: "string" \| "number" \| "boolean" \| "null"`, `value` |
+| `comment` | `comment: string`, `style?: "line" \| "block"` (emitted when `allowComments: true`) |
 
 Example for `{ "a": [1, null] }`:
 
@@ -312,13 +450,52 @@ Example for `<a href="https://example.com">Hello</a>`:
 
 A self-closing tag such as `<br/>` produces a `startElement` with `selfClosing: true` immediately followed by an `endElement`.
 
+### SAC (Simple API for CSV)
+
+| `name` | Extra fields |
+|--------|--------------|
+| `startDocument` | `kind: "csv"` |
+| `endDocument` | – |
+| `startHeaderRow` / `endHeaderRow` | – |
+| `startRecordRow` / `endRecordRow` | – |
+| `column` | `value: string`, `index?: number`, `header?: string`, `quoted?: boolean` |
+
+Example for `id,name\n1,Alice` with `{ header: true }`:
+
+```js
+{ "name": "startDocument", "kind": "csv" }
+{ "name": "startHeaderRow" }
+{ "name": "column", "value": "id", "index": 0, "quoted": false }
+{ "name": "column", "value": "name", "index": 1, "quoted": false }
+{ "name": "endHeaderRow" }
+{ "name": "startRecordRow" }
+{ "name": "column", "value": "1", "index": 0, "header": "id", "quoted": false }
+{ "name": "column", "value": "Alice", "index": 1, "header": "name", "quoted": false }
+{ "name": "endRecordRow" }
+{ "name": "endDocument" }
+```
+
+### SAT (Simple API for TOML)
+
+| `name` | Extra fields |
+|--------|--------------|
+| `startDocument` | `kind: "toml"` |
+| `endDocument` | – |
+| `comment` | `comment: string` (emitted when `comments: true`) |
+| `table` | `path: string[]` (`[a.b]`) |
+| `arrayTable` | `path: string[]` (`[[a.b]]`) |
+| `key` | `path: string[]` (`a.b = ...`) |
+| `startArray` / `endArray` | – |
+| `startInlineTable` / `endInlineTable` | – |
+| `value` | `type: "string" \| "integer" \| "float" \| "boolean" \| "offsetDateTime" \| "localDateTime" \| "localDate" \| "localTime"`, `value` |
+
 ---
 
 ## ⚠️ Error Handling
 
 - Malformed input errors the stream. With `TransformStream`s, both the readable side (e.g. `for await`) and pending writes reject.
 - With the `*EventWritableStream` classes, errors are reported to the handler's `onError` callback.
-- Errors carry a snapshot of the internal state for debugging (e.g. `buffer`, `state`, `pos`). The error classes are available from `streams` on `@simple-api-stream/json` and `@simple-api-stream/xml`:
+- Errors carry a snapshot of the internal state for debugging (e.g. `buffer`, `state`, `pos`). The error classes are available from `streams` on `@simple-api-stream/json`, `@simple-api-stream/xml`, `@simple-api-stream/csv`, and `@simple-api-stream/toml`:
 
 | Error class | Import from |
 |-------------|-------------|
@@ -329,6 +506,12 @@ A self-closing tag such as `<br/>` produces a `startElement` with `selfClosing: 
 | `XMLTextToSAXParserError` | `@simple-api-stream/xml` (`streams.XMLTextToSAXParserError`) |
 | `SAXToXMLTextTransformStreamError` | `@simple-api-stream/xml` (`streams.SAXToXMLTextTransformStreamError`) |
 | `ResolveToSAXReadableStreamError` | `@simple-api-stream/xml` (`streams.ResolveToSAXReadableStreamError`) |
+| `CSVTextToSACParserError` | `@simple-api-stream/csv` (`streams.CSVTextToSACParserError`) |
+| `SACToCSVTextTransformStreamError` | `@simple-api-stream/csv` (`streams.SACToCSVTextTransformStreamError`) |
+| `ResolveToSACReadableStreamError` | `@simple-api-stream/csv` (`streams.ResolveToSACReadableStreamError`) |
+| `TOMLTextToSATParserError` | `@simple-api-stream/toml` (`streams.TOMLTextToSATParserError`) |
+| `SATToTOMLTextTransformStreamError` | `@simple-api-stream/toml` (`streams.SATToTOMLTextTransformStreamError`) |
+| `SATToObjectTransformStreamError` | `@simple-api-stream/toml` (`streams.SATToObjectTransformStreamError`) |
 
 ```ts
 import { JSONTextToSAJTransformStream, streams } from "@simple-api-stream/json";
@@ -354,9 +537,13 @@ import {
   SAEvent,
   StartDocumentEvent,
   EndDocumentEvent,
+  ErrorEvent,
+  CommentEvent,
   type SimpleApiParser,
   type StartDocumentSAEventInterface,
   type EndDocumentSAEventInterface,
+  type ErrorSAEventInterface,
+  type CommentSAEventInterface,
 } from "@simple-api-stream/core";
 
 // JSON streaming utilities
@@ -384,6 +571,34 @@ import {
   type eventInterfaces,
   type interfaces,
 } from "@simple-api-stream/xml";
+
+// CSV streaming utilities
+import {
+  CSVTextToSACTransformStream,
+  CSVTextToSACEventWritableStream,
+  SACToCSVTextTransformStream,
+  ResolveToSACReadableStream,
+  streams,
+  events,
+  type eventInterfaces,
+  type interfaces,
+} from "@simple-api-stream/csv";
+
+// TOML streaming utilities
+import {
+  TOMLTextToSATTransformStream,
+  TOMLTextToSATEventWritableStream,
+  SATToObjectTransformStream,
+  SATToTOMLTextTransformStream,
+  ResolveToSATReadableStream,
+  streams,
+  events,
+  type eventInterfaces,
+  type interfaces,
+} from "@simple-api-stream/toml";
+
+// Optional TOML → JSON (SAT → SAJ) bridge
+import { SATToSAJTransformStream } from "@simple-api-stream/toml/json";
 ```
 
 ---
@@ -394,10 +609,10 @@ import {
 npm install
 npm run lint     # ESLint (type-aware)
 npm test         # Vitest with coverage across all packages
-npm run build    # Build @simple-api-stream/{core,json,xml} (ESM + .d.ts)
+npm run build    # Build @simple-api-stream/{core,json,xml,csv,toml} (ESM + .d.ts)
 ```
 
-- Packages live under `packages/core`, `packages/json`, and `packages/xml`; tests are colocated as `*.test.ts`.
+- Packages live under `packages/core`, `packages/json`, `packages/xml`, `packages/csv`, and `packages/toml`; tests are colocated as `*.test.ts`.
 - Relative imports use explicit `.js` extensions (`moduleResolution: "NodeNext"`).
 
 ## 📄 License

@@ -1,6 +1,6 @@
 {
   "name": "@simple-api-stream/core",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Core event classes and interfaces for simple-api-stream",
   "publishConfig": {
     "access": "public"
@@ -8,7 +8,8 @@
   "files": [
     "dist",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "type": "module",
   "sideEffects": false,
@@ -21,8 +22,10 @@
     }
   },
   "scripts": {
-    "build": "vite build && tsc --project tsconfig.build.json",
-    "clean": "node ../../utils/remove.ts -- -f ./dist -f ./tsconfig.build.tsbuildinfo"
+    "build": "vite build && tsc --build tsconfig.build.json --force",
+    "clean": "node ../../utils/remove.ts -- -f ./dist -f ./tsconfig.build.tsbuildinfo",
+    "prepack": "node -e \"require('node:fs').cpSync('../../CHANGELOG.md', 'CHANGELOG.md')\"",
+    "postpack": "node ../../utils/remove.ts -- -f ./CHANGELOG.md"
   },
   "repository": {
     "type": "git",

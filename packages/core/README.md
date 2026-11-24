@@ -12,8 +12,8 @@ npm install @simple-api-stream/core
 
 ### `@simple-api-stream/core`
 
-- Event classes: `SAEvent`, `StartDocumentEvent`, `EndDocumentEvent`, `ErrorEvent`
-- Event interfaces (types): `StartDocumentSAEventInterface`, `EndDocumentSAEventInterface`, `ErrorSAEventInterface`
+- Event classes: `SAEvent`, `StartDocumentEvent`, `EndDocumentEvent`, `ErrorEvent`, `CommentEvent`
+- Event interfaces (types): `StartDocumentSAEventInterface`, `EndDocumentSAEventInterface`, `ErrorSAEventInterface`, `CommentSAEventInterface`
 - Parser interface (type): `SimpleApiParser<T>`
 
 ## License

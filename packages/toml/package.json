@@ -1,0 +1,67 @@
+{
+  "name": "@simple-api-stream/toml",
+  "version": "1.1.0",
+  "description": "Streaming TOML (SAT) parser and serializer built on the Web Streams API",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./json": {
+      "types": "./dist/json.d.ts",
+      "default": "./dist/json.js"
+    }
+  },
+  "dependencies": {
+    "@simple-api-stream/core": "^1.1.0"
+  },
+  "peerDependencies": {
+    "@simple-api-stream/json": "^1.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@simple-api-stream/json": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "build": "vite build && tsc --build tsconfig.build.json --force",
+    "clean": "node ../../utils/remove.ts -- -f ./dist -f ./tsconfig.build.tsbuildinfo",
+    "prepack": "node -e \"require('node:fs').cpSync('../../CHANGELOG.md', 'CHANGELOG.md')\"",
+    "postpack": "node ../../utils/remove.ts -- -f ./CHANGELOG.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simple-api-stream/simple-api-stream.git",
+    "directory": "packages/toml"
+  },
+  "keywords": [
+    "TOML",
+    "SAT",
+    "stream",
+    "web streams",
+    "TransformStream",
+    "parser"
+  ],
+  "author": "juners",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.x"
+  },
+  "bugs": {
+    "url": "https://github.com/simple-api-stream/simple-api-stream/issues"
+  },
+  "homepage": "https://github.com/simple-api-stream/simple-api-stream#readme"
+}

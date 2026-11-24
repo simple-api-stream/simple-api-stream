@@ -1,5 +1,6 @@
 import { toErrorMessage } from "./utils/index.js";
 import type {
+  CommentSAJEventInterface,
   KeySAJEventInterface,
   SAJEventInterface,
   ValueBooleanSAJEventInterface,
@@ -49,6 +50,9 @@ export class SAJToJSONTextTransformStreamError extends Error implements Status {
   parts: string[];
 }
 
+/**
+ * Configuration options for `SAJToJSONTextTransformStream`.
+ */
 export type SAJToJSONTextTransformStreamOptions = {
   /** json text is document summarize */
   summarize: boolean | Summarize
@@ -56,6 +60,8 @@ export type SAJToJSONTextTransformStreamOptions = {
   indent: number | string
   /** line break character (defaults to "\n" when indent is set) */
   lineBreak: string
+  /** whether to emit comment events as JSONC comments (defaults to false) */
+  comments: boolean
 };
 const stacks = Object.freeze({
   object: "object",
@@ -92,6 +98,7 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
   #indent: string;
   /** Line break string */
   #lineBreak: string;
+  #comments: boolean;
   #parts: string[] = [];
 
   #status() {
@@ -106,11 +113,14 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
     };
   }
 
+  /**
+   * Returns the current serializer status snapshot.
+   */
   get status() {
     return this.#status();
   }
 
-  constructor({ summarize, indent, lineBreak }: Partial<SAJToJSONTextTransformStreamOptions> = {}) {
+  constructor({ summarize, indent, lineBreak, comments }: Partial<SAJToJSONTextTransformStreamOptions> = {}) {
     let controller_!: TransformStreamDefaultController<string>;
     super({
       start: (controller) => {
@@ -129,6 +139,7 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
       ? (indent > 0 ? " ".repeat(indent) : "")
       : (indent ?? "");
     this.#lineBreak = lineBreak ?? (this.#indent ? "\n" : "");
+    this.#comments = comments ?? false;
   }
 
   #toSummarize(value?: SAJToJSONTextTransformStreamOptions["summarize"]): Summarize {
@@ -194,9 +205,27 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
         return this.#key(chunk);
       case "value":
         return this.#value(chunk);
+      case "comment":
+        return this.#comment(chunk);
       case "error":
         return this.#error();
     }
+  }
+
+  #comment({ comment, style }: CommentSAJEventInterface): string[] | undefined {
+    if (!this.#comments) return undefined;
+    const out: string[] = [];
+    if (this.#firstItemStack.length > 0 && !this.#pendingValueForKey) {
+      const prefix = this.#makeIndentPrefix();
+      if (prefix) out.push(prefix);
+    }
+    if (style === "line") {
+      out.push(`//${comment}${this.#lineBreak || "\n"}`);
+    }
+    else {
+      out.push(`/*${comment}*/`);
+    }
+    return out;
   }
 
   #error(): undefined {

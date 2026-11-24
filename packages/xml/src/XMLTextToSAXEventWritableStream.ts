@@ -71,6 +71,9 @@ export class XMLTextToSAXEventWritableStream extends WritableStream<string> {
     this.#buffer = buffer;
   }
 
+  /**
+   * Returns the current parser status snapshot.
+   */
   get status() {
     return this.#buffer.status;
   }

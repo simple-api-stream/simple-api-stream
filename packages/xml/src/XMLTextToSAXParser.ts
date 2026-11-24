@@ -76,14 +76,23 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     this.#stateName = name;
   }
 
+  /**
+   * Returns the current unparsed text buffer.
+   */
   get buffer() {
     return this.#buffer;
   }
 
+  /**
+   * Returns the current parser state name.
+   */
   get state() {
     return this.#stateName;
   }
 
+  /**
+   * Returns the current accumulated token string.
+   */
   get acc() {
     return this.#acc;
   }
@@ -97,6 +106,9 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     };
   }
 
+  /**
+   * Returns the current parser status snapshot.
+   */
   get status() {
     return this.#status();
   }
@@ -111,15 +123,24 @@ export class XMLTextToSAXParser implements SimpleApiParser<string> {
     this.#multiple = multiple ?? true;
   }
 
+  /**
+   * Appends an XML text chunk and parses available characters, emitting SAX events.
+   */
   enqueue(chunk: string) {
     this.#buffer += chunk;
     this.#parseBuffer();
   }
 
+  /**
+   * Finalizes parsing of any remaining buffered characters and emits closing events.
+   */
   flush() {
     this.#parseBuffer(true);
   }
 
+  /**
+   * Forwards an error reason to the handler's `onError` callback.
+   */
   error(reason: unknown) {
     this.#handler?.onError?.(reason);
   }

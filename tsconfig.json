@@ -12,6 +12,12 @@
     },
     {
       "path": "./packages/xml/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/csv/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/toml/tsconfig.build.json"
     }
   ]
 }

@@ -52,6 +52,7 @@ for await (const obj of objects) {
 | `startArray` / `endArray` | – |
 | `key` | `key: string` |
 | `value` | `type: "string" \| "number" \| "boolean" \| "null"`, `value` |
+| `comment` | `comment: string`, `style?: "line" \| "block"` (emitted when `allowComments: true`) |
 
 For full options, error classes, and usage examples, see the [root README](../../README.md).
 

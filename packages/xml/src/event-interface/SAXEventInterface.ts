@@ -10,6 +10,9 @@ import type { ProcessingInstructionSAXEventInterface } from "./ProcessingInstruc
 import type { StartDocumentSAXEventInterface } from "./StartDocumentSAXEventInterface.js";
 import type { EndDocumentSAXEventInterface } from "./EndDocumentSAXEventInterface.js";
 
+/**
+ * Union type of all SAX (Simple API for XML) event interfaces.
+ */
 export type SAXEventInterface
   = DoctypeSAXEventInterface
     | StartElementSAXEventInterface

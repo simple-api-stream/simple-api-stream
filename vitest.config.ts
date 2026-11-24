@@ -16,6 +16,18 @@ export default defineConfig({
         find: "@simple-api-stream/xml",
         replacement: resolve(import.meta.dirname, "packages/xml/src/index.ts"),
       },
+      {
+        find: "@simple-api-stream/csv",
+        replacement: resolve(import.meta.dirname, "packages/csv/src/index.ts"),
+      },
+      {
+        find: "@simple-api-stream/toml/json",
+        replacement: resolve(import.meta.dirname, "packages/toml/src/json.ts"),
+      },
+      {
+        find: "@simple-api-stream/toml",
+        replacement: resolve(import.meta.dirname, "packages/toml/src/index.ts"),
+      },
     ],
   },
   test: {

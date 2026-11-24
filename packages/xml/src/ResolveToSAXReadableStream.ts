@@ -79,6 +79,9 @@ export class ResolveToSAXReadableStream extends ReadableStream<SAXEventInterface
     return new ResolveToSAXReadableStreamError(message, this.#status(), options);
   }
 
+  /**
+   * Enqueues a `ProcessingInstructionEvent`, `XMLDeclarationEvent`, or `XMLStylesheetDeclarationEvent`.
+   */
   processingInstruction(...args: ConstructorParameters<typeof ProcessingInstructionEvent | typeof XMLDeclarationEvent | typeof XMLStylesheetDeclarationEvent>): void {
     if (typeof args[0] === "string") {
       this.#controller.enqueue(new ProcessingInstructionEvent(...args as ConstructorParameters<typeof ProcessingInstructionEvent>));
@@ -98,14 +101,23 @@ export class ResolveToSAXReadableStream extends ReadableStream<SAXEventInterface
     throw error;
   }
 
+  /**
+   * Enqueues a `CdataEvent`.
+   */
   cdata(...args: ConstructorParameters<typeof CdataEvent>): void {
     this.#controller.enqueue(new CdataEvent(...args));
   }
 
+  /**
+   * Enqueues a `CommentEvent`.
+   */
   comment(...args: ConstructorParameters<typeof CommentEvent>): void {
     this.#controller.enqueue(new CommentEvent(...args));
   }
 
+  /**
+   * Enqueues a `DoctypeSimpleEvent`, `DoctypeSystemEvent`, or `DoctypePublicEvent`.
+   */
   doctype(...args: ConstructorParameters<typeof DoctypeSimpleEvent>): void;
   doctype(...args: ConstructorParameters<typeof DoctypeSystemEvent>): void;
   doctype(...args: ConstructorParameters<typeof DoctypePublicEvent>): void;
@@ -121,32 +133,53 @@ export class ResolveToSAXReadableStream extends ReadableStream<SAXEventInterface
     }
   }
 
+  /**
+   * Enqueues an `EndElementEvent`.
+   */
   endElement(...args: ConstructorParameters<typeof EndElementEvent>): void {
     this.#controller.enqueue(new EndElementEvent(...args));
   }
 
+  /**
+   * Enqueues a `StartElementEvent`.
+   */
   startElement(...args: ConstructorParameters<typeof StartElementEvent>): void {
     this.#controller.enqueue(new StartElementEvent(...args));
   }
 
+  /**
+   * Enqueues a `TextEvent`.
+   */
   text(...args: ConstructorParameters<typeof TextEvent>): void {
     this.#controller.enqueue(new TextEvent(...args));
   }
 
+  /**
+   * Enqueues a `StartDocumentEvent`.
+   */
   startDocument(): void {
     this.#controller.enqueue(new StartDocumentEvent());
   }
 
+  /**
+   * Enqueues an `EndDocumentEvent`.
+   */
   endDocument(): void {
     this.#controller.enqueue(new EndDocumentEvent());
   }
 
+  /**
+   * Closes the underlying `ReadableStream` controller.
+   */
   close() {
     if (this.#closed) return;
     this.#closed = true;
     this.#controller.close();
   }
 
+  /**
+   * Disposes the stream by closing it.
+   */
   [Symbol.dispose]() {
     this.close();
   }

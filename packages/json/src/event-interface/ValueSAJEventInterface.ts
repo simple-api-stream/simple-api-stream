@@ -7,6 +7,9 @@ type ValueDictionary = {
   null: null
   boolean: boolean
 };
+/**
+ * Interface representing a JSON primitive value event.
+ */
 export interface ValueSAJEventInterface<VT extends ValueType> extends TypeSAJEventInterface<VT> {
   name: typeof SAJ_VALUE_EVENT_TYPE
   value: ValueDictionary[VT]

@@ -1,6 +1,6 @@
-import type { SAX_COMMENT_EVENT_TYPE } from "../event/CommentEvent.js";
+import type { CommentSAEventInterface } from "@simple-api-stream/core";
 
-export interface CommentSAXEventInterface {
-  name: typeof SAX_COMMENT_EVENT_TYPE
-  comment: string
-}
+/**
+ * Type representing an XML comment event.
+ */
+export type CommentSAXEventInterface = CommentSAEventInterface;

@@ -1,3 +1,8 @@
+/**
+ * Normalizes an unknown error or message value into a `{ message, options }` object suitable for `Error` construction.
+ * @param message Error instance or message value
+ * @param options Optional `ErrorOptions` to extend with `cause` when `message` is not a string
+ */
 export function toErrorMessage(message: unknown, options?: ErrorOptions): {
   message: string
   options?: ErrorOptions
