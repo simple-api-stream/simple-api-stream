@@ -1,6 +1,6 @@
 # @simple-api-stream/xml
 
-Streaming XML (SAX = Simple API for XML) parser and serializer built on the [Web Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Streams_API).
+Streaming XML (SAX = Simple API for XML) parser, AST/DOM converters, serializer, and optional JSON (SAJ) bridge built on the [Web Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Streams_API).
 
 ## Installation
 
@@ -12,18 +12,19 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 
 ## Features
 
-| Class | Stream type | Input | Output |
-|-------|-------------|-------|--------|
-| [`XMLTextToSAXTransformStream`](./src/XMLTextToSAXTransformStream.ts) | `TransformStream` | XML text (`string` chunks) | [`SAXEventInterface`](./src/event-interface/SAXEventInterface.ts) objects |
-| [`XMLTextToSAXEventWritableStream`](./src/XMLTextToSAXEventWritableStream.ts) | `WritableStream` | XML text (`string` chunks) | Calls a [`SAXHandler`](./src/interface/SAXHandler.ts) |
-| [`SAXToObjectTransformStream<T>`](./src/SAXToObjectTransformStream.ts) | `TransformStream` | SAX events | Lightweight plain-object XML AST (`XMLDocumentNode`) or mapped `T` |
-| [`ObjectToSAXTransformStream<T>`](./src/ObjectToSAXTransformStream.ts) | `TransformStream` | Lightweight XML AST (`XMLNode`) or mapped `T` | SAX events |
-| [`SAXToDOMTransformStream<T>`](./src/SAXToDOMTransformStream.ts) | `TransformStream` | SAX events | DOM `Document` or `DocumentFragment` |
-| [`DOMToSAXTransformStream`](./src/DOMToSAXTransformStream.ts) | `TransformStream` | DOM-like nodes (`DOMNodeLike`) | SAX events |
-| [`SAXToXMLTextTransformStream`](./src/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
-| [`ResolveToSAXReadableStream`](./src/ResolveToSAXReadableStream.ts) | `ReadableStream` | Method calls ([`SAXResolver`](./src/interface/SAXResolver.ts)) | SAX events |
-| [`SAXToSAJTransformStream`](./src/json/SAXToSAJTransformStream.ts) (`@simple-api-stream/xml/json`) | `TransformStream` | SAX events | SAJ events (lossless `XMLDocumentNode` AST JSON, O(depth) streaming) |
-| [`SAJToSAXTransformStream`](./src/json/SAJToSAXTransformStream.ts) (`@simple-api-stream/xml/json`) | `TransformStream` | SAJ events (`XMLNode` AST JSON) | SAX events |
+| Export | Type | Input | Output |
+|--------|------|-------|--------|
+| [`XMLTextToSAXTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/XMLTextToSAXTransformStream.ts) | `TransformStream` | XML text (`string` chunks) | [`SAXEventInterface`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/event-interface/SAXEventInterface.ts) objects |
+| [`XMLTextToSAXEventWritableStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/XMLTextToSAXEventWritableStream.ts) | `WritableStream` | XML text (`string` chunks) | Calls a [`SAXHandler`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/interface/SAXHandler.ts) |
+| [`SAXToObjectTransformStream<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/SAXToObjectTransformStream.ts) | `TransformStream` | SAX events | Lightweight plain-object XML AST (`XMLDocumentNode`) or mapped `T` |
+| [`ObjectToSAXTransformStream<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/ObjectToSAXTransformStream.ts) | `TransformStream` | Lightweight XML AST (`XMLNode`) or mapped `T` | SAX events |
+| [`SAXToDOMTransformStream<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/SAXToDOMTransformStream.ts) | `TransformStream` | SAX events | DOM `Document` or `DocumentFragment` |
+| [`DOMToSAXTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/DOMToSAXTransformStream.ts) | `TransformStream` | DOM-like nodes (`DOMNodeLike`) | SAX events |
+| [`SAXToXMLTextTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
+| [`ResolveToSAXReadableStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/ResolveToSAXReadableStream.ts) | `ReadableStream` | Method calls ([`SAXResolver`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/interface/SAXResolver.ts)) | SAX events |
+| [`parseXMLResponse<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/parseXMLResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (`XMLDocumentNode` or mapped `T`) |
+| [`SAXToSAJTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/json/SAXToSAJTransformStream.ts) (`@simple-api-stream/xml/json`) | `TransformStream` | SAX events | SAJ events (lossless `XMLDocumentNode` AST JSON, O(depth) streaming) |
+| [`SAJToSAXTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/xml/src/json/SAJToSAXTransformStream.ts) (`@simple-api-stream/xml/json`) | `TransformStream` | SAJ events (`XMLNode` AST JSON) | SAX events |
 
 ## Usage
 
@@ -36,6 +37,19 @@ for await (const event of events) {
   if (event.name === "startElement")
     console.log(event.tagName, event.attrs);
 }
+```
+
+### Converting XML to JSON (`@simple-api-stream/xml/json`)
+
+```ts
+import { XMLTextToSAXTransformStream } from "@simple-api-stream/xml";
+import { SAXToSAJTransformStream } from "@simple-api-stream/xml/json";
+import { SAJToJSONTextTransformStream } from "@simple-api-stream/json";
+
+const jsonText = xmlTextStream
+  .pipeThrough(new XMLTextToSAXTransformStream())
+  .pipeThrough(new SAXToSAJTransformStream())
+  .pipeThrough(new SAJToJSONTextTransformStream({ indent: 2 }));
 ```
 
 ## SAX Events
@@ -52,7 +66,7 @@ for await (const event of events) {
 | `doctype` | `root`, `dtdType?: "PUBLIC" \| "SYSTEM"`, `identifier?`, `uri?`, `declarations?: string[]` |
 | `processingInstruction` | `target`, `data`; `<?xml …?>` additionally has `version`, `encoding`, `standalone`, and `<?xml-stylesheet …?>` has `type`, `href` |
 
-For full options, error classes, and usage examples, see the [root README](../../README.md).
+For full options, error classes, and usage examples, see the [root README](https://github.com/simple-api-stream/simple-api-stream#readme).
 
 ## See Also
 

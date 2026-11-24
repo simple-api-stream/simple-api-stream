@@ -1,8 +1,8 @@
 # simple-api-stream
 
-Streaming utilities for **incremental JSON, XML, CSV, and TOML processing** built on the [Web Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Streams_API).
+Streaming utilities for **incremental JSON, XML, CSV, TOML, and SSE processing** built on the [Web Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Streams_API).
 
-Text is parsed chunk by chunk into a flat sequence of **events**: SAJ (Simple API for JSON) for JSON, SAX (Simple API for XML) for XML, SAC (Simple API for CSV) for CSV, and SAT (Simple API for TOML) for TOML. You can consume the events directly, rebuild JavaScript objects from them, or turn them back into text. Because every component is a standard `ReadableStream` / `WritableStream` / `TransformStream`, the pieces compose with `pipeThrough()` / `pipeTo()` and respect backpressure.
+Text is parsed chunk by chunk into a flat sequence of **events**: SAJ (Simple API for JSON) for JSON, SAX (Simple API for XML) for XML, SAC (Simple API for CSV) for CSV, SAT (Simple API for TOML) for TOML, and SSE events for Server-Sent Events (`text/event-stream`). You can consume the events directly, rebuild JavaScript objects from them, or turn them back into text. Because every component is a standard `ReadableStream` / `WritableStream` / `TransformStream`, the pieces compose with `pipeThrough()` / `pipeTo()` and respect backpressure.
 
 - Zero external runtime dependencies
 - Works anywhere Web Streams are available (Node.js, browsers, Deno, Bun, …)
@@ -44,24 +44,25 @@ for await (const obj of objects) {
 
 | Package | Description |
 |---------|-------------|
-| [`@simple-api-stream/core`](./packages/core) | Core event classes (`SAEvent`, `StartDocumentEvent`, `EndDocumentEvent`, `ErrorEvent`, `CommentEvent`), parser interfaces (`SimpleApiParser`), and shared utilities |
-| [`@simple-api-stream/json`](./packages/json) | Streaming JSON (SAJ) parser, object materializer, serializer, and imperative builder |
-| [`@simple-api-stream/xml`](./packages/xml) | Streaming XML (SAX) parser, AST/DOM converters, serializer, and imperative builder |
-| [`@simple-api-stream/csv`](./packages/csv) | Streaming CSV (SAC) parser, row object converters, serializer, and imperative builder |
-| [`@simple-api-stream/toml`](./packages/toml) | Streaming TOML (SAT) parser, object converters, serializer, imperative builder, and optional SAJ bridge (`@simple-api-stream/toml/json`) |
+| [`@simple-api-stream/core`](./packages/core) | Core event classes (`SAEvent`, `StartDocumentEvent`, `EndDocumentEvent`, `ErrorEvent`, `CommentEvent`), parser interfaces (`SimpleApiParser`), and Fetch `Response` helpers (`responseToTextStream`, `ResponseStreamError`) |
+| [`@simple-api-stream/json`](./packages/json) | Streaming JSON (SAJ) parser, object materializer, serializer, imperative builder, and Fetch `Response` helper (`parseJSONResponse`) |
+| [`@simple-api-stream/xml`](./packages/xml) | Streaming XML (SAX) parser, AST/DOM converters, serializer, imperative builder, Fetch `Response` helper (`parseXMLResponse`), and optional SAJ bridge (`@simple-api-stream/xml/json`) |
+| [`@simple-api-stream/csv`](./packages/csv) | Streaming CSV (SAC) parser, row object converters, serializer, imperative builder, Fetch `Response` helper (`parseCSVResponse`), and optional SAJ bridge (`@simple-api-stream/csv/json`) |
+| [`@simple-api-stream/toml`](./packages/toml) | Streaming TOML (SAT) parser, object converters, serializer, imperative builder, Fetch `Response` helper (`parseTOMLResponse`), and optional SAJ bridge (`@simple-api-stream/toml/json`) |
 | [`@simple-api-stream/sse`](./packages/sse) | Streaming Server-Sent Events (`text/event-stream`) parser, serializer, and Fetch `Response` helper (`parseSSEResponse`) |
 
 ---
 
 ## 🧭 Overview
 
-Every format follows the same streaming mental model:
+Every document format (JSON, XML, CSV, TOML) follows the same streaming mental model (while SSE focuses on line-oriented `message` / `comment` event streaming via `SSETextToEventTransformStream`, `SSEEventToTextTransformStream`, and `parseSSEResponse`):
 
 - **`*TextToSA*TransformStream`** — parses text chunks into a stream of events.
 - **`SA*To*TextTransformStream`** — serializes events back into text.
 - **`SA*ToObjectTransformStream` / `ObjectToSA*TransformStream`** — converts between events and JavaScript values/objects (XML also provides `SAXToDOMTransformStream` / `DOMToSAXTransformStream` for DOM nodes).
 - **`ResolveToSA*ReadableStream`** — an imperative builder (`ReadableStream`) that *resolves* `*Resolver` method calls (e.g. `stream.startObject()`, `stream.key("a")`) into event chunks.
 - **`*TextToSA*EventWritableStream`** — parses text and invokes callback hooks on a `SA*Handler`.
+- **`parse*Response`** — Fetch `Response` helpers built on `@simple-api-stream/core`'s `responseToTextStream()`.
 
 ```mermaid
 flowchart LR
@@ -105,18 +106,23 @@ flowchart LR
     SAJ -- SAJToSATTransformStream --> SAT
     TT -- TOMLTextToSATEventWritableStream --> HT["SATHandler callbacks"]
   end
+  subgraph SSE
+    ST["SSE text"] -- SSETextToEventTransformStream --> SSEEV["SSE events"]
+    SSEEV -- SSEEventToTextTransformStream --> ST2["SSE text"]
+  end
 ```
 
 ## ✨ Features
 
-| Package | Class | Stream type | Input | Output |
-|---------|-------|-------------|-------|--------|
+| Package | Export | Type | Input | Output |
+|---------|--------|------|-------|--------|
 | **`@simple-api-stream/json`** | [`JSONTextToSAJTransformStream`](./packages/json/src/JSONTextToSAJTransformStream.ts) | `TransformStream` | JSON text (`string` chunks) | [`SAJEventInterface`](./packages/json/src/event-interface/SAJEventInterface.ts) objects |
 | | [`JSONTextToSAJEventWritableStream`](./packages/json/src/JSONTextToSAJEventWritableStream.ts) | `WritableStream` | JSON text (`string` chunks) | Calls a [`SAJHandler`](./packages/json/src/interface/SAJHandler.ts) |
 | | [`SAJToObjectTransformStream<T>`](./packages/json/src/SAJToObjectTransformStream.ts) | `TransformStream` | SAJ events | JavaScript values of type `T` |
 | | [`ObjectToSAJTransformStream<T>`](./packages/json/src/ObjectToSAJTransformStream.ts) | `TransformStream` | JavaScript values (incl. iterables / async iterables) | SAJ events |
 | | [`SAJToJSONTextTransformStream`](./packages/json/src/SAJToJSONTextTransformStream.ts) | `TransformStream` | SAJ events | JSON text |
 | | [`ResolveToSAJReadableStream`](./packages/json/src/ResolveToSAJReadableStream.ts) | `ReadableStream` | Method calls ([`SAJResolver`](./packages/json/src/interface/SAJResolver.ts)) | SAJ events |
+| | [`parseJSONResponse<T>`](./packages/json/src/parseJSONResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (auto-detects NDJSON / JSONL / `json-seq`) |
 | **`@simple-api-stream/xml`** | [`XMLTextToSAXTransformStream`](./packages/xml/src/XMLTextToSAXTransformStream.ts) | `TransformStream` | XML text (`string` chunks) | [`SAXEventInterface`](./packages/xml/src/event-interface/SAXEventInterface.ts) objects |
 | | [`XMLTextToSAXEventWritableStream`](./packages/xml/src/XMLTextToSAXEventWritableStream.ts) | `WritableStream` | XML text (`string` chunks) | Calls a [`SAXHandler`](./packages/xml/src/interface/SAXHandler.ts) |
 | | [`SAXToObjectTransformStream<T>`](./packages/xml/src/SAXToObjectTransformStream.ts) | `TransformStream` | SAX events | Lightweight XML AST (`XMLDocumentNode`) or mapped `T` |
@@ -125,6 +131,7 @@ flowchart LR
 | | [`DOMToSAXTransformStream`](./packages/xml/src/DOMToSAXTransformStream.ts) | `TransformStream` | DOM-like nodes (`DOMNodeLike`) | SAX events |
 | | [`SAXToXMLTextTransformStream`](./packages/xml/src/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
 | | [`ResolveToSAXReadableStream`](./packages/xml/src/ResolveToSAXReadableStream.ts) | `ReadableStream` | Method calls ([`SAXResolver`](./packages/xml/src/interface/SAXResolver.ts)) | SAX events |
+| | [`parseXMLResponse<T>`](./packages/xml/src/parseXMLResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (`XMLDocumentNode` or mapped `T`) |
 | | [`SAXToSAJTransformStream`](./packages/xml/src/json/SAXToSAJTransformStream.ts) (`./json`) | `TransformStream` | SAX events | SAJ events (`XMLDocumentNode` AST JSON) |
 | | [`SAJToSAXTransformStream`](./packages/xml/src/json/SAJToSAXTransformStream.ts) (`./json`) | `TransformStream` | SAJ events (`XMLNode` AST JSON) | SAX events |
 | **`@simple-api-stream/csv`** | [`CSVTextToSACTransformStream`](./packages/csv/src/CSVTextToSACTransformStream.ts) | `TransformStream` | CSV text (`string` chunks) | [`SACEventInterface`](./packages/csv/src/event-interface/SACEventInterface.ts) objects |
@@ -133,6 +140,7 @@ flowchart LR
 | | [`ObjectToSACTransformStream<T>`](./packages/csv/src/ObjectToSACTransformStream.ts) | `TransformStream` | JavaScript row objects / iterables | SAC events |
 | | [`SACToCSVTextTransformStream`](./packages/csv/src/SACToCSVTextTransformStream.ts) | `TransformStream` | SAC events | CSV text |
 | | [`ResolveToSACReadableStream`](./packages/csv/src/ResolveToSACReadableStream.ts) | `ReadableStream` | Method calls ([`SACResolver`](./packages/csv/src/interface/SACResolver.ts)) | SAC events |
+| | [`parseCSVResponse<T>`](./packages/csv/src/parseCSVResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (auto-sets `delimiter: "\t"` for TSV) |
 | | [`SACToSAJTransformStream`](./packages/csv/src/json/SACToSAJTransformStream.ts) (`./json`) | `TransformStream` | SAC events | SAJ events (JSON array / NDJSON) |
 | | [`SAJToSACTransformStream`](./packages/csv/src/json/SAJToSACTransformStream.ts) (`./json`) | `TransformStream` | SAJ events | SAC events |
 | **`@simple-api-stream/toml`** | [`TOMLTextToSATTransformStream`](./packages/toml/src/TOMLTextToSATTransformStream.ts) | `TransformStream` | TOML text (`string` chunks) | [`SATEventInterface`](./packages/toml/src/event-interface/SATEventInterface.ts) objects |
@@ -141,8 +149,12 @@ flowchart LR
 | | [`ObjectToSATTransformStream<T>`](./packages/toml/src/ObjectToSATTransformStream.ts) | `TransformStream` | JavaScript table objects | SAT events |
 | | [`SATToTOMLTextTransformStream`](./packages/toml/src/SATToTOMLTextTransformStream.ts) | `TransformStream` | SAT events | TOML text |
 | | [`ResolveToSATReadableStream`](./packages/toml/src/ResolveToSATReadableStream.ts) | `ReadableStream` | Method calls ([`SATResolver`](./packages/toml/src/interface/SATResolver.ts)) | SAT events |
+| | [`parseTOMLResponse<T>`](./packages/toml/src/parseTOMLResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (TOML table objects) |
 | | [`SATToSAJTransformStream`](./packages/toml/src/json/SATToSAJTransformStream.ts) (`./json`) | `TransformStream` | SAT events | SAJ events |
 | | [`SAJToSATTransformStream`](./packages/toml/src/json/SAJToSATTransformStream.ts) (`./json`) | `TransformStream` | SAJ events | SAT events |
+| **`@simple-api-stream/sse`** | [`SSETextToEventTransformStream`](./packages/sse/src/SSETextToEventTransformStream.ts) | `TransformStream` | SSE text (`string` chunks) | [`SSEEventInterface`](./packages/sse/src/event-interface/SSEEventInterface.ts) objects |
+| | [`SSEEventToTextTransformStream`](./packages/sse/src/SSEEventToTextTransformStream.ts) | `TransformStream` | [`SSEEventInterface`](./packages/sse/src/event-interface/SSEEventInterface.ts) objects | SSE text (`text/event-stream`) |
+| | [`parseSSEResponse<T>`](./packages/sse/src/parseSSEResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (`SSEMessage` or mapped `T`) |
 
 ---
 
@@ -160,6 +172,9 @@ npm install @simple-api-stream/csv
 
 # Install TOML streaming utilities
 npm install @simple-api-stream/toml
+
+# Install Server-Sent Events (SSE) streaming utilities
+npm install @simple-api-stream/sse
 ```
 
 > `@simple-api-stream/core` is listed under `dependencies` of each format package and is installed automatically — you only need to install `@simple-api-stream/core` directly if you are building a custom format parser or importing the shared base event classes directly.
@@ -402,6 +417,7 @@ import { parseJSONResponse } from "@simple-api-stream/json";
 import { parseXMLResponse } from "@simple-api-stream/xml";
 import { parseCSVResponse } from "@simple-api-stream/csv";
 import { parseTOMLResponse } from "@simple-api-stream/toml";
+import { parseSSEResponse } from "@simple-api-stream/sse";
 
 // JSON (auto-enables multiple for NDJSON / JSONL / application/json-seq)
 for await (const item of parseJSONResponse<MyType>(await fetch("/api/data.ndjson"))) {
@@ -419,6 +435,13 @@ for await (const row of parseCSVResponse(await fetch("/data.csv"), {
 // XML & TOML
 const xmlDocs = parseXMLResponse(await fetch("/feed.xml"));
 const tomlConfigs = parseTOMLResponse(await fetch("/config.toml"), { checkOk: true });
+
+// SSE (validates text/event-stream; supports mapMessage + skip)
+for await (const msg of parseSSEResponse(await fetch("/events"), {
+  mapMessage: (m, { skip }) => (m.data === "[DONE]" ? skip : JSON.parse(m.data)),
+})) {
+  console.log(msg);
+}
 ```
 
 ### TOML text → JavaScript objects / JSON text
@@ -436,6 +459,20 @@ const jsonText = tomlTextStream
   .pipeThrough(new TOMLTextToSATTransformStream())
   .pipeThrough(new SATToSAJTransformStream())
   .pipeThrough(new SAJToJSONTextTransformStream({ indent: 2 }));
+```
+
+### SSE text → events → SSE text
+
+```ts
+import {
+  SSETextToEventTransformStream,
+  SSEEventToTextTransformStream,
+} from "@simple-api-stream/sse";
+
+const events = sseTextStream.pipeThrough(new SSETextToEventTransformStream({ comments: true }));
+
+// Or transform and serialize back to text/event-stream
+const sseOut = events.pipeThrough(new SSEEventToTextTransformStream({ comments: true }));
 ```
 
 ---
@@ -586,19 +623,56 @@ Text and attribute values are escaped automatically.
 | `makeDocument` | `boolean` | `true` | Wrap each written table object in `startDocument` / `endDocument`. |
 | `unSupported` | `"ignore" \| "error" \| (arg: { value, skip }) => unknown` | `"ignore"` | How to handle values that cannot be represented in TOML (`null`, `undefined`, `function`, `symbol`, `bigint`, invalid `Date`). `"ignore"` omits them, `"error"` errors the stream, and a function can return a replacement value or `skip`. |
 
+### `SSETextToEventTransformStream(options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `skipDocument` | `boolean` | `false` | Do not emit `startDocument` / `endDocument` events. |
+| `comments` | `boolean` | `false` | Emit `comment` events for `: ...` comment lines. |
+| `stripBom` | `boolean` | `true` | Strip a leading UTF-8 BOM (`\uFEFF`) at the start of the stream. |
+| `flushIncomplete` | `boolean` | `false` | Dispatch a pending event with non-empty `data` buffer if the stream ends without a trailing blank line (`false` matches the WHATWG SSE specification). |
+
+### `SSEEventToTextTransformStream(options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `lineBreak` | `string` | `"\n"` | Line break sequence used in serialized output. |
+| `comments` | `boolean` | `false` | Serialize `comment` events as `: ...` lines. When `false`, `comment` events are omitted. |
+
+### Optional `./json` Bridge Streams
+
+- **`SAXToSAJTransformStream(options?)`** (`@simple-api-stream/xml/json`): `makeDocument?: boolean` (`true`), `ignoreWhitespaceText?: boolean` (`false`), `ignoreComments?: boolean` (`false`).
+- **`SAJToSAXTransformStream(options?)`** (`@simple-api-stream/xml/json`): `makeDocument?: boolean` (`true`), `multiple?: boolean` (`false`).
+- **`SACToSAJTransformStream(options?)`** (`@simple-api-stream/csv/json`): `rowFormat?: "auto" | "object" | "array"` (`"auto"`), `multiple?: boolean` (`false`), `makeDocument?: boolean` (`true`), `includeHeaderRow?: boolean` (`false`).
+- **`SAJToSACTransformStream(options?)`** (`@simple-api-stream/csv/json`): `makeDocument?: boolean` (`true`), `header?: "auto" | boolean | readonly string[]` (`"auto"`), `emitHeader?: boolean`, `formatValue?: ObjectToSACValueFormatter`.
+- **`SATToSAJTransformStream(options?)`** (`@simple-api-stream/toml/json`): `makeDocument?: boolean` (`true`).
+- **`SAJToSATTransformStream(options?)`** (`@simple-api-stream/toml/json`): `multiple?: boolean` (`false`), plus `ObjectToSATTransformStreamOptions` (`makeDocument`, `unSupported`).
+
+### `responseToTextStream(response, options?)` / `parse*Response(response, options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `checkOk` | `boolean` | `false` | Throw `ResponseStreamError` if `!response.ok`. |
+| `checkContentType` | `boolean \| RegExp \| ((contentType: string \| null) => boolean)` | `true` (for `parse*Response`) | Validate the `Content-Type` header (`false` disables validation). |
+| `encoding` | `string` | `charset` from `Content-Type`, or `"utf-8"` | Character encoding passed to `TextDecoderStream`. |
+| `decoder` | `TextDecoderOptions` | – | Options forwarded to `TextDecoderStream` (`fatal`, `ignoreBOM`). |
+| `parser` | Format-specific parser options | – | Available on all `parse*Response` helpers; forwarded to the underlying `*TextTo*TransformStream`. |
+| `object` | Format-specific object options | – | Available on `parseJSONResponse`, `parseXMLResponse`, and `parseCSVResponse`; forwarded to `*ToObjectTransformStream`. |
+| `mapMessage` | `(message: SSEMessage, ctx: { skip }) => T \| typeof skip` | – | Available on `parseSSEResponse`; maps each `SSEMessage` into `T` or returns `skip` to filter out messages (e.g. `"[DONE]"`). |
+
 ---
 
 ## 📜 Event Formats
 
-Events are plain objects with a `name` discriminator, so they can be narrowed with `switch (event.name)` in TypeScript. Type definitions are exported as `eventInterfaces` and the event classes as `events` from `@simple-api-stream/json`, `@simple-api-stream/xml`, `@simple-api-stream/csv`, and `@simple-api-stream/toml`.
+Events are plain objects with a `name` discriminator, so they can be narrowed with `switch (event.name)` in TypeScript. Type definitions are exported as `eventInterfaces` and the event classes as `events` from `@simple-api-stream/json`, `@simple-api-stream/xml`, `@simple-api-stream/csv`, `@simple-api-stream/toml`, and `@simple-api-stream/sse`.
 
 ### Shared Core Events (`@simple-api-stream/core`)
 
-| Event `name` | JSON (SAJ) | XML (SAX) | CSV (SAC) | TOML (SAT) |
-|--------------|-----------|-----------|-----------|------------|
-| `startDocument` / `endDocument` | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) |
-| `comment` | Opt-in (`allowComments: true`) | Yes (always) | – | Opt-in (`comments: true`) |
-| `error` | Opt-in (`multiple: "json-seq"`, `errorToEvent: true`) | – | – | – |
+| Event `name` | JSON (SAJ) | XML (SAX) | CSV (SAC) | TOML (SAT) | SSE |
+|--------------|-----------|-----------|-----------|------------|-----|
+| `startDocument` / `endDocument` | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) |
+| `comment` | Opt-in (`allowComments: true`) | Yes (always) | – | Opt-in (`comments: true`) | Opt-in (`comments: true`) |
+| `error` | Opt-in (`multiple: "json-seq"`, `errorToEvent: true`) | – | – | – | – |
 
 ### SAJ (Simple API for JSON)
 
@@ -692,16 +766,34 @@ Example for `id,name\n1,Alice` with `{ header: true }`:
 | `startInlineTable` / `endInlineTable` | – |
 | `value` | `type: "string" \| "integer" \| "float" \| "boolean" \| "offsetDateTime" \| "localDateTime" \| "localDate" \| "localTime"`, `value` |
 
+### SSE (Server-Sent Events)
+
+| `name` | Extra fields |
+|--------|--------------|
+| `startDocument` | `kind: "sse"` |
+| `endDocument` | – |
+| `comment` | `comment: string` (emitted when `comments: true`) |
+| `message` | `data: string`, `event?: string`, `id?: string`, `retry?: number` |
+
+Example for `event: update\nid: 42\ndata: hello\n\n`:
+
+```js
+{ "name": "startDocument", "kind": "sse" }
+{ "name": "message", "event": "update", "id": "42", "data": "hello" }
+{ "name": "endDocument" }
+```
+
 ---
 
 ## ⚠️ Error Handling
 
 - Malformed input errors the stream. With `TransformStream`s, both the readable side (e.g. `for await`) and pending writes reject.
 - With the `*EventWritableStream` classes, errors are reported to the handler's `onError` callback.
-- Errors carry a snapshot of the internal state for debugging (e.g. `buffer`, `state`, `pos`). The error classes are available from `streams` on `@simple-api-stream/json`, `@simple-api-stream/xml`, `@simple-api-stream/csv`, and `@simple-api-stream/toml`:
+- Errors carry a snapshot of the internal state for debugging (e.g. `buffer`, `state`, `pos`). The error classes are available from `@simple-api-stream/core`, `streams` on `@simple-api-stream/{json,xml,csv,toml}`, and the `./json` subpaths:
 
 | Error class | Import from |
 |-------------|-------------|
+| `ResponseStreamError` | `@simple-api-stream/core` |
 | `JSONTextToSAJParserError` | `@simple-api-stream/json` (`streams.JSONTextToSAJParserError`) |
 | `SAJToObjectTransformStreamError` | `@simple-api-stream/json` (`streams.SAJToObjectTransformStreamError`) |
 | `ObjectToSAJTransformStreamError` | `@simple-api-stream/json` (`streams.ObjectToSAJTransformStreamError`) |
@@ -713,11 +805,13 @@ Example for `id,name\n1,Alice` with `{ header: true }`:
 | `DOMToSAXTransformStreamError` | `@simple-api-stream/xml` (`streams.DOMToSAXTransformStreamError`) |
 | `SAXToXMLTextTransformStreamError` | `@simple-api-stream/xml` (`streams.SAXToXMLTextTransformStreamError`) |
 | `ResolveToSAXReadableStreamError` | `@simple-api-stream/xml` (`streams.ResolveToSAXReadableStreamError`) |
+| `SAXToSAJTransformStreamError` | `@simple-api-stream/xml/json` |
 | `CSVTextToSACParserError` | `@simple-api-stream/csv` (`streams.CSVTextToSACParserError`) |
 | `SACToObjectTransformStreamError` | `@simple-api-stream/csv` (`streams.SACToObjectTransformStreamError`) |
 | `ObjectToSACTransformStreamError` | `@simple-api-stream/csv` (`streams.ObjectToSACTransformStreamError`) |
 | `SACToCSVTextTransformStreamError` | `@simple-api-stream/csv` (`streams.SACToCSVTextTransformStreamError`) |
 | `ResolveToSACReadableStreamError` | `@simple-api-stream/csv` (`streams.ResolveToSACReadableStreamError`) |
+| `SACToSAJTransformStreamError` | `@simple-api-stream/csv/json` |
 | `TOMLTextToSATParserError` | `@simple-api-stream/toml` (`streams.TOMLTextToSATParserError`) |
 | `SATToTOMLTextTransformStreamError` | `@simple-api-stream/toml` (`streams.SATToTOMLTextTransformStreamError`) |
 | `SATToObjectTransformStreamError` | `@simple-api-stream/toml` (`streams.SATToObjectTransformStreamError`) |
@@ -754,6 +848,8 @@ import {
   parseMediaType,
   extractCharset,
   type SimpleApiParser,
+  type ContentTypeMatcher,
+  type ResponseToTextStreamOptions,
   type StartDocumentSAEventInterface,
   type EndDocumentSAEventInterface,
   type ErrorSAEventInterface,
@@ -768,6 +864,7 @@ import {
   ObjectToSAJTransformStream,
   SAJToJSONTextTransformStream,
   ResolveToSAJReadableStream,
+  parseJSONResponse,
   streams,
   events,
   type eventInterfaces,
@@ -784,6 +881,7 @@ import {
   DOMToSAXTransformStream,
   SAXToXMLTextTransformStream,
   ResolveToSAXReadableStream,
+  parseXMLResponse,
   streams,
   events,
   type eventInterfaces,
@@ -801,6 +899,7 @@ import {
   ObjectToSACTransformStream,
   SACToCSVTextTransformStream,
   ResolveToSACReadableStream,
+  parseCSVResponse,
   streams,
   events,
   type eventInterfaces,
@@ -815,11 +914,23 @@ import {
   ObjectToSATTransformStream,
   SATToTOMLTextTransformStream,
   ResolveToSATReadableStream,
+  parseTOMLResponse,
   streams,
   events,
   type eventInterfaces,
   type interfaces,
 } from "@simple-api-stream/toml";
+
+// SSE streaming utilities
+import {
+  SSETextToEventTransformStream,
+  SSEEventToTextTransformStream,
+  parseSSEResponse,
+  streams,
+  events,
+  type eventInterfaces,
+  type SSEMessage,
+} from "@simple-api-stream/sse";
 
 // Optional XML ⇔ JSON (SAX ⇔ SAJ, lossless XMLNode AST structure) bridge
 import { SAXToSAJTransformStream, SAJToSAXTransformStream } from "@simple-api-stream/xml/json";
@@ -837,9 +948,10 @@ import { SATToSAJTransformStream, SAJToSATTransformStream } from "@simple-api-st
 
 ```bash
 npm install
-npm run lint     # ESLint (type-aware)
-npm test         # Vitest with coverage across all packages
-npm run build    # Build @simple-api-stream/{core,json,xml,csv,toml} (ESM + .d.ts)
+npm run lint       # ESLint (type-aware)
+npm run typecheck  # TypeScript check across root and all workspaces
+npm test           # Vitest with coverage across all packages
+npm run build      # Build @simple-api-stream/{core,json,xml,csv,toml,sse} (ESM + .d.ts)
 ```
 
 - Packages live under `packages/core`, `packages/json`, `packages/xml`, `packages/csv`, `packages/toml`, and `packages/sse`; tests are colocated as `*.test.ts`.

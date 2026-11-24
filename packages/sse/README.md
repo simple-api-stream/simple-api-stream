@@ -14,9 +14,9 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 
 | Export | Type | Input | Output |
 |--------|------|-------|--------|
-| [`SSETextToEventTransformStream`](./src/SSETextToEventTransformStream.ts) | `TransformStream` | SSE text (`string` chunks) | `SSEEventInterface` objects |
-| [`SSEEventToTextTransformStream`](./src/SSEEventToTextTransformStream.ts) | `TransformStream` | `SSEEventInterface` objects | SSE text (`text/event-stream`) |
-| [`parseSSEResponse<T>`](./src/parseSSEResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (`SSEMessage` or mapped `T`) |
+| [`SSETextToEventTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/sse/src/SSETextToEventTransformStream.ts) | `TransformStream` | SSE text (`string` chunks) | [`SSEEventInterface`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/sse/src/event-interface/SSEEventInterface.ts) objects |
+| [`SSEEventToTextTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/sse/src/SSEEventToTextTransformStream.ts) | `TransformStream` | [`SSEEventInterface`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/sse/src/event-interface/SSEEventInterface.ts) objects | SSE text (`text/event-stream`) |
+| [`parseSSEResponse<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/sse/src/parseSSEResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (`SSEMessage` or mapped `T`) |
 
 ## Usage
 
@@ -29,7 +29,29 @@ for await (const msg of parseSSEResponse(response)) {
 }
 ```
 
-For full options and usage examples, see the [root README](../../README.md).
+Or compose the underlying Web Streams directly:
+
+```ts
+import {
+  SSETextToEventTransformStream,
+  SSEEventToTextTransformStream,
+} from "@simple-api-stream/sse";
+
+const sseText = inputTextStream
+  .pipeThrough(new SSETextToEventTransformStream({ comments: true }))
+  .pipeThrough(new SSEEventToTextTransformStream({ comments: true }));
+```
+
+## SSE Events
+
+| `name` | Extra fields |
+|--------|--------------|
+| `startDocument` | `kind: "sse"` |
+| `endDocument` | – |
+| `comment` | `comment: string` (emitted when `comments: true`) |
+| `message` | `data: string`, `event?: string`, `id?: string`, `retry?: number` |
+
+For full options and usage examples, see the [root README](https://github.com/simple-api-stream/simple-api-stream#readme).
 
 ## See Also
 
