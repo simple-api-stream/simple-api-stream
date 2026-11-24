@@ -2,7 +2,7 @@
   "name": "simple-api-stream",
   "private": true,
   "version": "1.1.0",
-  "description": "Streaming JSON, XML, CSV, and TOML parsers and serializers built on the Web Streams API",
+  "description": "Streaming JSON, XML, CSV, TOML, and SSE parsers and serializers built on the Web Streams API",
   "type": "module",
   "workspaces": [
     "packages/*"

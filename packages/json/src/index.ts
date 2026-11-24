@@ -26,7 +26,7 @@ export const streams = {
 export { JSONTextToSAJEventWritableStream } from "./JSONTextToSAJEventWritableStream.js";
 export { ResolveToSAJReadableStream } from "./ResolveToSAJReadableStream.js";
 export { JSONTextToSAJTransformStream } from "./JSONTextToSAJTransformStream.js";
-export { SAJToObjectTransformStream } from "./SAJToObjectTransformStream.js";
-export { ObjectToSAJTransformStream } from "./ObjectToSAJTransformStream.js";
-export { SAJToJSONTextTransformStream } from "./SAJToJSONTextTransformStream.js";
+export { SAJToObjectTransformStream, type SAJToObjectTransformStreamOptions } from "./SAJToObjectTransformStream.js";
+export { ObjectToSAJTransformStream, type ObjectToSAJTransformStreamOptions } from "./ObjectToSAJTransformStream.js";
+export { SAJToJSONTextTransformStream, type SAJToJSONTextTransformStreamOptions } from "./SAJToJSONTextTransformStream.js";
 export { parseJSONResponse, type ParseJSONResponseOptions } from "./parseJSONResponse.js";

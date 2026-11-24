@@ -72,4 +72,20 @@ name = "beta"
       { name: "endDocument" },
     ]);
   });
+
+  test("omits startDocument and endDocument when makeDocument is false", async () => {
+    const stream = new ResolveToSATReadableStream((r) => {
+      r.key(["a"]);
+      r.value("integer", 1);
+    });
+    const events = await Array.fromAsync(
+      stream.pipeThrough(new SATToSAJTransformStream({ makeDocument: false })),
+    );
+    expect(events).toEqual([
+      { name: "startObject" },
+      { name: "key", key: "a" },
+      { name: "value", type: "number", value: 1 },
+      { name: "endObject" },
+    ]);
+  });
 });

@@ -43,10 +43,19 @@ function* emitValueAsSAJ(value: unknown): Generator<SAJEventInterface> {
 }
 
 /**
+ * Configuration options for `SATToSAJTransformStream`.
+ */
+export type SATToSAJTransformStreamOptions = {
+  /** Wrap each emitted JSON document in `startDocument` / `endDocument` (default: `true`). */
+  makeDocument?: boolean
+};
+
+/**
  * A `TransformStream` that converts SAT (Simple API for TOML) events into SAJ (Simple API for JSON) events.
  */
 export class SATToSAJTransformStream extends TransformStream<SATEventInterface, SAJEventInterface> {
-  constructor() {
+  constructor(options?: SATToSAJTransformStreamOptions) {
+    const makeDocument = options?.makeDocument ?? true;
     const reconstructor = new SATToObjectTransformStream<Record<string, unknown>>();
     const writer = reconstructor.writable.getWriter();
     const reader = reconstructor.readable.getReader();
@@ -56,11 +65,15 @@ export class SATToSAJTransformStream extends TransformStream<SATEventInterface, 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        controller_.enqueue({ name: "startDocument", kind: "json" });
+        if (makeDocument) {
+          controller_.enqueue({ name: "startDocument", kind: "json" });
+        }
         for (const sajEvent of emitValueAsSAJ(value)) {
           controller_.enqueue(sajEvent);
         }
-        controller_.enqueue({ name: "endDocument" });
+        if (makeDocument) {
+          controller_.enqueue({ name: "endDocument" });
+        }
       }
     })();
 
