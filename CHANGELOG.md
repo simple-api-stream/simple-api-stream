@@ -5,6 +5,8 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-24
+
 **Added**:
 
 - `@simple-api-stream/core`: Added `CommentEvent` and `CommentSAEventInterface` (`name: "comment"`, `comment: string`) as shared comment event contracts across packages.
@@ -13,10 +15,16 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
   - Added `CommentEvent` (extending `@simple-api-stream/core`'s `CommentEvent`) and `CommentSAJEventInterface` (`name: "comment"`, `comment: string`, `style?: "line" | "block"`), `onComment` on `SAJHandler`, and `comment()` on `SAJResolver` / `ResolveToSAJReadableStream`.
   - Added `allowComments` and `allowTrailingCommas` options (both default to `false`) to `JSONTextToSAJParser`, `JSONTextToSAJTransformStream`, and `JSONTextToSAJEventWritableStream` for opt-in JSONC parsing.
   - Added `comments` option (defaults to `false`) to `SAJToJSONTextTransformStream` to optionally serialize `comment` events, and updated `SAJToObjectTransformStream` to ignore `comment` events.
+- `@simple-api-stream/toml`:
+  - Added new streaming TOML (SAT = Simple API for TOML) package with `TOMLTextToSATTransformStream`, `TOMLTextToSATEventWritableStream`, `SATToTOMLTextTransformStream`, `SATToObjectTransformStream`, `ResolveToSATReadableStream`, and `TOMLTextToSATParser`.
+  - Added `@simple-api-stream/toml/json` subpath exporting `SATToSAJTransformStream` to convert SAT events into SAJ events (`@simple-api-stream/json` declared as an optional peer dependency).
 
 **Changed**:
 
-- Added English JSDoc comments to all remaining exported declarations (interfaces, types, and utility functions), public class methods/accessors (excluding constructors), and interface methods/callback properties across `@simple-api-stream/core`, `@simple-api-stream/csv`, `@simple-api-stream/json`, and `@simple-api-stream/xml`.
+- **All packages**:
+  - Added English JSDoc comments to exported declarations (classes, interfaces, types, and utility functions), public class methods/accessors (excluding constructors), and interface methods/callback properties across all packages.
+  - Configured `prepack` / `postpack` scripts to bundle the root `CHANGELOG.md` into published package tarballs without dirtying the working tree.
+  - Expanded test suites across `@simple-api-stream/csv`, `@simple-api-stream/json`, and `@simple-api-stream/toml` (reaching 100% coverage across the monorepo) and removed unused `assertIsTrue` utilities from `csv` and `toml`.
 
 ## [1.0.1] - 2026-11-20
 
@@ -50,6 +58,7 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 - Documentation:
   - Architecture overview, feature matrix, usage examples, option tables, event format references, error classes, and subpath export guide in `README.md`.
 
-[Unreleased]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/simple-api-stream/simple-api-stream/releases/tag/v1.0.0

@@ -1,12 +1,72 @@
-# `@simple-api-stream/toml`
+# @simple-api-stream/toml
 
-Streaming TOML (SAT: Simple API for TOML) parser, serializer, and Web Streams utilities, plus an optional JSON bridge (`@simple-api-stream/toml/json`).
+Streaming TOML (SAT = Simple API for TOML) parser, object materializer, serializer, and optional JSON (SAJ) bridge built on the [Web Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Streams_API).
+
+## Installation
+
+```bash
+npm install @simple-api-stream/toml
+```
+
+Requires Node.js **>= 24** or any runtime supporting Web Streams and async iteration of `ReadableStream`.
 
 ## Features
 
-- `TOMLTextToSATTransformStream` — Parses TOML text chunks into SAT events (`table`, `arrayTable`, `key`, `startArray`, `endArray`, `startInlineTable`, `endInlineTable`, `value`, `comment`, `startDocument`, `endDocument`).
-- `TOMLTextToSATEventWritableStream` — Invokes `SATHandler` callbacks as TOML text chunks are written.
-- `SATToTOMLTextTransformStream` — Serializes SAT events back into TOML text.
-- `SATToObjectTransformStream` — Reconstructs JavaScript objects from SAT events.
-- `ResolveToSATReadableStream` — Programmatically emits SAT events via `SATResolver`.
-- `@simple-api-stream/toml/json` (`SATToSAJTransformStream`) — Converts SAT events to SAJ events for `@simple-api-stream/json` (`@simple-api-stream/json` is an optional peer dependency).
+| Class | Stream type | Input | Output |
+|-------|-------------|-------|--------|
+| [`TOMLTextToSATTransformStream`](./src/TOMLTextToSATTransformStream.ts) | `TransformStream` | TOML text (`string` chunks) | [`SATEventInterface`](./src/event-interface/SATEventInterface.ts) objects |
+| [`TOMLTextToSATEventWritableStream`](./src/TOMLTextToSATEventWritableStream.ts) | `WritableStream` | TOML text (`string` chunks) | Calls a [`SATHandler`](./src/interface/SATHandler.ts) |
+| [`SATToObjectTransformStream<T>`](./src/SATToObjectTransformStream.ts) | `TransformStream` | SAT events | JavaScript objects of type `T` |
+| [`SATToTOMLTextTransformStream`](./src/SATToTOMLTextTransformStream.ts) | `TransformStream` | SAT events | TOML text |
+| [`ResolveToSATReadableStream`](./src/ResolveToSATReadableStream.ts) | `ReadableStream` | Method calls ([`SATResolver`](./src/interface/SATResolver.ts)) | SAT events |
+| [`SATToSAJTransformStream`](./src/SATToSAJTransformStream.ts) (`@simple-api-stream/toml/json`) | `TransformStream` | SAT events | SAJ events (`@simple-api-stream/json` optional peer) |
+
+## Usage
+
+```ts
+import {
+  TOMLTextToSATTransformStream,
+  SATToObjectTransformStream,
+} from "@simple-api-stream/toml";
+
+const objects = tomlTextStream
+  .pipeThrough(new TOMLTextToSATTransformStream())
+  .pipeThrough(new SATToObjectTransformStream());
+
+for await (const obj of objects) {
+  console.log("Parsed TOML:", obj);
+}
+```
+
+### Converting TOML to JSON (`@simple-api-stream/toml/json`)
+
+```ts
+import { TOMLTextToSATTransformStream } from "@simple-api-stream/toml";
+import { SATToSAJTransformStream } from "@simple-api-stream/toml/json";
+import { SAJToJSONTextTransformStream } from "@simple-api-stream/json";
+
+const jsonText = tomlTextStream
+  .pipeThrough(new TOMLTextToSATTransformStream())
+  .pipeThrough(new SATToSAJTransformStream())
+  .pipeThrough(new SAJToJSONTextTransformStream({ indent: 2 }));
+```
+
+## SAT Events
+
+| `name` | Extra fields |
+|--------|--------------|
+| `startDocument` | `kind: "toml"` |
+| `endDocument` | – |
+| `comment` | `comment: string` (emitted when `comments: true`) |
+| `table` | `path: string[]` (`[a.b]`) |
+| `arrayTable` | `path: string[]` (`[[a.b]]`) |
+| `key` | `path: string[]` (`a.b = ...`) |
+| `startArray` / `endArray` | – |
+| `startInlineTable` / `endInlineTable` | – |
+| `value` | `type: "string" \| "integer" \| "float" \| "boolean" \| "offsetDateTime" \| "localDateTime" \| "localDate" \| "localTime"`, `value` |
+
+For full options, error classes, and usage examples, see the [root README](../../README.md).
+
+## License
+
+[MIT](./LICENSE)
