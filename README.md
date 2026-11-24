@@ -64,13 +64,18 @@ flowchart LR
   end
   subgraph XML
     XT["XML text"] -- XMLTextToSAXTransformStream --> SAX["SAX events"]
+    XOBJ["XMLNode AST"] -- ObjectToSAXTransformStream --> SAX
+    XDOM["DOMNodeLike"] -- DOMToSAXTransformStream --> SAX
     RX["ResolveToSAXReadableStream (imperative)"] --> SAX
+    SAX -- SAXToObjectTransformStream --> XOBJ2["XMLDocumentNode / T"]
     SAX -- SAXToXMLTextTransformStream --> XT2["XML text"]
     XT -- XMLTextToSAXEventWritableStream --> HX["SAXHandler callbacks"]
   end
   subgraph CSV
     CT["CSV text"] -- CSVTextToSACTransformStream --> SAC["SAC events"]
+    COBJ["Row objects / iterables"] -- ObjectToSACTransformStream --> SAC
     RC["ResolveToSACReadableStream (imperative)"] --> SAC
+    SAC -- SACToObjectTransformStream --> COBJ2["Row objects / T"]
     SAC -- SACToCSVTextTransformStream --> CT2["CSV text"]
     CT -- CSVTextToSACEventWritableStream --> HC["SACHandler callbacks"]
   end
@@ -96,6 +101,9 @@ flowchart LR
 | | [`ResolveToSAJReadableStream`](./packages/json/src/ResolveToSAJReadableStream.ts) | `ReadableStream` | Method calls ([`SAJResolver`](./packages/json/src/interface/SAJResolver.ts)) | SAJ events |
 | **`@simple-api-stream/xml`** | [`XMLTextToSAXTransformStream`](./packages/xml/src/XMLTextToSAXTransformStream.ts) | `TransformStream` | XML text (`string` chunks) | [`SAXEventInterface`](./packages/xml/src/event-interface/SAXEventInterface.ts) objects |
 | | [`XMLTextToSAXEventWritableStream`](./packages/xml/src/XMLTextToSAXEventWritableStream.ts) | `WritableStream` | XML text (`string` chunks) | Calls a [`SAXHandler`](./packages/xml/src/interface/SAXHandler.ts) |
+| | [`SAXToObjectTransformStream<T>`](./packages/xml/src/SAXToObjectTransformStream.ts) | `TransformStream` | SAX events | Lightweight XML AST (`XMLDocumentNode`) or mapped `T` |
+| | [`ObjectToSAXTransformStream<T>`](./packages/xml/src/ObjectToSAXTransformStream.ts) | `TransformStream` | Lightweight XML AST (`XMLNode`) or mapped `T` | SAX events |
+| | [`DOMToSAXTransformStream`](./packages/xml/src/DOMToSAXTransformStream.ts) | `TransformStream` | DOM-like nodes (`DOMNodeLike`) | SAX events |
 | | [`SAXToXMLTextTransformStream`](./packages/xml/src/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
 | | [`ResolveToSAXReadableStream`](./packages/xml/src/ResolveToSAXReadableStream.ts) | `ReadableStream` | Method calls ([`SAXResolver`](./packages/xml/src/interface/SAXResolver.ts)) | SAX events |
 | **`@simple-api-stream/csv`** | [`CSVTextToSACTransformStream`](./packages/csv/src/CSVTextToSACTransformStream.ts) | `TransformStream` | CSV text (`string` chunks) | [`SACEventInterface`](./packages/csv/src/event-interface/SACEventInterface.ts) objects |
@@ -261,6 +269,32 @@ console.log((await Array.fromAsync(xmlText)).join(""));
 // <?xml version="1.0" encoding="UTF-8" ?><a href="https://example.com">Hello &amp; welcome</a>
 ```
 
+### XML text → AST / DOM → XML text
+
+```ts
+import {
+  XMLTextToSAXTransformStream,
+  SAXToObjectTransformStream,
+  ObjectToSAXTransformStream,
+  DOMToSAXTransformStream,
+  SAXToXMLTextTransformStream,
+} from "@simple-api-stream/xml";
+
+const docs = xmlTextStream
+  .pipeThrough(new XMLTextToSAXTransformStream())
+  .pipeThrough(new SAXToObjectTransformStream());
+
+// Round-trip AST back to XML text
+const xmlOut = docs
+  .pipeThrough(new ObjectToSAXTransformStream())
+  .pipeThrough(new SAXToXMLTextTransformStream({ summarize: "document" }));
+
+// Or serialize a browser/jsdom/xmldom DOM node directly
+const fromDom = domNodeStream
+  .pipeThrough(new DOMToSAXTransformStream({ selfClosingEmptyElements: true }))
+  .pipeThrough(new SAXToXMLTextTransformStream({ summarize: "document" }));
+```
+
 ### CSV text → SAC events
 
 ```ts
@@ -307,6 +341,30 @@ stream.close();
 
 console.log((await Array.fromAsync(csvText)).join(""));
 // id,name\r\n1,"Alice, Bob"\r\n
+```
+
+### CSV text → row objects → CSV text
+
+```ts
+import {
+  CSVTextToSACTransformStream,
+  SACToObjectTransformStream,
+  ObjectToSACTransformStream,
+  SACToCSVTextTransformStream,
+} from "@simple-api-stream/csv";
+
+const rows = csvTextStream
+  .pipeThrough(new CSVTextToSACTransformStream({ header: true }))
+  .pipeThrough(new SACToObjectTransformStream({
+    mapRow: ({ columns, skip }) => {
+      if (columns[0]?.value === "") return skip;
+      return { id: Number(columns[0]?.value), name: columns[1]?.value ?? "" };
+    },
+  }));
+
+const csvOut = rows
+  .pipeThrough(new ObjectToSACTransformStream({ header: ["id", "name"] }))
+  .pipeThrough(new SACToCSVTextTransformStream({ summarize: "row" }));
 ```
 
 ### TOML text → JavaScript objects / JSON text
@@ -382,6 +440,28 @@ const jsonText = tomlTextStream
 
 Text and attribute values are escaped automatically.
 
+### `SAXToObjectTransformStream<T>(options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `mapDocument` | `(doc: XMLDocumentNode, ctx: { skip }) => T \| typeof skip` | – | Map each completed `XMLDocumentNode` to a custom value (infers `T`) or return `skip` to omit it. |
+| `ignoreWhitespaceText` | `boolean` | `false` | Omit whitespace-only `text` events from the reconstructed tree. |
+| `ignoreComments` | `boolean` | `false` | Omit `comment` events from the reconstructed tree. |
+
+### `ObjectToSAXTransformStream<T>(options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `makeDocument` | `boolean` | `true` | Wrap each emitted top-level node in `startDocument` / `endDocument`. |
+| `mapNode` | `(value: T, ctx: { skip }) => XMLNode \| typeof skip` | – | Map custom input values into `XMLNode` (or return `skip` to omit them). |
+
+### `DOMToSAXTransformStream(options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `makeDocument` | `boolean` | `true` | Wrap each emitted top-level DOM node in `startDocument` / `endDocument`. |
+| `selfClosingEmptyElements` | `boolean` | `false` | Emit `selfClosing: true` for element nodes with no child nodes. |
+
 ### `CSVTextToSACTransformStream(options?)` / `CSVTextToSACEventWritableStream(handler, options?)`
 
 | Option | Type | Default | Description |
@@ -403,6 +483,22 @@ Text and attribute values are escaped automatically.
 | `lineBreak` | `string` | `"\r\n"` | Line break string appended after each row. |
 | `quotePolicy` | `"minimal" \| "all"` | `"minimal"` | `"minimal"` quotes only fields containing delimiters, quotes, or line breaks; `"all"` quotes every field. |
 | `summarize` | `boolean \| "default" \| "row" \| "document"` | `"default"` | Output granularity. `"default"` (`false`) emits one chunk per event, `"row"` emits one chunk per row, `"document"` (`true`) emits one chunk per `startDocument` … `endDocument`. |
+
+### `SACToObjectTransformStream<T>(options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `mapRow` | `({ columns, headers, rowIndex, skip }) => T \| typeof skip` | `SACToObjectTransformStream.toObject` | Map each record row's column events and metadata into `T` (infers `T`) or return `skip` to omit the row. Use `SACToObjectTransformStream.toArray` for `string[]` rows. |
+
+### `ObjectToSACTransformStream<T>(options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `makeDocument` | `boolean` | `true` | Wrap the stream in `startDocument` / `endDocument`. |
+| `header` | `boolean \| readonly string[]` | `false` | `readonly string[]`: explicit column order and header names. `true`: infer headers from the first object row's keys. |
+| `emitHeader` | `boolean` | `true` when `header` is enabled, `false` otherwise | Emit `startHeaderRow` … `endHeaderRow` before the first record row (or on flush if explicit headers were given). |
+| `mapRow` | `(row: T, { headers, rowIndex, skip }) => Iterable<ObjectToSACColumnInput> \| typeof skip` | – | Custom row-to-columns mapper (supports `{ value, header?, quoted? }` metadata and `skip`). |
+| `formatValue` | `(value, { index, header, rowIndex }) => ObjectToSACColumnInput` | – | Custom cell serializer for default object/iterable mapping. |
 
 ### `TOMLTextToSATTransformStream(options?)` / `TOMLTextToSATEventWritableStream(handler, options?)`
 
@@ -541,9 +637,14 @@ Example for `id,name\n1,Alice` with `{ header: true }`:
 | `ObjectToSAJTransformStreamError` | `@simple-api-stream/json` (`streams.ObjectToSAJTransformStreamError`) |
 | `SAJToJSONTextTransformStreamError` | `@simple-api-stream/json` (`streams.SAJToJSONTextTransformStreamError`) |
 | `XMLTextToSAXParserError` | `@simple-api-stream/xml` (`streams.XMLTextToSAXParserError`) |
+| `SAXToObjectTransformStreamError` | `@simple-api-stream/xml` (`streams.SAXToObjectTransformStreamError`) |
+| `ObjectToSAXTransformStreamError` | `@simple-api-stream/xml` (`streams.ObjectToSAXTransformStreamError`) |
+| `DOMToSAXTransformStreamError` | `@simple-api-stream/xml` (`streams.DOMToSAXTransformStreamError`) |
 | `SAXToXMLTextTransformStreamError` | `@simple-api-stream/xml` (`streams.SAXToXMLTextTransformStreamError`) |
 | `ResolveToSAXReadableStreamError` | `@simple-api-stream/xml` (`streams.ResolveToSAXReadableStreamError`) |
 | `CSVTextToSACParserError` | `@simple-api-stream/csv` (`streams.CSVTextToSACParserError`) |
+| `SACToObjectTransformStreamError` | `@simple-api-stream/csv` (`streams.SACToObjectTransformStreamError`) |
+| `ObjectToSACTransformStreamError` | `@simple-api-stream/csv` (`streams.ObjectToSACTransformStreamError`) |
 | `SACToCSVTextTransformStreamError` | `@simple-api-stream/csv` (`streams.SACToCSVTextTransformStreamError`) |
 | `ResolveToSACReadableStreamError` | `@simple-api-stream/csv` (`streams.ResolveToSACReadableStreamError`) |
 | `TOMLTextToSATParserError` | `@simple-api-stream/toml` (`streams.TOMLTextToSATParserError`) |
@@ -601,18 +702,26 @@ import {
 import {
   XMLTextToSAXTransformStream,
   XMLTextToSAXEventWritableStream,
+  SAXToObjectTransformStream,
+  ObjectToSAXTransformStream,
+  DOMToSAXTransformStream,
   SAXToXMLTextTransformStream,
   ResolveToSAXReadableStream,
   streams,
   events,
   type eventInterfaces,
   type interfaces,
+  type XMLNode,
+  type XMLDocumentNode,
+  type DOMNodeLike,
 } from "@simple-api-stream/xml";
 
 // CSV streaming utilities
 import {
   CSVTextToSACTransformStream,
   CSVTextToSACEventWritableStream,
+  SACToObjectTransformStream,
+  ObjectToSACTransformStream,
   SACToCSVTextTransformStream,
   ResolveToSACReadableStream,
   streams,
