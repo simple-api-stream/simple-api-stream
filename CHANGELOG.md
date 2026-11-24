@@ -5,6 +5,10 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 
 ## [Unreleased]
 
+**Added**:
+
+- `@simple-api-stream/csv`: Added `SACToObjectTransformStream<T>` (with `mapRow`, `toObject`, `toArray`, and `skip` support) and `ObjectToSACTransformStream<T>` (with `makeDocument`, `header`, `emitHeader`, `mapRow`, `formatValue`, and `skip` support) for streaming bidirectional conversion between SAC events and JavaScript row objects/iterables.
+
 ## [1.1.0] - 2026-11-24
 
 **Added**:

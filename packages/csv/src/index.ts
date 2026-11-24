@@ -5,8 +5,10 @@ export type * as interfaces from "./interface/index.js";
 
 import * as CSVTextToSACEventWritableStreamModule from "./CSVTextToSACEventWritableStream.js";
 import * as CSVTextToSACTransformStreamModule from "./CSVTextToSACTransformStream.js";
+import * as ObjectToSACTransformStreamModule from "./ObjectToSACTransformStream.js";
 import * as ResolveToSACReadableStreamModule from "./ResolveToSACReadableStream.js";
 import * as SACToCSVTextTransformStreamModule from "./SACToCSVTextTransformStream.js";
+import * as SACToObjectTransformStreamModule from "./SACToObjectTransformStream.js";
 import * as CSVTextToSACParserModule from "./CSVTextToSACParser.js";
 
 /**
@@ -15,12 +17,29 @@ import * as CSVTextToSACParserModule from "./CSVTextToSACParser.js";
 export const streams = {
   ...CSVTextToSACEventWritableStreamModule,
   ...CSVTextToSACTransformStreamModule,
+  ...ObjectToSACTransformStreamModule,
   ...ResolveToSACReadableStreamModule,
   ...SACToCSVTextTransformStreamModule,
+  ...SACToObjectTransformStreamModule,
   ...CSVTextToSACParserModule,
 };
 
 export { CSVTextToSACEventWritableStream } from "./CSVTextToSACEventWritableStream.js";
 export { CSVTextToSACTransformStream } from "./CSVTextToSACTransformStream.js";
+export { ObjectToSACTransformStream } from "./ObjectToSACTransformStream.js";
 export { ResolveToSACReadableStream } from "./ResolveToSACReadableStream.js";
 export { SACToCSVTextTransformStream } from "./SACToCSVTextTransformStream.js";
+export { SACToObjectTransformStream } from "./SACToObjectTransformStream.js";
+export type {
+  ObjectToSACColumnInput,
+  ObjectToSACRowContext,
+  ObjectToSACRowMapper,
+  ObjectToSACTransformStreamOptions,
+  ObjectToSACValueContext,
+  ObjectToSACValueFormatter,
+} from "./ObjectToSACTransformStream.js";
+export type {
+  SACToObjectRowContext,
+  SACToObjectRowMapper,
+  SACToObjectTransformStreamOptions,
+} from "./SACToObjectTransformStream.js";

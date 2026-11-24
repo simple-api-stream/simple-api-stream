@@ -16,6 +16,8 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 |-------|-------------|-------|--------|
 | [`CSVTextToSACTransformStream`](./src/CSVTextToSACTransformStream.ts) | `TransformStream` | CSV text (`string` chunks) | [`SACEventInterface`](./src/event-interface/SACEventInterface.ts) objects |
 | [`CSVTextToSACEventWritableStream`](./src/CSVTextToSACEventWritableStream.ts) | `WritableStream` | CSV text (`string` chunks) | Calls a [`SACHandler`](./src/interface/SACHandler.ts) |
+| [`SACToObjectTransformStream<T>`](./src/SACToObjectTransformStream.ts) | `TransformStream` | SAC events | JavaScript row objects / values of type `T` |
+| [`ObjectToSACTransformStream<T>`](./src/ObjectToSACTransformStream.ts) | `TransformStream` | JavaScript row objects / iterables | SAC events |
 | [`SACToCSVTextTransformStream`](./src/SACToCSVTextTransformStream.ts) | `TransformStream` | SAC events | CSV text |
 | [`ResolveToSACReadableStream`](./src/ResolveToSACReadableStream.ts) | `ReadableStream` | Method calls ([`SACResolver`](./src/interface/SACResolver.ts)) | SAC events |
 
