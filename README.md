@@ -68,6 +68,8 @@ flowchart LR
     RX["ResolveToSAXReadableStream (imperative)"] --> SAX
     SAX -- SAXToObjectTransformStream --> XOBJ2["XMLDocumentNode / T"]
     SAX -- SAXToDOMTransformStream --> XDOM2["DOM Document / Fragment"]
+    SAX -- SAXToSAJTransformStream --> SAJ
+    SAJ -- SAJToSAXTransformStream --> SAX
     SAX -- SAXToXMLTextTransformStream --> XT2["XML text"]
     XT -- XMLTextToSAXEventWritableStream --> HX["SAXHandler callbacks"]
   end
@@ -109,6 +111,8 @@ flowchart LR
 | | [`DOMToSAXTransformStream`](./packages/xml/src/DOMToSAXTransformStream.ts) | `TransformStream` | DOM-like nodes (`DOMNodeLike`) | SAX events |
 | | [`SAXToXMLTextTransformStream`](./packages/xml/src/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
 | | [`ResolveToSAXReadableStream`](./packages/xml/src/ResolveToSAXReadableStream.ts) | `ReadableStream` | Method calls ([`SAXResolver`](./packages/xml/src/interface/SAXResolver.ts)) | SAX events |
+| | [`SAXToSAJTransformStream`](./packages/xml/src/json/SAXToSAJTransformStream.ts) (`./json`) | `TransformStream` | SAX events | SAJ events (`XMLDocumentNode` AST JSON) |
+| | [`SAJToSAXTransformStream`](./packages/xml/src/json/SAJToSAXTransformStream.ts) (`./json`) | `TransformStream` | SAJ events (`XMLNode` AST JSON) | SAX events |
 | **`@simple-api-stream/csv`** | [`CSVTextToSACTransformStream`](./packages/csv/src/CSVTextToSACTransformStream.ts) | `TransformStream` | CSV text (`string` chunks) | [`SACEventInterface`](./packages/csv/src/event-interface/SACEventInterface.ts) objects |
 | | [`CSVTextToSACEventWritableStream`](./packages/csv/src/CSVTextToSACEventWritableStream.ts) | `WritableStream` | CSV text (`string` chunks) | Calls a [`SACHandler`](./packages/csv/src/interface/SACHandler.ts) |
 | | [`SACToObjectTransformStream<T>`](./packages/csv/src/SACToObjectTransformStream.ts) | `TransformStream` | SAC events | JavaScript row objects / values of type `T` |
@@ -768,6 +772,9 @@ import {
   type eventInterfaces,
   type interfaces,
 } from "@simple-api-stream/toml";
+
+// Optional XML ⇔ JSON (SAX ⇔ SAJ, lossless XMLNode AST structure) bridge
+import { SAXToSAJTransformStream, SAJToSAXTransformStream } from "@simple-api-stream/xml/json";
 
 // Optional TOML ⇔ JSON (SAT ⇔ SAJ) bridge
 import { SATToSAJTransformStream, SAJToSATTransformStream } from "@simple-api-stream/toml/json";

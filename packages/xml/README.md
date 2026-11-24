@@ -22,6 +22,8 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 | [`DOMToSAXTransformStream`](./src/DOMToSAXTransformStream.ts) | `TransformStream` | DOM-like nodes (`DOMNodeLike`) | SAX events |
 | [`SAXToXMLTextTransformStream`](./src/SAXToXMLTextTransformStream.ts) | `TransformStream` | SAX events | XML text |
 | [`ResolveToSAXReadableStream`](./src/ResolveToSAXReadableStream.ts) | `ReadableStream` | Method calls ([`SAXResolver`](./src/interface/SAXResolver.ts)) | SAX events |
+| [`SAXToSAJTransformStream`](./src/json/SAXToSAJTransformStream.ts) (`@simple-api-stream/xml/json`) | `TransformStream` | SAX events | SAJ events (lossless `XMLDocumentNode` AST JSON, O(depth) streaming) |
+| [`SAJToSAXTransformStream`](./src/json/SAJToSAXTransformStream.ts) (`@simple-api-stream/xml/json`) | `TransformStream` | SAJ events (`XMLNode` AST JSON) | SAX events |
 
 ## Usage
 
