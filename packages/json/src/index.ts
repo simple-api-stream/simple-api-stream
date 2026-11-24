@@ -29,3 +29,4 @@ export { JSONTextToSAJTransformStream } from "./JSONTextToSAJTransformStream.js"
 export { SAJToObjectTransformStream } from "./SAJToObjectTransformStream.js";
 export { ObjectToSAJTransformStream } from "./ObjectToSAJTransformStream.js";
 export { SAJToJSONTextTransformStream } from "./SAJToJSONTextTransformStream.js";
+export { parseJSONResponse, type ParseJSONResponseOptions } from "./parseJSONResponse.js";

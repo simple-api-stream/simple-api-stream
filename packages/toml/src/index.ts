@@ -30,6 +30,7 @@ export { SATToObjectTransformStream } from "./SATToObjectTransformStream.js";
 export { SATToTOMLTextTransformStream } from "./SATToTOMLTextTransformStream.js";
 export { TOMLTextToSATEventWritableStream } from "./TOMLTextToSATEventWritableStream.js";
 export { TOMLTextToSATTransformStream } from "./TOMLTextToSATTransformStream.js";
+export { parseTOMLResponse, type ParseTOMLResponseOptions } from "./parseTOMLResponse.js";
 export type {
   ObjectToSATTransformStreamOptions,
   ObjectToSATUnsupportedHandler,

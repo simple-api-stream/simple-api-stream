@@ -30,6 +30,7 @@ export { ObjectToSACTransformStream } from "./ObjectToSACTransformStream.js";
 export { ResolveToSACReadableStream } from "./ResolveToSACReadableStream.js";
 export { SACToCSVTextTransformStream } from "./SACToCSVTextTransformStream.js";
 export { SACToObjectTransformStream } from "./SACToObjectTransformStream.js";
+export { parseCSVResponse, type ParseCSVResponseOptions } from "./parseCSVResponse.js";
 export type {
   ObjectToSACColumnInput,
   ObjectToSACRowContext,

@@ -14,6 +14,17 @@ Text is parsed chunk by chunk into a flat sequence of **events**: SAJ (Simple AP
 ## ⚡ Quick Start
 
 ```ts
+import { parseJSONResponse } from "@simple-api-stream/json";
+
+const response = await fetch("https://example.com/data.json");
+for await (const obj of parseJSONResponse(response)) {
+  console.log(obj);
+}
+```
+
+Or compose the underlying Web Streams directly:
+
+```ts
 import { JSONTextToSAJTransformStream, SAJToObjectTransformStream } from "@simple-api-stream/json";
 
 const response = await fetch("https://example.com/data.json");
@@ -381,6 +392,34 @@ const csvOut = rows
   .pipeThrough(new SACToCSVTextTransformStream({ summarize: "row" }));
 ```
 
+### Fetch `Response` helpers
+
+Each format package provides a `parse*Response(response, options?)` helper built on `@simple-api-stream/core`'s `responseToTextStream()`. They validate the `Content-Type` header by default (`checkContentType: false` to disable, or pass a `RegExp` / predicate), detect `charset` automatically, and return a `ReadableStream<T>` (which can be consumed with `for await` or piped further):
+
+```ts
+import { parseJSONResponse } from "@simple-api-stream/json";
+import { parseXMLResponse } from "@simple-api-stream/xml";
+import { parseCSVResponse } from "@simple-api-stream/csv";
+import { parseTOMLResponse } from "@simple-api-stream/toml";
+
+// JSON (auto-enables multiple for NDJSON / JSONL / application/json-seq)
+for await (const item of parseJSONResponse<MyType>(await fetch("/api/data.ndjson"))) {
+  console.log(item);
+}
+
+// CSV (auto-sets delimiter: "\t" for text/tab-separated-values; infers T from mapRow)
+for await (const row of parseCSVResponse(await fetch("/data.csv"), {
+  parser: { header: true },
+  object: { mapRow: ({ columns }) => ({ id: Number(columns[0]?.value), name: columns[1]?.value ?? "" }) },
+})) {
+  console.log(row.id, row.name);
+}
+
+// XML & TOML
+const xmlDocs = parseXMLResponse(await fetch("/feed.xml"));
+const tomlConfigs = parseTOMLResponse(await fetch("/config.toml"), { checkOk: true });
+```
+
 ### TOML text → JavaScript objects / JSON text
 
 ```ts
@@ -709,6 +748,10 @@ import {
   EndDocumentEvent,
   ErrorEvent,
   CommentEvent,
+  responseToTextStream,
+  ResponseStreamError,
+  parseMediaType,
+  extractCharset,
   type SimpleApiParser,
   type StartDocumentSAEventInterface,
   type EndDocumentSAEventInterface,

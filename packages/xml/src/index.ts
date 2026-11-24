@@ -34,6 +34,7 @@ export { ResolveToSAXReadableStream } from "./ResolveToSAXReadableStream.js";
 export { SAXToDOMTransformStream } from "./SAXToDOMTransformStream.js";
 export { SAXToObjectTransformStream } from "./SAXToObjectTransformStream.js";
 export { SAXToXMLTextTransformStream } from "./SAXToXMLTextTransformStream.js";
+export { parseXMLResponse, type ParseXMLResponseOptions } from "./parseXMLResponse.js";
 export type {
   DOMAttrLike,
   DOMNodeLike,

@@ -7,13 +7,16 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 
 **Added**:
 
+- `@simple-api-stream/core`: Added `responseToTextStream`, `ResponseStreamError`, `parseMediaType`, and `extractCharset` helpers for validating Fetch `Response` objects (`checkOk`, `checkContentType`, `charset` auto-detection) and decoding them to `ReadableStream<string>`.
+- `@simple-api-stream/json`: Added `parseJSONResponse<T>` helper (auto-validates JSON/NDJSON/JSON-seq `Content-Type` and auto-detects `multiple` for NDJSON/JSONL/`application/json-seq`).
 - `@simple-api-stream/csv`:
-  - Added `SACToObjectTransformStream<T>` (with `mapRow`, `toObject`, `toArray`, and `skip` support) and `ObjectToSACTransformStream<T>` (with `makeDocument`, `header`, `emitHeader`, `mapRow`, `formatValue`, and `skip` support) for streaming bidirectional conversion between SAC events and JavaScript row objects/iterables.
+  - Added `SACToObjectTransformStream<T>` (with `mapRow`, `toObject`, `toArray`, and `skip` support), `ObjectToSACTransformStream<T>` (with `makeDocument`, `header`, `emitHeader`, `mapRow`, `formatValue`, and `skip` support), and `parseCSVResponse<T>` (auto-validates CSV/TSV `Content-Type` and auto-sets `delimiter: "\t"` for `text/tab-separated-values`).
   - Added `@simple-api-stream/csv/json` subpath exporting `SACToSAJTransformStream` (O(1) streaming SAC → SAJ with `rowFormat`, `multiple`, `makeDocument`, and `includeHeaderRow`) and `SAJToSACTransformStream` (streaming top-level JSON arrays and NDJSON row-by-row into SAC events; `@simple-api-stream/json` declared as an optional peer dependency).
 - `@simple-api-stream/xml`:
   - Added `SAXToObjectTransformStream<T>` (reconstructing lightweight plain-object `XMLDocumentNode` ASTs with `mapDocument`, `ignoreWhitespaceText`, `ignoreComments`, and `skip`), `ObjectToSAXTransformStream<T>` (converting `XMLNode` ASTs or mapped values back to SAX events), `SAXToDOMTransformStream<T>` (constructing DOM `Document` / `DocumentFragment` trees via an injected or global `DOMDocumentFactoryLike`), and `DOMToSAXTransformStream` (converting zero-dependency `DOMNodeLike` nodes such as browser DOM / `jsdom` / `@xmldom/xmldom` into SAX events).
   - Added `@simple-api-stream/xml/json` subpath exporting `SAXToSAJTransformStream` (O(depth) streaming SAX → SAJ in lossless `XMLDocumentNode` AST JSON form) and `SAJToSAXTransformStream` (`@simple-api-stream/json` declared as an optional peer dependency).
-- `@simple-api-stream/toml`: Added `ObjectToSATTransformStream<T>` (with `makeDocument`, `unSupported`, `Date` → `offsetDateTime`, nested `[table]` / `[[arrayTable]]` ordering, inline tables, and circular reference detection) and `SAJToSATTransformStream` (exported from `@simple-api-stream/toml/json` alongside `SATToSAJTransformStream`) to convert JavaScript table objects and SAJ events into SAT events.
+  - Added `parseXMLResponse<T>` helper for streaming XML/`+xml` Fetch `Response` objects.
+- `@simple-api-stream/toml`: Added `ObjectToSATTransformStream<T>` (with `makeDocument`, `unSupported`, `Date` → `offsetDateTime`, nested `[table]` / `[[arrayTable]]` ordering, inline tables, and circular reference detection), `SAJToSATTransformStream` (exported from `@simple-api-stream/toml/json` alongside `SATToSAJTransformStream`), and `parseTOMLResponse<T>` helper.
 
 ## [1.1.0] - 2026-11-24
 
