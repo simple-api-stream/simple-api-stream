@@ -48,6 +48,9 @@ export class CSVTextToSACParserError extends Error implements Status {
   }
 }
 
+/**
+ * Optional lifecycle hook callbacks invoked during `CSVTextToSACParser` parsing.
+ */
 export type CSVTextToSACParserAdditionalHandler = {
   onParseBefore(arg: Status): void
   onParseLoopBefore(arg: Status): void
@@ -55,6 +58,9 @@ export type CSVTextToSACParserAdditionalHandler = {
   onParseAfter(arg: Status): void
 };
 
+/**
+ * Configuration options for `CSVTextToSACParser`.
+ */
 export type CSVTextToSACParserOptions = {
   skipDocument?: boolean
   header?: boolean | string[]
@@ -134,6 +140,9 @@ export class CSVTextToSACParser implements SimpleApiParser<string> {
     };
   }
 
+  /**
+   * Returns the current parser status snapshot.
+   */
   get status(): Status {
     return this.#status();
   }
@@ -348,6 +357,9 @@ export class CSVTextToSACParser implements SimpleApiParser<string> {
     this.#reportError(this.#makeError(`Unexpected character ${JSON.stringify(ch)} after closing quote at pos ${this.#pos}`));
   }
 
+  /**
+   * Appends a CSV text chunk and parses available characters, emitting SAC events.
+   */
   enqueue(chunk: string): void {
     if (this.#flushed) {
       this.#reportError(this.#makeError("Cannot enqueue after flush()"));
@@ -386,6 +398,9 @@ export class CSVTextToSACParser implements SimpleApiParser<string> {
     }
   }
 
+  /**
+   * Finalizes parsing of any remaining buffered characters and emits closing events.
+   */
   flush(): void {
     if (this.#flushed) return;
     this.#flushed = true;

@@ -77,6 +77,9 @@ export class XMLTextToSAXTransformStream extends TransformStream<string, SAXEven
     this.#buffer = buffer;
   }
 
+  /**
+   * Returns the current parser status snapshot.
+   */
   get status() {
     return this.#buffer.status;
   }

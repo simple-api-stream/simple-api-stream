@@ -23,6 +23,9 @@ const summarize = Object.freeze({
 } as const);
 type Summarize = typeof summarize[keyof typeof summarize];
 
+/**
+ * Configuration options for `SAXToXMLTextTransformStream`.
+ */
 export type SAXToXMLTextTransformOptions = {
   /**
    * indent size or indent character
@@ -135,6 +138,9 @@ export class SAXToXMLTextTransformStream extends TransformStream<SAXEventInterfa
     };
   }
 
+  /**
+   * Returns the current serializer status snapshot.
+   */
   get status() {
     return this.#status();
   }

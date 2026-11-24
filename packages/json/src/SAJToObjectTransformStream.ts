@@ -29,6 +29,9 @@ export class SAJToObjectTransformStreamError extends Error implements Status {
   current: unknown;
 }
 
+/**
+ * Configuration options for `SAJToObjectTransformStream`.
+ */
 export type SAJToObjectTransformStreamOptions = {
   multiple: boolean
 };
@@ -78,6 +81,9 @@ export class SAJToObjectTransformStream<T> extends TransformStream<SAJEventInter
     };
   }
 
+  /**
+   * Returns the current reconstructor status snapshot.
+   */
   get status() {
     return this.#status();
   }

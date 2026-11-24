@@ -11,8 +11,14 @@ const summarize = Object.freeze({
 } as const);
 type Summarize = typeof summarize[keyof typeof summarize];
 
+/**
+ * Policy controlling when CSV fields are enclosed in quotes (`"minimal"` or `"all"`).
+ */
 export type QuotePolicy = "minimal" | "all";
 
+/**
+ * Configuration options for `SACToCSVTextTransformStream`.
+ */
 export type SACToCSVTextTransformStreamOptions = {
   delimiter?: string
   quote?: string

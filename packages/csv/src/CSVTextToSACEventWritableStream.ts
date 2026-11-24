@@ -27,6 +27,9 @@ export class CSVTextToSACEventWritableStream extends WritableStream<string> {
     this.#parser = parser;
   }
 
+  /**
+   * Returns the current parser status snapshot.
+   */
   get status() {
     return this.#parser.status;
   }

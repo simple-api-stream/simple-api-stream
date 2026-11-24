@@ -50,6 +50,9 @@ export class SAJToJSONTextTransformStreamError extends Error implements Status {
   parts: string[];
 }
 
+/**
+ * Configuration options for `SAJToJSONTextTransformStream`.
+ */
 export type SAJToJSONTextTransformStreamOptions = {
   /** json text is document summarize */
   summarize: boolean | Summarize
@@ -110,6 +113,9 @@ export class SAJToJSONTextTransformStream extends TransformStream<SAJEventInterf
     };
   }
 
+  /**
+   * Returns the current serializer status snapshot.
+   */
   get status() {
     return this.#status();
   }

@@ -37,6 +37,9 @@ type Status = {
   get typeStack(): ("object" | "array")[]
 };
 
+/**
+ * Optional lifecycle hook callbacks invoked during `JSONTextToSAJParser` parsing.
+ */
 export type JSONTextToSAJParserAdditionalHandler = {
   onParseBefore(arg: Status): void
   onParseLoopBefore(arg: Status): void
@@ -52,6 +55,9 @@ function isJsonWhitespace(ch: string): boolean {
 
 type Ch = string | typeof EOL;
 
+/**
+ * Options controlling multi-document and JSON Text Sequence (`json-seq`) parsing in `JSONTextToSAJParser`.
+ */
 export type JSONTextToSAJParserMultipleOptions =
   | { multiple?: boolean, errorToEvent?: never }
   | { multiple: "json-seq", errorToEvent?: boolean };
@@ -96,6 +102,9 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
     };
   }
 
+  /**
+   * Returns the current parser status snapshot.
+   */
   get status() {
     return this.#status();
   }
@@ -140,11 +149,17 @@ export class JSONTextToSAJParser implements SimpleApiParser<string> {
     return this.#makeError(`not complete syntax error. buffer:${this.#buffer}`);
   }
 
+  /**
+   * Appends a JSON text chunk and parses available characters, emitting SAJ events.
+   */
   enqueue(chunk: string): void {
     this.#buffer += chunk;
     this.#parse();
   }
 
+  /**
+   * Finalizes parsing of any remaining buffered characters and emits closing events.
+   */
   flush(): void {
     this.#parse(true);
   }

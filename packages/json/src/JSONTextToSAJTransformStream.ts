@@ -40,6 +40,9 @@ export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEve
     this.#parser = buffer;
   }
 
+  /**
+   * Returns the current parser status snapshot.
+   */
   get status() {
     return this.#parser.status;
   }

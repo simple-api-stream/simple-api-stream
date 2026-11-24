@@ -17,6 +17,9 @@ type Status = {
   get unSupported(): ReturnType<typeof toUnsupported>
 };
 
+/**
+ * Configuration options for `ObjectToSAJTransformStream`.
+ */
 export type ObjectToSAJTransformStreamOptions = {
   makeDocument?: boolean
   unSupported?: UnSupporteds | UnSupportedFunction
@@ -95,6 +98,9 @@ export class ObjectToSAJTransformStream<T = unknown> extends TransformStream<T, 
     };
   }
 
+  /**
+   * Returns the current stream configuration status.
+   */
   get status() {
     return this.#status();
   }

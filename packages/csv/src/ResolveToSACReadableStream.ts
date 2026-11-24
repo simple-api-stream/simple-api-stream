@@ -66,14 +66,23 @@ export class ResolveToSACReadableStream extends ReadableStream<SACEventInterface
     return new ResolveToSACReadableStreamError(message, this.#status(), options);
   }
 
+  /**
+   * Enqueues a `StartDocumentEvent`.
+   */
   startDocument(): void {
     this.#controller.enqueue(new StartDocumentEvent());
   }
 
+  /**
+   * Enqueues an `EndDocumentEvent`.
+   */
   endDocument(): void {
     this.#controller.enqueue(new EndDocumentEvent());
   }
 
+  /**
+   * Enqueues a `StartHeaderRowEvent` and begins tracking header columns.
+   */
   startHeaderRow(): void {
     if (this.#rowMode !== null) {
       throw this.#makeError(`Cannot startHeaderRow while ${this.#rowMode} row is open`);
@@ -84,6 +93,9 @@ export class ResolveToSACReadableStream extends ReadableStream<SACEventInterface
     this.#controller.enqueue(new StartHeaderRowEvent());
   }
 
+  /**
+   * Enqueues an `EndHeaderRowEvent` and closes the current header row.
+   */
   endHeaderRow(): void {
     if (this.#rowMode !== "header") {
       throw this.#makeError("Cannot endHeaderRow when no header row is open");
@@ -92,6 +104,9 @@ export class ResolveToSACReadableStream extends ReadableStream<SACEventInterface
     this.#controller.enqueue(new EndHeaderRowEvent());
   }
 
+  /**
+   * Enqueues a `StartRecordRowEvent` and begins tracking record columns.
+   */
   startRecordRow(): void {
     if (this.#rowMode !== null) {
       throw this.#makeError(`Cannot startRecordRow while ${this.#rowMode} row is open`);
@@ -101,6 +116,9 @@ export class ResolveToSACReadableStream extends ReadableStream<SACEventInterface
     this.#controller.enqueue(new StartRecordRowEvent());
   }
 
+  /**
+   * Enqueues an `EndRecordRowEvent` and closes the current record row.
+   */
   endRecordRow(): void {
     if (this.#rowMode !== "record") {
       throw this.#makeError("Cannot endRecordRow when no record row is open");
@@ -109,6 +127,9 @@ export class ResolveToSACReadableStream extends ReadableStream<SACEventInterface
     this.#controller.enqueue(new EndRecordRowEvent());
   }
 
+  /**
+   * Enqueues a `ColumnEvent` for the current row, resolving `index` and `header` automatically when applicable.
+   */
   column(value: string, options?: ColumnEventOptions): void {
     const index = options?.index ?? (this.#rowMode !== null ? this.#colIndex++ : undefined);
     let header = options?.header;
@@ -121,12 +142,18 @@ export class ResolveToSACReadableStream extends ReadableStream<SACEventInterface
     this.#controller.enqueue(new ColumnEvent(value, { ...options, index, header }));
   }
 
+  /**
+   * Closes the underlying `ReadableStream` controller.
+   */
   close() {
     if (this.#closed) return;
     this.#closed = true;
     this.#controller.close();
   }
 
+  /**
+   * Disposes the stream by closing it.
+   */
   [Symbol.dispose]() {
     this.close();
   }
