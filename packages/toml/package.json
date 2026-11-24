@@ -38,6 +38,7 @@
   },
   "scripts": {
     "build": "vite build && tsc --build tsconfig.build.json --force",
+    "typecheck": "tsc --noEmit",
     "clean": "node ../../utils/remove.ts -- -f ./dist -f ./tsconfig.build.tsbuildinfo",
     "prepack": "node -e \"require('node:fs').cpSync('../../CHANGELOG.md', 'CHANGELOG.md')\"",
     "postpack": "node ../../utils/remove.ts -- -f ./CHANGELOG.md"
