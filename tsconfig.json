@@ -18,6 +18,9 @@
     },
     {
       "path": "./packages/toml/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/sse/tsconfig.build.json"
     }
   ]
 }

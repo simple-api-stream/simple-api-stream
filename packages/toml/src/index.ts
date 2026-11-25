@@ -3,6 +3,7 @@ export * as events from "./event/index.js";
 export type * as eventInterfaces from "./event-interface/index.js";
 export type * as interfaces from "./interface/index.js";
 
+import * as ObjectToSATTransformStreamModule from "./ObjectToSATTransformStream.js";
 import * as ResolveToSATReadableStreamModule from "./ResolveToSATReadableStream.js";
 import * as SATToObjectTransformStreamModule from "./SATToObjectTransformStream.js";
 import * as SATToTOMLTextTransformStreamModule from "./SATToTOMLTextTransformStream.js";
@@ -14,6 +15,7 @@ import * as TOMLTextToSATTransformStreamModule from "./TOMLTextToSATTransformStr
  * Namespace containing all TOML stream and parser classes.
  */
 export const streams = {
+  ...ObjectToSATTransformStreamModule,
   ...ResolveToSATReadableStreamModule,
   ...SATToObjectTransformStreamModule,
   ...SATToTOMLTextTransformStreamModule,
@@ -22,8 +24,14 @@ export const streams = {
   ...TOMLTextToSATTransformStreamModule,
 };
 
+export { ObjectToSATTransformStream } from "./ObjectToSATTransformStream.js";
 export { ResolveToSATReadableStream } from "./ResolveToSATReadableStream.js";
 export { SATToObjectTransformStream } from "./SATToObjectTransformStream.js";
 export { SATToTOMLTextTransformStream } from "./SATToTOMLTextTransformStream.js";
 export { TOMLTextToSATEventWritableStream } from "./TOMLTextToSATEventWritableStream.js";
 export { TOMLTextToSATTransformStream } from "./TOMLTextToSATTransformStream.js";
+export { parseTOMLResponse, type ParseTOMLResponseOptions } from "./parseTOMLResponse.js";
+export type {
+  ObjectToSATTransformStreamOptions,
+  ObjectToSATUnsupportedHandler,
+} from "./ObjectToSATTransformStream.js";

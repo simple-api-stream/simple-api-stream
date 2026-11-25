@@ -4,12 +4,9 @@ on:
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
 
-env:
-  WORKING_DIRECTORY: application
-
 jobs:
   test:
-    name: Run test codes
+    name: Run checks and tests
     permissions:
       contents: read
       pull-requests: write
@@ -32,6 +29,12 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
       - name: Install dependencies
         run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
       - name: Run Vitest
         run: npx vitest --coverage.enabled true --coverage.reporter=json-summary --coverage.reporter=json --coverage.reportsDirectory=coverage
       - name: Show coverage

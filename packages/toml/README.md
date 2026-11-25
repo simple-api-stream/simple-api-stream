@@ -12,14 +12,17 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 
 ## Features
 
-| Class | Stream type | Input | Output |
-|-------|-------------|-------|--------|
-| [`TOMLTextToSATTransformStream`](./src/TOMLTextToSATTransformStream.ts) | `TransformStream` | TOML text (`string` chunks) | [`SATEventInterface`](./src/event-interface/SATEventInterface.ts) objects |
-| [`TOMLTextToSATEventWritableStream`](./src/TOMLTextToSATEventWritableStream.ts) | `WritableStream` | TOML text (`string` chunks) | Calls a [`SATHandler`](./src/interface/SATHandler.ts) |
-| [`SATToObjectTransformStream<T>`](./src/SATToObjectTransformStream.ts) | `TransformStream` | SAT events | JavaScript objects of type `T` |
-| [`SATToTOMLTextTransformStream`](./src/SATToTOMLTextTransformStream.ts) | `TransformStream` | SAT events | TOML text |
-| [`ResolveToSATReadableStream`](./src/ResolveToSATReadableStream.ts) | `ReadableStream` | Method calls ([`SATResolver`](./src/interface/SATResolver.ts)) | SAT events |
-| [`SATToSAJTransformStream`](./src/SATToSAJTransformStream.ts) (`@simple-api-stream/toml/json`) | `TransformStream` | SAT events | SAJ events (`@simple-api-stream/json` optional peer) |
+| Export | Type | Input | Output |
+|--------|------|-------|--------|
+| [`TOMLTextToSATTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/toml/src/TOMLTextToSATTransformStream.ts) | `TransformStream` | TOML text (`string` chunks) | [`SATEventInterface`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/toml/src/event-interface/SATEventInterface.ts) objects |
+| [`TOMLTextToSATEventWritableStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/toml/src/TOMLTextToSATEventWritableStream.ts) | `WritableStream` | TOML text (`string` chunks) | Calls a [`SATHandler`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/toml/src/interface/SATHandler.ts) |
+| [`SATToObjectTransformStream<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/toml/src/SATToObjectTransformStream.ts) | `TransformStream` | SAT events | JavaScript objects of type `T` |
+| [`ObjectToSATTransformStream<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/toml/src/ObjectToSATTransformStream.ts) | `TransformStream` | JavaScript table objects | SAT events |
+| [`SATToTOMLTextTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/toml/src/SATToTOMLTextTransformStream.ts) | `TransformStream` | SAT events | TOML text |
+| [`ResolveToSATReadableStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/toml/src/ResolveToSATReadableStream.ts) | `ReadableStream` | Method calls ([`SATResolver`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/toml/src/interface/SATResolver.ts)) | SAT events |
+| [`parseTOMLResponse<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/toml/src/parseTOMLResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (reconstructed TOML table objects) |
+| [`SATToSAJTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/toml/src/json/SATToSAJTransformStream.ts) (`@simple-api-stream/toml/json`) | `TransformStream` | SAT events | SAJ events (`@simple-api-stream/json` optional peer) |
+| [`SAJToSATTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/toml/src/json/SAJToSATTransformStream.ts) (`@simple-api-stream/toml/json`) | `TransformStream` | SAJ events | SAT events (`@simple-api-stream/json` optional peer) |
 
 ## Usage
 
@@ -65,7 +68,13 @@ const jsonText = tomlTextStream
 | `startInlineTable` / `endInlineTable` | – |
 | `value` | `type: "string" \| "integer" \| "float" \| "boolean" \| "offsetDateTime" \| "localDateTime" \| "localDate" \| "localTime"`, `value` |
 
-For full options, error classes, and usage examples, see the [root README](../../README.md).
+For full options, error classes, and usage examples, see the [root README](https://github.com/simple-api-stream/simple-api-stream#readme).
+
+## See Also
+
+- [TOML v1.0.0 Specification](https://toml.io/en/v1.0.0)
+- [RFC 3339 — Date and Time on the Internet: Timestamps](https://datatracker.ietf.org/doc/html/rfc3339)
+- [WHATWG Streams Standard](https://streams.spec.whatwg.org/)
 
 ## License
 

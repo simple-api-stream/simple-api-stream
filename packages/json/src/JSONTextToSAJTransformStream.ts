@@ -23,7 +23,7 @@ export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEve
       },
 
       /**
-       * Receives a chunk of JSON text and forwards it to the SAX parser.
+       * Receives a chunk of JSON text and forwards it to the SAJ parser.
        */
       transform(chunk) {
         buffer.enqueue(chunk);
@@ -31,7 +31,7 @@ export class JSONTextToSAJTransformStream extends TransformStream<string, SAJEve
 
       /**
        * Called when the writable side of the stream is closed.
-       * Flushes any remaining buffered XML data through the parser.
+       * Flushes any remaining buffered JSON data through the parser.
        */
       flush() {
         buffer.flush();

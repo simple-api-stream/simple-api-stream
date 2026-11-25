@@ -12,16 +12,28 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 
 ## Features
 
-| Class | Stream type | Input | Output |
-|-------|-------------|-------|--------|
-| [`JSONTextToSAJTransformStream`](./src/JSONTextToSAJTransformStream.ts) | `TransformStream` | JSON text (`string` chunks) | [`SAJEventInterface`](./src/event-interface/SAJEventInterface.ts) objects |
-| [`JSONTextToSAJEventWritableStream`](./src/JSONTextToSAJEventWritableStream.ts) | `WritableStream` | JSON text (`string` chunks) | Calls a [`SAJHandler`](./src/interface/SAJHandler.ts) |
-| [`SAJToObjectTransformStream<T>`](./src/SAJToObjectTransformStream.ts) | `TransformStream` | SAJ events | JavaScript values of type `T` |
-| [`ObjectToSAJTransformStream<T>`](./src/ObjectToSAJTransformStream.ts) | `TransformStream` | JavaScript values (incl. `toJSON()`, iterables, async iterables) | SAJ events |
-| [`SAJToJSONTextTransformStream`](./src/SAJToJSONTextTransformStream.ts) | `TransformStream` | SAJ events | JSON text |
-| [`ResolveToSAJReadableStream`](./src/ResolveToSAJReadableStream.ts) | `ReadableStream` | Method calls ([`SAJResolver`](./src/interface/SAJResolver.ts)) | SAJ events |
+| Export | Type | Input | Output |
+|--------|------|-------|--------|
+| [`JSONTextToSAJTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/json/src/JSONTextToSAJTransformStream.ts) | `TransformStream` | JSON text (`string` chunks) | [`SAJEventInterface`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/json/src/event-interface/SAJEventInterface.ts) objects |
+| [`JSONTextToSAJEventWritableStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/json/src/JSONTextToSAJEventWritableStream.ts) | `WritableStream` | JSON text (`string` chunks) | Calls a [`SAJHandler`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/json/src/interface/SAJHandler.ts) |
+| [`SAJToObjectTransformStream<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/json/src/SAJToObjectTransformStream.ts) | `TransformStream` | SAJ events | JavaScript values of type `T` |
+| [`ObjectToSAJTransformStream<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/json/src/ObjectToSAJTransformStream.ts) | `TransformStream` | JavaScript values (incl. `toJSON()`, iterables, async iterables) | SAJ events |
+| [`SAJToJSONTextTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/json/src/SAJToJSONTextTransformStream.ts) | `TransformStream` | SAJ events | JSON text |
+| [`ResolveToSAJReadableStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/json/src/ResolveToSAJReadableStream.ts) | `ReadableStream` | Method calls ([`SAJResolver`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/json/src/interface/SAJResolver.ts)) | SAJ events |
+| [`parseJSONResponse<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/json/src/parseJSONResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (auto-detects NDJSON / JSONL / `json-seq`) |
 
 ## Usage
+
+```ts
+import { parseJSONResponse } from "@simple-api-stream/json";
+
+const response = await fetch("https://example.com/data.json");
+for await (const obj of parseJSONResponse<MyType>(response)) {
+  console.log("Parsed object:", obj);
+}
+```
+
+Or compose the underlying Web Streams directly:
 
 ```ts
 import {
@@ -54,7 +66,15 @@ for await (const obj of objects) {
 | `value` | `type: "string" \| "number" \| "boolean" \| "null"`, `value` |
 | `comment` | `comment: string`, `style?: "line" \| "block"` (emitted when `allowComments: true`) |
 
-For full options, error classes, and usage examples, see the [root README](../../README.md).
+For full options, error classes, and usage examples, see the [root README](https://github.com/simple-api-stream/simple-api-stream#readme).
+
+## See Also
+
+- [RFC 8259 — The JavaScript Object Notation (JSON) Data Interchange Format](https://datatracker.ietf.org/doc/html/rfc8259)
+- [RFC 7464 — JavaScript Object Notation (JSON) Text Sequences (`application/json-seq`)](https://datatracker.ietf.org/doc/html/rfc7464)
+- [RFC 8142 — GeoJSON Text Sequences (`application/geo+json-seq`)](https://datatracker.ietf.org/doc/html/rfc8142)
+- [JSON Lines](https://jsonlines.org/) / [NDJSON Specification](https://github.com/ndjson/ndjson-spec)
+- [WHATWG Streams Standard](https://streams.spec.whatwg.org/)
 
 ## License
 
