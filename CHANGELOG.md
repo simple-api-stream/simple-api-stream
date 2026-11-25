@@ -5,6 +5,8 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-11-25
+
 **Added**:
 
 - `@simple-api-stream/core`: Added `responseToTextStream`, `ResponseStreamError`, `parseMediaType`, and `extractCharset` helpers for validating Fetch `Response` objects (`checkOk`, `checkContentType`, `charset` auto-detection) and decoding them to `ReadableStream<string>`.
@@ -72,7 +74,8 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 - Documentation:
   - Architecture overview, feature matrix, usage examples, option tables, event format references, error classes, and subpath export guide in `README.md`.
 
-[Unreleased]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/simple-api-stream/simple-api-stream/releases/tag/v1.0.0

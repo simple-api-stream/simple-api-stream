@@ -1,6 +1,6 @@
 {
   "name": "@simple-api-stream/xml",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Streaming XML (SAX) parser and serializer built on the Web Streams API",
   "publishConfig": {
     "access": "public"
@@ -26,10 +26,10 @@
     }
   },
   "dependencies": {
-    "@simple-api-stream/core": "^1.1.0"
+    "@simple-api-stream/core": "^1.1.1"
   },
   "peerDependencies": {
-    "@simple-api-stream/json": "^1.1.0"
+    "@simple-api-stream/json": "^1.1.1"
   },
   "peerDependenciesMeta": {
     "@simple-api-stream/json": {
