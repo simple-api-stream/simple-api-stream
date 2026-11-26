@@ -19,7 +19,7 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 - Parser interface (type): `SimpleApiParser<T>`
 - Fetch `Response` helpers: `responseToTextStream`, `ResponseStreamError`, `parseMediaType`, `extractCharset`, and types `ResponseToTextStreamOptions`, `ContentTypeMatcher`
 
-For full documentation and usage examples, see the [root README](https://github.com/simple-api-stream/simple-api-stream#readme).
+For full documentation and usage examples, see the [root README](../../README.md).
 
 ## See Also
 

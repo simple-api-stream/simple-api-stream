@@ -14,15 +14,15 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 
 | Export | Type | Input | Output |
 |--------|------|-------|--------|
-| [`CSVTextToSACTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/csv/src/CSVTextToSACTransformStream.ts) | `TransformStream` | CSV text (`string` chunks) | [`SACEventInterface`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/csv/src/event-interface/SACEventInterface.ts) objects |
-| [`CSVTextToSACEventWritableStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/csv/src/CSVTextToSACEventWritableStream.ts) | `WritableStream` | CSV text (`string` chunks) | Calls a [`SACHandler`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/csv/src/interface/SACHandler.ts) |
-| [`SACToObjectTransformStream<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/csv/src/SACToObjectTransformStream.ts) | `TransformStream` | SAC events | JavaScript row objects / values of type `T` |
-| [`ObjectToSACTransformStream<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/csv/src/ObjectToSACTransformStream.ts) | `TransformStream` | JavaScript row objects / iterables | SAC events |
-| [`SACToCSVTextTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/csv/src/SACToCSVTextTransformStream.ts) | `TransformStream` | SAC events | CSV text |
-| [`ResolveToSACReadableStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/csv/src/ResolveToSACReadableStream.ts) | `ReadableStream` | Method calls ([`SACResolver`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/csv/src/interface/SACResolver.ts)) | SAC events |
-| [`parseCSVResponse<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/csv/src/parseCSVResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (auto-sets `delimiter: "\t"` for TSV) |
-| [`SACToSAJTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/csv/src/json/SACToSAJTransformStream.ts) (`@simple-api-stream/csv/json`) | `TransformStream` | SAC events | SAJ events (O(1) streaming JSON array / NDJSON) |
-| [`SAJToSACTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/csv/src/json/SAJToSACTransformStream.ts) (`@simple-api-stream/csv/json`) | `TransformStream` | SAJ events (JSON array of rows / NDJSON) | SAC events |
+| [`CSVTextToSACTransformStream`](./src/CSVTextToSACTransformStream.ts) | `TransformStream` | CSV text (`string` chunks) | [`SACEventInterface`](./src/event-interface/SACEventInterface.ts) objects |
+| [`CSVTextToSACEventWritableStream`](./src/CSVTextToSACEventWritableStream.ts) | `WritableStream` | CSV text (`string` chunks) | Calls a [`SACHandler`](./src/interface/SACHandler.ts) |
+| [`SACToObjectTransformStream<T>`](./src/SACToObjectTransformStream.ts) | `TransformStream` | SAC events | JavaScript row objects / values of type `T` |
+| [`ObjectToSACTransformStream<T>`](./src/ObjectToSACTransformStream.ts) | `TransformStream` | JavaScript row objects / iterables | SAC events |
+| [`SACToCSVTextTransformStream`](./src/SACToCSVTextTransformStream.ts) | `TransformStream` | SAC events | CSV text |
+| [`ResolveToSACReadableStream`](./src/ResolveToSACReadableStream.ts) | `ReadableStream` | Method calls ([`SACResolver`](./src/interface/SACResolver.ts)) | SAC events |
+| [`parseCSVResponse<T>`](./src/parseCSVResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (auto-sets `delimiter: "\t"` for TSV) |
+| [`SACToSAJTransformStream`](./src/json/SACToSAJTransformStream.ts) (`@simple-api-stream/csv/json`) | `TransformStream` | SAC events | SAJ events (O(1) streaming JSON array / NDJSON) |
+| [`SAJToSACTransformStream`](./src/json/SAJToSACTransformStream.ts) (`@simple-api-stream/csv/json`) | `TransformStream` | SAJ events (JSON array of rows / NDJSON) | SAC events |
 
 ## Usage
 
@@ -60,7 +60,7 @@ const jsonText = csvTextStream
 | `startRecordRow` / `endRecordRow` | – |
 | `column` | `value: string`, `index?: number`, `header?: string`, `quoted?: boolean` |
 
-For full options, error classes, and usage examples, see the [root README](https://github.com/simple-api-stream/simple-api-stream#readme).
+For full options, error classes, and usage examples, see the [root README](../../README.md).
 
 ## See Also
 

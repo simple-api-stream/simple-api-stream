@@ -14,9 +14,9 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 
 | Export | Type | Input | Output |
 |--------|------|-------|--------|
-| [`SSETextToEventTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/sse/src/SSETextToEventTransformStream.ts) | `TransformStream` | SSE text (`string` chunks) | [`SSEEventInterface`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/sse/src/event-interface/SSEEventInterface.ts) objects |
-| [`SSEEventToTextTransformStream`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/sse/src/SSEEventToTextTransformStream.ts) | `TransformStream` | [`SSEEventInterface`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/sse/src/event-interface/SSEEventInterface.ts) objects | SSE text (`text/event-stream`) |
-| [`parseSSEResponse<T>`](https://github.com/simple-api-stream/simple-api-stream/blob/main/packages/sse/src/parseSSEResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (`SSEMessage` or mapped `T`) |
+| [`SSETextToEventTransformStream`](./src/SSETextToEventTransformStream.ts) | `TransformStream` | SSE text (`string` chunks) | [`SSEEventInterface`](./src/event-interface/SSEEventInterface.ts) objects |
+| [`SSEEventToTextTransformStream`](./src/SSEEventToTextTransformStream.ts) | `TransformStream` | [`SSEEventInterface`](./src/event-interface/SSEEventInterface.ts) objects | SSE text (`text/event-stream`) |
+| [`parseSSEResponse<T>`](./src/parseSSEResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (`SSEMessage` or mapped `T`) |
 
 ## Usage
 
@@ -51,7 +51,7 @@ const sseText = inputTextStream
 | `comment` | `comment: string` (emitted when `comments: true`) |
 | `message` | `data: string`, `event?: string`, `id?: string`, `retry?: number` |
 
-For full options and usage examples, see the [root README](https://github.com/simple-api-stream/simple-api-stream#readme).
+For full options and usage examples, see the [root README](../../README.md).
 
 ## See Also
 
