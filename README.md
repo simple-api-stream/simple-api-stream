@@ -42,14 +42,16 @@ for await (const obj of objects) {
 
 ## 📦 Packages
 
-| Package | Description |
-|---------|-------------|
-| [`@simple-api-stream/core`](./packages/core) | Core event classes (`SAEvent`, `StartDocumentEvent`, `EndDocumentEvent`, `ErrorEvent`, `CommentEvent`), parser interfaces (`SimpleApiParser`), and Fetch `Response` helpers (`responseToTextStream`, `ResponseStreamError`) |
-| [`@simple-api-stream/json`](./packages/json) | Streaming JSON (SAJ) parser, object materializer, serializer, imperative builder, and Fetch `Response` helper (`parseJSONResponse`) |
-| [`@simple-api-stream/xml`](./packages/xml) | Streaming XML (SAX) parser, AST/DOM converters, serializer, imperative builder, Fetch `Response` helper (`parseXMLResponse`), and optional SAJ bridge (`@simple-api-stream/xml/json`) |
-| [`@simple-api-stream/csv`](./packages/csv) | Streaming CSV (SAC) parser, row object converters, serializer, imperative builder, Fetch `Response` helper (`parseCSVResponse`), and optional SAJ bridge (`@simple-api-stream/csv/json`) |
-| [`@simple-api-stream/toml`](./packages/toml) | Streaming TOML (SAT) parser, object converters, serializer, imperative builder, Fetch `Response` helper (`parseTOMLResponse`), and optional SAJ bridge (`@simple-api-stream/toml/json`) |
-| [`@simple-api-stream/sse`](./packages/sse) | Streaming Server-Sent Events (`text/event-stream`) parser, serializer, and Fetch `Response` helper (`parseSSEResponse`) |
+| Package | npm | Description |
+|---------|-----|-------------|
+| [`@simple-api-stream/core`](./packages/core) | [![npm](https://img.shields.io/npm/v/@simple-api-stream/core)](https://www.npmjs.com/package/@simple-api-stream/core) | Core event classes (`SAEvent`, `StartDocumentEvent`, `EndDocumentEvent`, `ErrorEvent`, `CommentEvent`), parser interfaces (`SimpleApiParser`), and Fetch `Response` helpers (`responseToTextStream`, `ResponseStreamError`) |
+| [`@simple-api-stream/json`](./packages/json) | [![npm](https://img.shields.io/npm/v/@simple-api-stream/json)](https://www.npmjs.com/package/@simple-api-stream/json) | Streaming JSON (SAJ) parser, object materializer, serializer, imperative builder, and Fetch `Response` helper (`parseJSONResponse`) |
+| [`@simple-api-stream/xml`](./packages/xml) | [![npm](https://img.shields.io/npm/v/@simple-api-stream/xml)](https://www.npmjs.com/package/@simple-api-stream/xml) | Streaming XML (SAX) parser, AST/DOM converters, serializer, imperative builder, Fetch `Response` helper (`parseXMLResponse`), and optional SAJ bridge (`@simple-api-stream/xml/json`) |
+| [`@simple-api-stream/csv`](./packages/csv) | [![npm](https://img.shields.io/npm/v/@simple-api-stream/csv)](https://www.npmjs.com/package/@simple-api-stream/csv) | Streaming CSV (SAC) parser, row object converters, serializer, imperative builder, Fetch `Response` helper (`parseCSVResponse`), and optional SAJ bridge (`@simple-api-stream/csv/json`) |
+| [`@simple-api-stream/toml`](./packages/toml) | [![npm](https://img.shields.io/npm/v/@simple-api-stream/toml)](https://www.npmjs.com/package/@simple-api-stream/toml) | Streaming TOML (SAT) parser, object converters, serializer, imperative builder, Fetch `Response` helper (`parseTOMLResponse`), and optional SAJ bridge (`@simple-api-stream/toml/json`) |
+| [`@simple-api-stream/sse`](./packages/sse) | [![npm](https://img.shields.io/npm/v/@simple-api-stream/sse)](https://www.npmjs.com/package/@simple-api-stream/sse) | Streaming Server-Sent Events (`text/event-stream`) parser, serializer, and Fetch `Response` helper (`parseSSEResponse`) |
+
+All packages are published under the [@simple-api-stream](https://www.npmjs.com/org/simple-api-stream) npm organization.
 
 ---
 
