@@ -3,8 +3,8 @@
   "displayName": "simple api stream",
   "icon": "images/simple-api-stream_256x256.png",
   "private": true,
-  "version": "1.1.1",
-  "description": "Streaming JSON, XML, CSV, TOML, and SSE parsers and serializers built on the Web Streams API",
+  "version": "1.2.0",
+  "description": "Streaming JSON, XML, CSV, TOML, INI, YAML, and SSE parsers and serializers built on the Web Streams API",
   "type": "module",
   "workspaces": [
     "packages/*"
@@ -14,7 +14,7 @@
     "test": "vitest run --coverage --coverage.reporter=cobertura --coverage.reporter=text",
     "lint": "eslint --flag unstable_native_nodejs_ts_config",
     "typecheck": "tsc --noEmit && npm run typecheck --workspaces",
-    "build": "npm run build -w @simple-api-stream/core && npm run build -w @simple-api-stream/json && npm run build -w @simple-api-stream/xml && npm run build -w @simple-api-stream/csv && npm run build -w @simple-api-stream/toml && npm run build -w @simple-api-stream/sse",
+    "build": "npm run build -w @simple-api-stream/core && npm run build -w @simple-api-stream/json && npm run build -w @simple-api-stream/xml && npm run build -w @simple-api-stream/csv && npm run build -w @simple-api-stream/toml && npm run build -w @simple-api-stream/ini && npm run build -w @simple-api-stream/yaml && npm run build -w @simple-api-stream/sse",
     "clean": "npm run clean --workspaces && node utils/remove.ts -- -f ./TestResults"
   },
   "repository": {

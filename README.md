@@ -1,8 +1,8 @@
 # simple-api-stream
 
-Streaming utilities for **incremental JSON, XML, CSV, TOML, and SSE processing** built on the [Web Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Streams_API).
+Streaming utilities for **incremental JSON, XML, CSV, TOML, INI, YAML, and SSE processing** built on the [Web Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Streams_API).
 
-Text is parsed chunk by chunk into a flat sequence of **events**: SAJ (Simple API for JSON) for JSON, SAX (Simple API for XML) for XML, SAC (Simple API for CSV) for CSV, SAT (Simple API for TOML) for TOML, and SSE events for Server-Sent Events (`text/event-stream`). You can consume the events directly, rebuild JavaScript objects from them, or turn them back into text. Because every component is a standard `ReadableStream` / `WritableStream` / `TransformStream`, the pieces compose with `pipeThrough()` / `pipeTo()` and respect backpressure.
+Text is parsed chunk by chunk into a flat sequence of **events**: SAJ (Simple API for JSON) for JSON, SAX (Simple API for XML) for XML, SAC (Simple API for CSV) for CSV, SAT (Simple API for TOML) for TOML, SAI (Simple API for INI) for INI, SAY (Simple API for YAML) for YAML, and SSE events for Server-Sent Events (`text/event-stream`). You can consume the events directly, rebuild JavaScript objects from them, or turn them back into text. Because every component is a standard `ReadableStream` / `WritableStream` / `TransformStream`, the pieces compose with `pipeThrough()` / `pipeTo()` and respect backpressure.
 
 - Zero external runtime dependencies
 - Works anywhere Web Streams are available (Node.js, browsers, Deno, Bun, …)
@@ -49,6 +49,8 @@ for await (const obj of objects) {
 | [`@simple-api-stream/xml`](./packages/xml) | [![npm](https://img.shields.io/npm/v/@simple-api-stream/xml)](https://www.npmjs.com/package/@simple-api-stream/xml) | Streaming XML (SAX) parser, AST/DOM converters, serializer, imperative builder, Fetch `Response` helper (`parseXMLResponse`), and optional SAJ bridge (`@simple-api-stream/xml/json`) |
 | [`@simple-api-stream/csv`](./packages/csv) | [![npm](https://img.shields.io/npm/v/@simple-api-stream/csv)](https://www.npmjs.com/package/@simple-api-stream/csv) | Streaming CSV (SAC) parser, row object converters, serializer, imperative builder, Fetch `Response` helper (`parseCSVResponse`), and optional SAJ bridge (`@simple-api-stream/csv/json`) |
 | [`@simple-api-stream/toml`](./packages/toml) | [![npm](https://img.shields.io/npm/v/@simple-api-stream/toml)](https://www.npmjs.com/package/@simple-api-stream/toml) | Streaming TOML (SAT) parser, object converters, serializer, imperative builder, Fetch `Response` helper (`parseTOMLResponse`), and optional SAJ bridge (`@simple-api-stream/toml/json`) |
+| [`@simple-api-stream/ini`](./packages/ini) | [![npm](https://img.shields.io/npm/v/@simple-api-stream/ini)](https://www.npmjs.com/package/@simple-api-stream/ini) | Streaming INI (SAI) parser, object converters, serializer, imperative builder, Fetch `Response` helper (`parseINIResponse`), and optional SAT/SAJ bridges (`@simple-api-stream/ini/toml`, `@simple-api-stream/ini/json`) |
+| [`@simple-api-stream/yaml`](./packages/yaml) | [![npm](https://img.shields.io/npm/v/@simple-api-stream/yaml)](https://www.npmjs.com/package/@simple-api-stream/yaml) | Streaming YAML 1.2 (SAY) parser, object converters (with anchors/aliases & merge keys), serializer, imperative builder, Fetch `Response` helper (`parseYAMLResponse`), and optional SAJ bridge (`@simple-api-stream/yaml/json`) |
 | [`@simple-api-stream/sse`](./packages/sse) | [![npm](https://img.shields.io/npm/v/@simple-api-stream/sse)](https://www.npmjs.com/package/@simple-api-stream/sse) | Streaming Server-Sent Events (`text/event-stream`) parser, serializer, and Fetch `Response` helper (`parseSSEResponse`) |
 
 All packages are published under the [@simple-api-stream](https://www.npmjs.com/org/simple-api-stream) npm organization.
@@ -57,7 +59,7 @@ All packages are published under the [@simple-api-stream](https://www.npmjs.com/
 
 ## 🧭 Overview
 
-Every document format (JSON, XML, CSV, TOML) follows the same streaming mental model (while SSE focuses on line-oriented `message` / `comment` event streaming via `SSETextToEventTransformStream`, `SSEEventToTextTransformStream`, and `parseSSEResponse`):
+Every document format (JSON, XML, CSV, TOML, INI, YAML) follows the same streaming mental model (while SSE focuses on line-oriented `message` / `comment` event streaming via `SSETextToEventTransformStream`, `SSEEventToTextTransformStream`, and `parseSSEResponse`):
 
 - **`*TextToSA*TransformStream`** — parses text chunks into a stream of events.
 - **`SA*To*TextTransformStream`** — serializes events back into text.
@@ -108,6 +110,28 @@ flowchart LR
     SAJ -- SAJToSATTransformStream --> SAT
     TT -- TOMLTextToSATEventWritableStream --> HT["SATHandler callbacks"]
   end
+  subgraph INI
+    IT["INI text"] -- INITextToSAITransformStream --> SAI["SAI events"]
+    IOBJ0["JS objects"] -- ObjectToSAITransformStream --> SAI
+    RI["ResolveToSAIReadableStream (imperative)"] --> SAI
+    SAI -- SAIToObjectTransformStream --> IOBJ["JS objects"]
+    SAI -- SAIToINITextTransformStream --> IT2["INI text"]
+    SAI -- SAIToSATTransformStream --> SAT
+    SAT -- SATToSAITransformStream --> SAI
+    SAI -- SAIToSAJTransformStream --> SAJ
+    SAJ -- SAJToSAITransformStream --> SAI
+    IT -- INITextToSAIEventWritableStream --> HI["SAIHandler callbacks"]
+  end
+  subgraph YAML
+    YT["YAML text"] -- YAMLTextToSAYTransformStream --> SAY["SAY events"]
+    YOBJ0["JS values"] -- ObjectToSAYTransformStream --> SAY
+    RY["ResolveToSAYReadableStream (imperative)"] --> SAY
+    SAY -- SAYToObjectTransformStream --> YOBJ["JS values"]
+    SAY -- SAYToYAMLTextTransformStream --> YT2["YAML text"]
+    SAY -- SAYToSAJTransformStream --> SAJ
+    SAJ -- SAJToSAYTransformStream --> SAY
+    YT -- YAMLTextToSAYEventWritableStream --> HY["SAYHandler callbacks"]
+  end
   subgraph SSE
     ST["SSE text"] -- SSETextToEventTransformStream --> SSEEV["SSE events"]
     SSEEV -- SSEEventToTextTransformStream --> ST2["SSE text"]
@@ -154,6 +178,26 @@ flowchart LR
 | | [`parseTOMLResponse<T>`](./packages/toml/src/parseTOMLResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (TOML table objects) |
 | | [`SATToSAJTransformStream`](./packages/toml/src/json/SATToSAJTransformStream.ts) (`./json`) | `TransformStream` | SAT events | SAJ events |
 | | [`SAJToSATTransformStream`](./packages/toml/src/json/SAJToSATTransformStream.ts) (`./json`) | `TransformStream` | SAJ events | SAT events |
+| **`@simple-api-stream/ini`** | [`INITextToSAITransformStream`](./packages/ini/src/INITextToSAITransformStream.ts) | `TransformStream` | INI text (`string` chunks) | [`SAIEventInterface`](./packages/ini/src/event-interface/SAIEventInterface.ts) objects |
+| | [`INITextToSAIEventWritableStream`](./packages/ini/src/INITextToSAIEventWritableStream.ts) | `WritableStream` | INI text (`string` chunks) | Calls a [`SAIHandler`](./packages/ini/src/interface/SAIHandler.ts) |
+| | [`SAIToObjectTransformStream<T>`](./packages/ini/src/SAIToObjectTransformStream.ts) | `TransformStream` | SAI events | JavaScript objects of type `T` |
+| | [`ObjectToSAITransformStream<T>`](./packages/ini/src/ObjectToSAITransformStream.ts) | `TransformStream` | JavaScript plain objects | SAI events |
+| | [`SAIToINITextTransformStream`](./packages/ini/src/SAIToINITextTransformStream.ts) | `TransformStream` | SAI events | INI text |
+| | [`ResolveToSAIReadableStream`](./packages/ini/src/ResolveToSAIReadableStream.ts) | `ReadableStream` | Method calls ([`SAIResolver`](./packages/ini/src/interface/SAIResolver.ts)) | SAI events |
+| | [`parseINIResponse<T>`](./packages/ini/src/parseINIResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (INI objects) |
+| | [`SAIToSATTransformStream`](./packages/ini/src/toml/SAIToSATTransformStream.ts) (`./toml`) | `TransformStream` | SAI events | SAT events (O(1) streaming) |
+| | [`SATToSAITransformStream`](./packages/ini/src/toml/SATToSAITransformStream.ts) (`./toml`) | `TransformStream` | SAT events | SAI events |
+| | [`SAIToSAJTransformStream`](./packages/ini/src/json/SAIToSAJTransformStream.ts) (`./json`) | `TransformStream` | SAI events | SAJ events |
+| | [`SAJToSAITransformStream`](./packages/ini/src/json/SAJToSAITransformStream.ts) (`./json`) | `TransformStream` | SAJ events | SAI events |
+| **`@simple-api-stream/yaml`** | [`YAMLTextToSAYTransformStream`](./packages/yaml/src/YAMLTextToSAYTransformStream.ts) | `TransformStream` | YAML text (`string` chunks) | [`SAYEventInterface`](./packages/yaml/src/event-interface/SAYEventInterface.ts) objects |
+| | [`YAMLTextToSAYEventWritableStream`](./packages/yaml/src/YAMLTextToSAYEventWritableStream.ts) | `WritableStream` | YAML text (`string` chunks) | Calls a [`SAYHandler`](./packages/yaml/src/interface/SAYHandler.ts) |
+| | [`SAYToObjectTransformStream<T>`](./packages/yaml/src/SAYToObjectTransformStream.ts) | `TransformStream` | SAY events | JavaScript values of type `T` (resolves anchors/aliases & merge keys) |
+| | [`ObjectToSAYTransformStream<T>`](./packages/yaml/src/ObjectToSAYTransformStream.ts) | `TransformStream` | JavaScript values | SAY events (optional auto-anchors) |
+| | [`SAYToYAMLTextTransformStream`](./packages/yaml/src/SAYToYAMLTextTransformStream.ts) | `TransformStream` | SAY events | YAML text |
+| | [`ResolveToSAYReadableStream`](./packages/yaml/src/ResolveToSAYReadableStream.ts) | `ReadableStream` | Method calls ([`SAYResolver`](./packages/yaml/src/interface/SAYResolver.ts)) | SAY events |
+| | [`parseYAMLResponse<T>`](./packages/yaml/src/parseYAMLResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (YAML values) |
+| | [`SAYToSAJTransformStream`](./packages/yaml/src/json/SAYToSAJTransformStream.ts) (`./json`) | `TransformStream` | SAY events | SAJ events |
+| | [`SAJToSAYTransformStream`](./packages/yaml/src/json/SAJToSAYTransformStream.ts) (`./json`) | `TransformStream` | SAJ events | SAY events (O(1) streaming) |
 | **`@simple-api-stream/sse`** | [`SSETextToEventTransformStream`](./packages/sse/src/SSETextToEventTransformStream.ts) | `TransformStream` | SSE text (`string` chunks) | [`SSEEventInterface`](./packages/sse/src/event-interface/SSEEventInterface.ts) objects |
 | | [`SSEEventToTextTransformStream`](./packages/sse/src/SSEEventToTextTransformStream.ts) | `TransformStream` | [`SSEEventInterface`](./packages/sse/src/event-interface/SSEEventInterface.ts) objects | SSE text (`text/event-stream`) |
 | | [`parseSSEResponse<T>`](./packages/sse/src/parseSSEResponse.ts) | Helper function | Fetch `Response` | `ReadableStream<T>` (`SSEMessage` or mapped `T`) |
@@ -174,6 +218,12 @@ npm install @simple-api-stream/csv
 
 # Install TOML streaming utilities
 npm install @simple-api-stream/toml
+
+# Install INI streaming utilities
+npm install @simple-api-stream/ini
+
+# Install YAML streaming utilities
+npm install @simple-api-stream/yaml
 
 # Install Server-Sent Events (SSE) streaming utilities
 npm install @simple-api-stream/sse
@@ -463,6 +513,36 @@ const jsonText = tomlTextStream
   .pipeThrough(new SAJToJSONTextTransformStream({ indent: 2 }));
 ```
 
+### INI text ⇔ TOML text
+
+```ts
+import { INITextToSAITransformStream } from "@simple-api-stream/ini";
+import { SAIToSATTransformStream } from "@simple-api-stream/ini/toml";
+import { SATToTOMLTextTransformStream } from "@simple-api-stream/toml";
+
+const tomlText = iniTextStream
+  .pipeThrough(new INITextToSAITransformStream({ comments: true }))
+  .pipeThrough(new SAIToSATTransformStream())
+  .pipeThrough(new SATToTOMLTextTransformStream({ comments: true }));
+```
+
+### YAML text → JavaScript values / JSON text
+
+```ts
+import { YAMLTextToSAYTransformStream, SAYToObjectTransformStream } from "@simple-api-stream/yaml";
+import { SAYToSAJTransformStream } from "@simple-api-stream/yaml/json";
+import { SAJToJSONTextTransformStream } from "@simple-api-stream/json";
+
+const docs = yamlTextStream
+  .pipeThrough(new YAMLTextToSAYTransformStream())
+  .pipeThrough(new SAYToObjectTransformStream());
+
+const yamlAsJson = yamlTextStream
+  .pipeThrough(new YAMLTextToSAYTransformStream())
+  .pipeThrough(new SAYToSAJTransformStream())
+  .pipeThrough(new SAJToJSONTextTransformStream({ indent: 2 }));
+```
+
 ### SSE text → events → SSE text
 
 ```ts
@@ -670,11 +750,11 @@ Events are plain objects with a `name` discriminator, so they can be narrowed wi
 
 ### Shared Core Events (`@simple-api-stream/core`)
 
-| Event `name` | JSON (SAJ) | XML (SAX) | CSV (SAC) | TOML (SAT) | SSE |
-|--------------|-----------|-----------|-----------|------------|-----|
-| `startDocument` / `endDocument` | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) |
-| `comment` | Opt-in (`allowComments: true`) | Yes (always) | – | Opt-in (`comments: true`) | Opt-in (`comments: true`) |
-| `error` | Opt-in (`multiple: "json-seq"`, `errorToEvent: true`) | – | – | – | – |
+| Event `name` | JSON (SAJ) | XML (SAX) | CSV (SAC) | TOML (SAT) | INI (SAI) | YAML (SAY) | SSE |
+|--------------|-----------|-----------|-----------|------------|-----------|------------|-----|
+| `startDocument` / `endDocument` | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) | Yes (`skipDocument` to omit) |
+| `comment` | Opt-in (`allowComments: true`) | Yes (always) | – | Opt-in (`comments: true`) | Opt-in (`comments: true`) | Opt-in (`comments: true`) | Opt-in (`comments: true`) |
+| `error` | Opt-in (`multiple: "json-seq"`, `errorToEvent: true`) | – | – | – | – | – | – |
 
 ### SAJ (Simple API for JSON)
 
@@ -768,6 +848,29 @@ Example for `id,name\n1,Alice` with `{ header: true }`:
 | `startInlineTable` / `endInlineTable` | – |
 | `value` | `type: "string" \| "integer" \| "float" \| "boolean" \| "offsetDateTime" \| "localDateTime" \| "localDate" \| "localTime"`, `value` |
 
+### SAI (Simple API for INI)
+
+| `name` | Extra fields |
+|--------|--------------|
+| `startDocument` | `kind: "ini"` |
+| `endDocument` | – |
+| `comment` | `comment: string`, `prefix?: string` (emitted when `comments: true`) |
+| `section` | `section: string` (`[section]`) |
+| `entry` | `key: string`, `value: string` (`key = value`) |
+
+### SAY (Simple API for YAML)
+
+| `name` | Extra fields |
+|--------|--------------|
+| `startDocument` | `kind: "yaml"` |
+| `endDocument` | – |
+| `comment` | `comment: string` (emitted when `comments: true`) |
+| `startMapping` / `endMapping` | `flow?: boolean`, `anchor?: string`, `tag?: string` |
+| `startSequence` / `endSequence` | `flow?: boolean`, `anchor?: string`, `tag?: string` |
+| `key` | `key: string` |
+| `scalar` | `type: "string" \| "number" \| "boolean" \| "null"`, `value`, `style?: "plain" \| "single" \| "double" \| "literal" \| "folded"`, `anchor?: string`, `tag?: string` |
+| `alias` | `alias: string` |
+
 ### SSE (Server-Sent Events)
 
 | `name` | Extra fields |
@@ -818,6 +921,16 @@ Example for `event: update\nid: 42\ndata: hello\n\n`:
 | `SATToTOMLTextTransformStreamError` | `@simple-api-stream/toml` (`streams.SATToTOMLTextTransformStreamError`) |
 | `SATToObjectTransformStreamError` | `@simple-api-stream/toml` (`streams.SATToObjectTransformStreamError`) |
 | `ObjectToSATTransformStreamError` | `@simple-api-stream/toml` (`streams.ObjectToSATTransformStreamError`) |
+| `INITextToSAIParserError` | `@simple-api-stream/ini` (`streams.INITextToSAIParserError`) |
+| `SAIToINITextTransformStreamError` | `@simple-api-stream/ini` (`streams.SAIToINITextTransformStreamError`) |
+| `SAIToObjectTransformStreamError` | `@simple-api-stream/ini` (`streams.SAIToObjectTransformStreamError`) |
+| `ObjectToSAITransformStreamError` | `@simple-api-stream/ini` (`streams.ObjectToSAITransformStreamError`) |
+| `SATToSAITransformStreamError` | `@simple-api-stream/ini/toml` |
+| `YAMLTextToSAYParserError` | `@simple-api-stream/yaml` (`streams.YAMLTextToSAYParserError`) |
+| `SAYToYAMLTextTransformStreamError` | `@simple-api-stream/yaml` (`streams.SAYToYAMLTextTransformStreamError`) |
+| `SAYToObjectTransformStreamError` | `@simple-api-stream/yaml` (`streams.SAYToObjectTransformStreamError`) |
+| `ObjectToSAYTransformStreamError` | `@simple-api-stream/yaml` (`streams.ObjectToSAYTransformStreamError`) |
+| `SAYToSAJTransformStreamError` | `@simple-api-stream/yaml/json` |
 
 ```ts
 import { JSONTextToSAJTransformStream, streams } from "@simple-api-stream/json";
@@ -942,6 +1055,31 @@ import { SACToSAJTransformStream, SAJToSACTransformStream } from "@simple-api-st
 
 // Optional TOML ⇔ JSON (SAT ⇔ SAJ) bridge
 import { SATToSAJTransformStream, SAJToSATTransformStream } from "@simple-api-stream/toml/json";
+
+// INI streaming utilities & optional TOML / JSON bridges
+import {
+  INITextToSAITransformStream,
+  INITextToSAIEventWritableStream,
+  SAIToObjectTransformStream,
+  ObjectToSAITransformStream,
+  SAIToINITextTransformStream,
+  ResolveToSAIReadableStream,
+  parseINIResponse,
+} from "@simple-api-stream/ini";
+import { SAIToSATTransformStream, SATToSAITransformStream } from "@simple-api-stream/ini/toml";
+import { SAIToSAJTransformStream, SAJToSAITransformStream } from "@simple-api-stream/ini/json";
+
+// YAML streaming utilities & optional JSON bridge
+import {
+  YAMLTextToSAYTransformStream,
+  YAMLTextToSAYEventWritableStream,
+  SAYToObjectTransformStream,
+  ObjectToSAYTransformStream,
+  SAYToYAMLTextTransformStream,
+  ResolveToSAYReadableStream,
+  parseYAMLResponse,
+} from "@simple-api-stream/yaml";
+import { SAYToSAJTransformStream, SAJToSAYTransformStream } from "@simple-api-stream/yaml/json";
 ```
 
 ---
@@ -953,10 +1091,10 @@ npm install
 npm run lint       # ESLint (type-aware)
 npm run typecheck  # TypeScript check across root and all workspaces
 npm test           # Vitest with coverage across all packages
-npm run build      # Build @simple-api-stream/{core,json,xml,csv,toml,sse} (ESM + .d.ts)
+npm run build      # Build @simple-api-stream/{core,json,xml,csv,toml,ini,yaml,sse} (ESM + .d.ts)
 ```
 
-- Packages live under `packages/core`, `packages/json`, `packages/xml`, `packages/csv`, `packages/toml`, and `packages/sse`; tests are colocated as `*.test.ts`.
+- Packages live under `packages/core`, `packages/json`, `packages/xml`, `packages/csv`, `packages/toml`, `packages/ini`, `packages/yaml`, and `packages/sse`; tests are colocated as `*.test.ts`.
 - Relative imports use explicit `.js` extensions (`moduleResolution: "NodeNext"`).
 
 ## 🔗 See Also
@@ -966,6 +1104,8 @@ npm run build      # Build @simple-api-stream/{core,json,xml,csv,toml,sse} (ESM 
 - **XML**: [W3C XML 1.0 (Fifth Edition)](https://www.w3.org/TR/xml/), [W3C XML Stylesheet Processing Instruction](https://www.w3.org/TR/xml-stylesheet/), [WHATWG DOM Standard](https://dom.spec.whatwg.org/), [WHATWG HTML Named Character References](https://html.spec.whatwg.org/multipage/named-characters.html)
 - **CSV**: [RFC 4180 (CSV)](https://datatracker.ietf.org/doc/html/rfc4180), [IANA `text/tab-separated-values`](https://www.iana.org/assignments/media-types/text/tab-separated-values)
 - **TOML**: [TOML v1.0.0 Specification](https://toml.io/en/v1.0.0), [RFC 3339 (Date and Time on the Internet)](https://datatracker.ietf.org/doc/html/rfc3339)
+- **INI**: [INI file (Wikipedia)](https://en.wikipedia.org/wiki/INI_file)
+- **YAML**: [YAML 1.2.2 Specification](https://yaml.org/spec/1.2.2/), [YAML 1.2 Core Schema](https://yaml.org/spec/1.2.2/#103-core-schema), [RFC 9512 (`application/yaml`)](https://datatracker.ietf.org/doc/html/rfc9512)
 - **SSE**: [WHATWG HTML Living Standard — Server-Sent Events](https://html.spec.whatwg.org/multipage/server-sent-events.html)
 
 ## 📄 License

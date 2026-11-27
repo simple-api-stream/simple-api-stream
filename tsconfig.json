@@ -20,6 +20,12 @@
       "path": "./packages/toml/tsconfig.build.json"
     },
     {
+      "path": "./packages/ini/tsconfig.build.json"
+    },
+    {
+      "path": "./packages/yaml/tsconfig.build.json"
+    },
+    {
       "path": "./packages/sse/tsconfig.build.json"
     }
   ]
