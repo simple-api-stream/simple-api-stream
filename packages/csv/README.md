@@ -27,6 +27,17 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 ## Usage
 
 ```ts
+import { parseCSVResponse } from "@simple-api-stream/csv";
+
+const response = await fetch("https://example.com/data.csv");
+for await (const row of parseCSVResponse(response, { parser: { header: true } })) {
+  console.log("Parsed row:", row);
+}
+```
+
+Or compose the underlying Web Streams directly:
+
+```ts
 import { CSVTextToSACTransformStream } from "@simple-api-stream/csv";
 
 const events = csvTextStream.pipeThrough(new CSVTextToSACTransformStream({ header: true }));

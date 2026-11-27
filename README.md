@@ -469,6 +469,8 @@ import { parseJSONResponse } from "@simple-api-stream/json";
 import { parseXMLResponse } from "@simple-api-stream/xml";
 import { parseCSVResponse } from "@simple-api-stream/csv";
 import { parseTOMLResponse } from "@simple-api-stream/toml";
+import { parseINIResponse } from "@simple-api-stream/ini";
+import { parseYAMLResponse } from "@simple-api-stream/yaml";
 import { parseSSEResponse } from "@simple-api-stream/sse";
 
 // JSON (auto-enables multiple for NDJSON / JSONL / application/json-seq)
@@ -484,9 +486,11 @@ for await (const row of parseCSVResponse(await fetch("/data.csv"), {
   console.log(row.id, row.name);
 }
 
-// XML & TOML
+// XML, TOML, INI & YAML
 const xmlDocs = parseXMLResponse(await fetch("/feed.xml"));
 const tomlConfigs = parseTOMLResponse(await fetch("/config.toml"), { checkOk: true });
+const iniConfigs = parseINIResponse(await fetch("/config.ini"));
+const yamlDocs = parseYAMLResponse(await fetch("/config.yaml"));
 
 // SSE (validates text/event-stream; supports mapMessage + skip)
 for await (const msg of parseSSEResponse(await fetch("/events"), {
@@ -739,7 +743,7 @@ Text and attribute values are escaped automatically.
 | `encoding` | `string` | `charset` from `Content-Type`, or `"utf-8"` | Character encoding passed to `TextDecoderStream`. |
 | `decoder` | `TextDecoderOptions` | – | Options forwarded to `TextDecoderStream` (`fatal`, `ignoreBOM`). |
 | `parser` | Format-specific parser options | – | Available on all `parse*Response` helpers; forwarded to the underlying `*TextTo*TransformStream`. |
-| `object` | Format-specific object options | – | Available on `parseJSONResponse`, `parseXMLResponse`, and `parseCSVResponse`; forwarded to `*ToObjectTransformStream`. |
+| `object` | Format-specific object options | – | Available on `parseJSONResponse`, `parseXMLResponse`, `parseCSVResponse`, and `parseYAMLResponse`; forwarded to `*ToObjectTransformStream`. |
 | `mapMessage` | `(message: SSEMessage, ctx: { skip }) => T \| typeof skip` | – | Available on `parseSSEResponse`; maps each `SSEMessage` into `T` or returns `skip` to filter out messages (e.g. `"[DONE]"`). |
 
 ---

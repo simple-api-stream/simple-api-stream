@@ -29,6 +29,17 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 ## Usage
 
 ```ts
+import { parseXMLResponse } from "@simple-api-stream/xml";
+
+const response = await fetch("https://example.com/feed.xml");
+for await (const doc of parseXMLResponse(response)) {
+  console.log("Parsed XML:", doc);
+}
+```
+
+Or compose the underlying Web Streams directly:
+
+```ts
 import { XMLTextToSAXTransformStream } from "@simple-api-stream/xml";
 
 const events = xmlTextStream.pipeThrough(new XMLTextToSAXTransformStream());

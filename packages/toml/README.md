@@ -27,6 +27,17 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 ## Usage
 
 ```ts
+import { parseTOMLResponse } from "@simple-api-stream/toml";
+
+const response = await fetch("https://example.com/config.toml");
+for await (const config of parseTOMLResponse(response)) {
+  console.log("Parsed TOML:", config);
+}
+```
+
+Or compose the underlying Web Streams directly:
+
+```ts
 import {
   TOMLTextToSATTransformStream,
   SATToObjectTransformStream,

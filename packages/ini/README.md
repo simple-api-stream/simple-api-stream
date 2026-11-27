@@ -29,6 +29,17 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 ## Usage
 
 ```ts
+import { parseINIResponse } from "@simple-api-stream/ini";
+
+const response = await fetch("https://example.com/config.ini");
+for await (const config of parseINIResponse(response)) {
+  console.log("Parsed INI:", config);
+}
+```
+
+Or compose the underlying Web Streams directly:
+
+```ts
 import {
   INITextToSAITransformStream,
   SAIToObjectTransformStream,

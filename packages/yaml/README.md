@@ -27,6 +27,17 @@ Requires Node.js **>= 24** or any runtime supporting Web Streams and async itera
 ## Usage
 
 ```ts
+import { parseYAMLResponse } from "@simple-api-stream/yaml";
+
+const response = await fetch("https://example.com/config.yaml");
+for await (const doc of parseYAMLResponse(response)) {
+  console.log("Parsed YAML:", doc);
+}
+```
+
+Or compose the underlying Web Streams directly:
+
+```ts
 import {
   YAMLTextToSAYTransformStream,
   SAYToObjectTransformStream,
