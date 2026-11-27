@@ -5,6 +5,19 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-27
+
+**Added**:
+
+- `@simple-api-stream/ini`:
+  - Added new streaming INI (SAI = Simple API for INI) package with `INITextToSAITransformStream`, `INITextToSAIEventWritableStream`, `SAIToINITextTransformStream`, `SAIToObjectTransformStream<T>`, `ObjectToSAITransformStream<T>`, `ResolveToSAIReadableStream`, `parseINIResponse<T>`, and `INITextToSAIParser` (supporting configurable `delimiters`, `commentPrefixes` preserved via `CommentEvent.prefix`, `inlineComments`, `stripBom`, quoted/escaped values, and `summarize: "default" | "section" | "document"`).
+  - Added `@simple-api-stream/ini/toml` subpath exporting `SAIToSATTransformStream` (O(1) streaming SAI → SAT with `splitDots` and `comments`) and `SATToSAITransformStream` (SAT → SAI with `unSupported` handling for arrays, inline tables, and array tables; `@simple-api-stream/toml` declared as an optional peer dependency).
+  - Added `@simple-api-stream/ini/json` subpath exporting `SAIToSAJTransformStream` and `SAJToSAITransformStream` (`@simple-api-stream/json` declared as an optional peer dependency).
+- `@simple-api-stream/yaml`:
+  - Added new streaming YAML 1.2 (SAY = Simple API for YAML) package supporting the YAML 1.2 Core Schema subset: block mappings & sequences, flow collections, literal/folded block scalars (`|` / `>` with chomping and explicit indent), multi-document streams (`---` / `...`), comments, anchors & aliases (`&` / `*`), and merge keys (`<<: *base` / `<<: [*a, *b]`).
+  - Exported `YAMLTextToSAYTransformStream`, `YAMLTextToSAYEventWritableStream`, `SAYToYAMLTextTransformStream`, `SAYToObjectTransformStream<T>` (with `multiple` and `mergeKeys`), `ObjectToSAYTransformStream<T>` (with optional automatic `anchors` for shared/circular references), `ResolveToSAYReadableStream`, `parseYAMLResponse<T>`, and `YAMLTextToSAYParser`.
+  - Added `@simple-api-stream/yaml/json` subpath exporting `SAYToSAJTransformStream` (with circular reference guard `SAYToSAJTransformStreamError`) and `SAJToSAYTransformStream` (O(1) streaming SAJ → SAY; `@simple-api-stream/json` declared as an optional peer dependency).
+
 ## [1.1.1] - 2026-11-25
 
 **Added**:
@@ -74,7 +87,8 @@ Adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and uses [Se
 - Documentation:
   - Architecture overview, feature matrix, usage examples, option tables, event format references, error classes, and subpath export guide in `README.md`.
 
-[Unreleased]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/simple-api-stream/simple-api-stream/compare/v1.0.0...v1.0.1

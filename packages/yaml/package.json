@@ -1,6 +1,6 @@
 {
   "name": "@simple-api-stream/yaml",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Streaming YAML (SAY) parser, serializer, and optional JSON (SAJ) bridge built on the Web Streams API",
   "publishConfig": {
     "access": "public"
@@ -26,10 +26,10 @@
     }
   },
   "dependencies": {
-    "@simple-api-stream/core": "^1.1.1"
+    "@simple-api-stream/core": "^1.2.0"
   },
   "peerDependencies": {
-    "@simple-api-stream/json": "^1.1.1"
+    "@simple-api-stream/json": "^1.2.0"
   },
   "peerDependenciesMeta": {
     "@simple-api-stream/json": {
