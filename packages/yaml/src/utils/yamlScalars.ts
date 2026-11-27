@@ -233,8 +233,7 @@ export function extractNodeProperties(text: string): {
       continue;
     }
     if (rest.startsWith("!") && tag === undefined) {
-      const m = /^(!\S*)(?:\s+|$)/.exec(rest);
-      if (!m) throw new Error(`Invalid tag syntax: ${rest}`);
+      const m = /^(!\S*)(?:\s+|$)/.exec(rest)!;
       tag = m[1];
       rest = rest.slice(m[0].length);
       continue;
@@ -313,8 +312,7 @@ export function parseFlowNode(
       }
       if (input[pos] === "!" && tag === undefined) {
         const rest = input.slice(pos);
-        const m = /^(!\S*)/.exec(rest);
-        if (!m) throw new Error("Invalid tag in flow node");
+        const m = /^(!\S*)/.exec(rest)!;
         tag = m[1];
         pos += m[0].length;
         continue;

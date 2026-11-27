@@ -282,7 +282,7 @@ export class SAYToYAMLTextTransformStream extends TransformStream<SAYEventInterf
       throw this.#makeError(`Unexpected end${type === "mapping" ? "Mapping" : "Sequence"}`);
     }
     if (frame.expectingValue) {
-      throw this.#makeError(`Unexpected end${type === "mapping" ? "Mapping" : "Sequence"} while awaiting value`);
+      throw this.#makeError("Unexpected endMapping while awaiting value");
     }
     if (frame.flow) {
       this.#emit(type === "mapping" ? "}" : "]");

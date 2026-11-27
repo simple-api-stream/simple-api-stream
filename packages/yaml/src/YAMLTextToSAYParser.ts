@@ -368,9 +368,6 @@ export class YAMLTextToSAYParser implements SimpleApiParser<string> {
   #endDocument(): void {
     if (!this.#inDocument) return;
     this.#flushBlockScalar();
-    if (this.#flowBuffer !== null) {
-      throw this.#makeError(`Unterminated flow collection before end of document at line ${this.#line}`);
-    }
     while (this.#stack.length > 0) {
       this.#popFrame();
     }

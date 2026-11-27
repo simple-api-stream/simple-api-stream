@@ -3,6 +3,7 @@ import {
   SAYToObjectTransformStream,
   YAMLTextToSAYTransformStream,
   streams,
+  type eventInterfaces,
 } from "./index.js";
 
 function from<T>(items: Iterable<T>): ReadableStream<T> {
@@ -15,7 +16,7 @@ function from<T>(items: Iterable<T>): ReadableStream<T> {
 }
 
 describe("SAYToObjectTransformStream", () => {
-  it("handles empty documents, __proto__ safety, and multiple: false", async () => {
+  it("handles empty documents, documentless streams, __proto__ safety, and multiple: false", async () => {
     const reconstructor = new SAYToObjectTransformStream();
     expect(reconstructor.status).toEqual({ multiple: true, inDocument: false, depth: 0 });
 
@@ -27,6 +28,13 @@ describe("SAYToObjectTransformStream", () => {
     expect(docs[0]).toBeNull();
     expect(({} as Record<string, unknown>).polluted).toBeUndefined();
     expect(Object.prototype.hasOwnProperty.call(docs[1], "__proto__")).toBe(true);
+
+    // Without startDocument / endDocument -> flushed at end of stream
+    const bare = await Array.fromAsync(
+      from([{ name: "scalar" as const, type: "number" as const, value: 99 }])
+        .pipeThrough(new SAYToObjectTransformStream()),
+    );
+    expect(bare).toEqual([99]);
 
     await expect(
       Array.fromAsync(
@@ -46,16 +54,24 @@ describe("SAYToObjectTransformStream", () => {
       ),
     ).rejects.toThrow(streams.SAYToObjectTransformStreamError);
 
-    await expect(
-      Array.fromAsync(
-        from([{ name: "endDocument" as const }]).pipeThrough(new SAYToObjectTransformStream()),
-      ),
-    ).rejects.toThrow(streams.SAYToObjectTransformStreamError);
+    const invalidSequences: eventInterfaces.SAYEventInterface[][] = [
+      [{ name: "endDocument" }],
+      [{ name: "startDocument", kind: "yaml" }, { name: "startDocument", kind: "yaml" }],
+      [{ name: "startDocument", kind: "yaml" }, { name: "startMapping" }, { name: "endDocument" }],
+      [{ name: "startMapping" }],
+      [{ name: "endMapping" }],
+      [{ name: "startMapping" }, { name: "key", key: "a" }, { name: "endMapping" }],
+      [{ name: "endSequence" }],
+      [{ name: "key", key: "a" }],
+      [{ name: "startMapping" }, { name: "key", key: "a" }, { name: "key", key: "b" }],
+      [{ name: "startMapping" }, { name: "scalar", type: "number", value: 1 }],
+      [{ name: "scalar", type: "number", value: 1 }, { name: "scalar", type: "number", value: 2 }],
+    ];
 
-    await expect(
-      Array.fromAsync(
-        from([{ name: "startMapping" as const }]).pipeThrough(new SAYToObjectTransformStream()),
-      ),
-    ).rejects.toThrow(streams.SAYToObjectTransformStreamError);
+    for (const seq of invalidSequences) {
+      await expect(
+        Array.fromAsync(from(seq).pipeThrough(new SAYToObjectTransformStream())),
+      ).rejects.toThrow(streams.SAYToObjectTransformStreamError);
+    }
   });
 });

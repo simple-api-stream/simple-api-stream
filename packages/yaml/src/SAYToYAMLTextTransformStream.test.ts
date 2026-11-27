@@ -5,6 +5,7 @@ import {
   SAYToYAMLTextTransformStream,
   YAMLTextToSAYTransformStream,
   streams,
+  type eventInterfaces,
 } from "./index.js";
 
 function from<T>(items: Iterable<T>): ReadableStream<T> {
@@ -17,20 +18,21 @@ function from<T>(items: Iterable<T>): ReadableStream<T> {
 }
 
 describe("SAYToYAMLTextTransformStream", () => {
-  it("serializes block and flow collections, empty collections, comments, anchors, aliases, and special numbers", async () => {
+  it("serializes block and flow collections, empty collections, comments, anchors, tags, aliases, and special numbers", async () => {
     const stream = new ResolveToSAYReadableStream((r) => {
       r.startDocument();
       r.comment(" header");
-      r.startMapping();
+      r.startMapping({ anchor: "root", tag: "!doc" });
+      r.comment(" inside mapping");
       r.key("title");
-      r.scalar("string", "hello");
+      r.scalar("string", "hello", { tag: "!!str" });
       r.key("quoted");
       r.scalar("string", "true");
       r.key("emptyMap");
-      r.startMapping();
+      r.startMapping({ anchor: "em" });
       r.endMapping();
       r.key("emptySeq");
-      r.startSequence();
+      r.startSequence({ tag: "!empty" });
       r.endSequence();
       r.key("flow");
       r.startSequence({ flow: true, anchor: "f" });
@@ -39,7 +41,11 @@ describe("SAYToYAMLTextTransformStream", () => {
       r.scalar("number", Number.NEGATIVE_INFINITY);
       r.scalar("number", Number.NaN);
       r.scalar("boolean", true);
+      r.scalar("boolean", false);
       r.scalar("null", null);
+      r.startSequence({ flow: true });
+      r.alias("em");
+      r.endSequence();
       r.endSequence();
       r.key("ref");
       r.alias("f");
@@ -57,23 +63,54 @@ describe("SAYToYAMLTextTransformStream", () => {
       r.endDocument();
     });
 
-    const serializer = new SAYToYAMLTextTransformStream({ comments: true, summarize: "document" });
+    const serializer = new SAYToYAMLTextTransformStream({
+      comments: true,
+      documentStart: true,
+      summarize: "document",
+    });
     expect(serializer.status.summarize).toBe("document");
     const docs = await Array.fromAsync(stream.pipeThrough(serializer));
 
     expect(docs).toEqual([
       [
+        "---",
         "# header",
-        "title: hello",
+        "&root !doc",
+        "# inside mapping",
+        "title: !!str hello",
         "quoted: \"true\"",
-        "emptyMap: {}",
-        "emptySeq: []",
-        "flow: &f [1, .inf, -.inf, .nan, true, null]",
+        "emptyMap: &em {}",
+        "emptySeq: !empty []",
+        "flow: &f [1, .inf, -.inf, .nan, true, false, null, [*em]]",
         "ref: *f",
         "",
       ].join("\n"),
       "---\n{a: \"x\", b: 2}\n",
     ]);
+
+    // Default summarize + comments: false + root empty mapping + flush without endDocument
+    const bare = (await Array.fromAsync(
+      from([
+        { name: "comment" as const, comment: "ignored" },
+        { name: "startMapping" as const },
+        { name: "endMapping" as const },
+      ]).pipeThrough(new SAYToYAMLTextTransformStream({ comments: false, summarize: false })),
+    )).join("");
+    expect(bare).toBe("{}\n");
+
+    // Non-empty anchored block child mapping
+    const anchoredChild = (await Array.fromAsync(
+      from([
+        { name: "startMapping" as const },
+        { name: "key" as const, key: "sub" },
+        { name: "startMapping" as const, anchor: "s" },
+        { name: "key" as const, key: "k" },
+        { name: "scalar" as const, type: "number" as const, value: 1 },
+        { name: "endMapping" as const },
+        { name: "endMapping" as const },
+      ]).pipeThrough(new SAYToYAMLTextTransformStream({ summarize: true })),
+    )).join("");
+    expect(anchoredChild).toBe("sub: &s\n  k: 1\n");
   });
 
   it("round-trips nested objects and sequences through YAML text", async () => {
@@ -126,22 +163,22 @@ describe("SAYToYAMLTextTransformStream", () => {
   it("errors on invalid options or event sequences", async () => {
     expect(() => new SAYToYAMLTextTransformStream({ indent: 0 })).toThrow(streams.SAYToYAMLTextTransformStreamError);
 
-    await expect(
-      Array.fromAsync(
-        from([{ name: "endDocument" as const }]).pipeThrough(new SAYToYAMLTextTransformStream()),
-      ),
-    ).rejects.toThrow(streams.SAYToYAMLTextTransformStreamError);
+    const invalidSequences: eventInterfaces.SAYEventInterface[][] = [
+      [{ name: "startDocument", kind: "yaml" }, { name: "startDocument", kind: "yaml" }],
+      [{ name: "endDocument" }],
+      [{ name: "startDocument", kind: "yaml" }, { name: "startMapping" }, { name: "endDocument" }],
+      [{ name: "key", key: "a" }],
+      [{ name: "startMapping" }, { name: "key", key: "a" }, { name: "key", key: "b" }],
+      [{ name: "startMapping" }, { name: "key", key: "a" }, { name: "endMapping" }],
+      [{ name: "endMapping" }],
+      [{ name: "endSequence" }],
+      [{ name: "startMapping" }],
+    ];
 
-    await expect(
-      Array.fromAsync(
-        from([{ name: "key" as const, key: "a" }]).pipeThrough(new SAYToYAMLTextTransformStream()),
-      ),
-    ).rejects.toThrow(streams.SAYToYAMLTextTransformStreamError);
-
-    await expect(
-      Array.fromAsync(
-        from([{ name: "startMapping" as const }]).pipeThrough(new SAYToYAMLTextTransformStream()),
-      ),
-    ).rejects.toThrow(streams.SAYToYAMLTextTransformStreamError);
+    for (const seq of invalidSequences) {
+      await expect(
+        Array.fromAsync(from(seq).pipeThrough(new SAYToYAMLTextTransformStream())),
+      ).rejects.toThrow(streams.SAYToYAMLTextTransformStreamError);
+    }
   });
 });

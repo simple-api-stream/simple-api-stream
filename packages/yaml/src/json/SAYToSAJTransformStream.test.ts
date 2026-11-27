@@ -37,7 +37,7 @@ describe("SAYToSAJTransformStream", () => {
     });
   });
 
-  it("supports makeDocument: false", async () => {
+  it("supports makeDocument: false and propagates errors", async () => {
     const events = await Array.fromAsync(
       from(["a: 1\n"])
         .pipeThrough(new YAMLTextToSAYTransformStream())
@@ -49,5 +49,13 @@ describe("SAYToSAJTransformStream", () => {
       { name: "value", type: "number", value: 1 },
       { name: "endObject" },
     ]);
+
+    await expect(
+      Array.fromAsync(
+        from(["a: *missing\n"])
+          .pipeThrough(new YAMLTextToSAYTransformStream())
+          .pipeThrough(new SAYToSAJTransformStream()),
+      ),
+    ).rejects.toThrow();
   });
 });
