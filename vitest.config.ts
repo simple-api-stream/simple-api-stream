@@ -63,6 +63,7 @@ export default defineConfig({
     ],
   },
   test: {
+    isolate: false,
     coverage: {
       reporter: ["cobertura", "text", "json-summary", "json"],
       reportsDirectory: "./TestResults/coverage",
