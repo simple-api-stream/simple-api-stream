@@ -29,4 +29,18 @@ describe("SAIToSAJTransformStream", () => {
       },
     });
   });
+
+  it("supports makeDocument: false", async () => {
+    const events = await Array.fromAsync(
+      from(["a = 1\n"])
+        .pipeThrough(new INITextToSAITransformStream())
+        .pipeThrough(new SAIToSAJTransformStream({ makeDocument: false })),
+    );
+    expect(events).toEqual([
+      { name: "startObject" },
+      { name: "key", key: "a" },
+      { name: "value", type: "string", value: "1" },
+      { name: "endObject" },
+    ]);
+  });
 });

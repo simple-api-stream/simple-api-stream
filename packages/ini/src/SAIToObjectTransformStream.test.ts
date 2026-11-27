@@ -17,8 +17,10 @@ function from<T>(items: Iterable<T>): ReadableStream<T> {
 describe("SAIToObjectTransformStream", () => {
   it("reconstructs root entries and sections with last-write-wins for duplicates", async () => {
     const ini = [
+      "; ignored comment",
       "root = first",
       "root = second",
+      "db = overwritten-by-section",
       "[db]",
       "host = db1",
       "port = 5432",
@@ -26,10 +28,13 @@ describe("SAIToObjectTransformStream", () => {
       "host = db2",
     ].join("\n");
 
+    const reconstructor = new SAIToObjectTransformStream();
+    expect(reconstructor.status).toEqual({ inDocument: false, currentSection: null });
+
     const objs = await Array.fromAsync(
       from([ini])
-        .pipeThrough(new INITextToSAITransformStream())
-        .pipeThrough(new SAIToObjectTransformStream()),
+        .pipeThrough(new INITextToSAITransformStream({ comments: true }))
+        .pipeThrough(reconstructor),
     );
 
     expect(objs).toEqual([
@@ -64,7 +69,16 @@ describe("SAIToObjectTransformStream", () => {
     expect(objs).toEqual([{ a: "1" }]);
   });
 
-  it("errors on unclosed document or unexpected endDocument", async () => {
+  it("errors on duplicate startDocument, unclosed document, or unexpected endDocument", async () => {
+    await expect(
+      Array.fromAsync(
+        from([
+          { name: "startDocument" as const, kind: "ini" as const },
+          { name: "startDocument" as const, kind: "ini" as const },
+        ]).pipeThrough(new SAIToObjectTransformStream()),
+      ),
+    ).rejects.toThrow(streams.SAIToObjectTransformStreamError);
+
     await expect(
       Array.fromAsync(
         from([{ name: "startDocument" as const, kind: "ini" as const }])

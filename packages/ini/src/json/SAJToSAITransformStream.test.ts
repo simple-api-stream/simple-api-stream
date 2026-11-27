@@ -31,4 +31,14 @@ describe("SAJToSAITransformStream", () => {
 
     expect(ini).toBe("title=App\n[server]\nhost=localhost\nport=8080\n");
   });
+
+  it("propagates errors for non-object JSON roots", async () => {
+    await expect(
+      Array.fromAsync(
+        from(["[1, 2, 3]"])
+          .pipeThrough(new JSONTextToSAJTransformStream())
+          .pipeThrough(new SAJToSAITransformStream()),
+      ),
+    ).rejects.toThrow();
+  });
 });

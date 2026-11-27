@@ -12,11 +12,13 @@ describe("parseINIResponse", () => {
     expect(objs).toEqual([{ app: { name: "demo" } }]);
   });
 
-  it("rejects unexpected Content-Type by default", () => {
-    const res = new Response("[app]\nname = demo\n", {
+  it("rejects unexpected or missing Content-Type by default", () => {
+    const jsonRes = new Response("[app]\nname = demo\n", {
       headers: { "content-type": "application/json" },
     });
+    expect(() => parseINIResponse(jsonRes)).toThrow(ResponseStreamError);
 
-    expect(() => parseINIResponse(res)).toThrow(ResponseStreamError);
+    const noCtRes = new Response(new ReadableStream());
+    expect(() => parseINIResponse(noCtRes)).toThrow(ResponseStreamError);
   });
 });

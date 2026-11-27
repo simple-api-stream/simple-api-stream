@@ -15,11 +15,13 @@ function from<T>(items: Iterable<T>): ReadableStream<T> {
 }
 
 describe("ObjectToSAITransformStream", () => {
-  it("converts plain objects with root entries and nested sections", async () => {
+  it("converts plain objects with root entries, Date, booleans, and nested sections", async () => {
     const input = {
       title: "Demo",
       port: 8080,
       enabled: true,
+      disabled: false,
+      created: new Date("2026-01-02T03:04:05.000Z"),
       db: {
         host: "localhost",
         pool: {
@@ -28,9 +30,12 @@ describe("ObjectToSAITransformStream", () => {
       },
     };
 
+    const converter = new ObjectToSAITransformStream();
+    expect(converter.status.makeDocument).toBe(true);
+
     const text = (await Array.fromAsync(
       from([input])
-        .pipeThrough(new ObjectToSAITransformStream())
+        .pipeThrough(converter)
         .pipeThrough(new SAIToINITextTransformStream({ summarize: true })),
     )).join("");
 
@@ -38,6 +43,8 @@ describe("ObjectToSAITransformStream", () => {
       "title=Demo",
       "port=8080",
       "enabled=true",
+      "disabled=false",
+      "created=2026-01-02T03:04:05.000Z",
       "[db]",
       "host=localhost",
       "[db.pool]",
@@ -46,8 +53,8 @@ describe("ObjectToSAITransformStream", () => {
     ].join("\n"));
   });
 
-  it("handles unsupported values according to unSupported option", async () => {
-    const input = { a: "ok", b: [1, 2], c: null };
+  it("handles unsupported values according to unSupported option and flattenSections: false", async () => {
+    const input = { a: "ok", b: [1, 2], c: null, d: new Date("invalid") };
 
     const ignored = await Array.fromAsync(
       from([input]).pipeThrough(new ObjectToSAITransformStream({ makeDocument: false })),
@@ -60,16 +67,30 @@ describe("ObjectToSAITransformStream", () => {
       ),
     ).rejects.toThrow(streams.ObjectToSAITransformStreamError);
 
+    const customConverter = new ObjectToSAITransformStream({
+      makeDocument: false,
+      flattenSections: false,
+      unSupported: ({ value, skip }) => (Array.isArray(value) ? value.join(",") : skip),
+    });
+    expect(customConverter.status.unSupported[0]).toBe("custom");
+
     const custom = await Array.fromAsync(
-      from([input]).pipeThrough(new ObjectToSAITransformStream({
-        makeDocument: false,
-        unSupported: ({ value, skip }) => (Array.isArray(value) ? value.join(",") : skip),
-      })),
+      from([{ a: "ok", b: [1, 2], sec: { nested: { deep: "x" } } }]).pipeThrough(customConverter),
     );
     expect(custom).toEqual([
       { name: "entry", key: "a", value: "ok" },
       { name: "entry", key: "b", value: "1,2" },
+      { name: "section", section: "sec" },
     ]);
+
+    // Custom handler returning another unsupported value errors
+    await expect(
+      Array.fromAsync(
+        from([{ bad: null }]).pipeThrough(new ObjectToSAITransformStream({
+          unSupported: () => undefined,
+        })),
+      ),
+    ).rejects.toThrow(streams.ObjectToSAITransformStreamError);
   });
 
   it("rejects non-object roots and circular references", async () => {

@@ -310,7 +310,6 @@ export class INITextToSAIParser implements SimpleApiParser<string> {
 
         this.#parseLine(rawLine);
         this.#handler.onParseLoopAfter?.(this.#status());
-        if (this.#errored) return;
       }
     }
     catch (err: unknown) {

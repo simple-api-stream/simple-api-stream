@@ -42,6 +42,18 @@ describe("SAIToSATTransformStream", () => {
     ].join("\n"));
   });
 
+  it("supports makeDocument: false and comments: false", async () => {
+    const events = await Array.fromAsync(
+      from(["; c\na = 1\n"])
+        .pipeThrough(new INITextToSAITransformStream({ comments: true }))
+        .pipeThrough(new SAIToSATTransformStream({ makeDocument: false, comments: false })),
+    );
+    expect(events).toEqual([
+      { name: "key", path: ["a"] },
+      { name: "value", type: "string", value: "1" },
+    ]);
+  });
+
   it("supports splitDots option for dotted INI section names", async () => {
     const ini = "[db.primary]\nhost = localhost\n";
 
