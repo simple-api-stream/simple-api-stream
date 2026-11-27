@@ -31,6 +31,7 @@ export default defineConfig([
             "vitest.config.ts",
             "packages/*/vite.config.js",
           ],
+          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 16,
         },
       },
     },

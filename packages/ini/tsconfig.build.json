@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "./src",
+    "sourceRoot": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "./tsconfig.build.tsbuildinfo",
+    "types": [],
+    "paths": {},
+    "noEmit": false
+  },
+  "exclude": [
+    "./src/**/*.test.ts"
+  ],
+  "include": [
+    "./src/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../core/tsconfig.build.json"
+    },
+    {
+      "path": "../toml/tsconfig.build.json"
+    },
+    {
+      "path": "../json/tsconfig.build.json"
+    }
+  ]
+}

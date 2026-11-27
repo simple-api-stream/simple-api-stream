@@ -37,6 +37,18 @@ export default defineConfig({
         replacement: resolve(import.meta.dirname, "packages/toml/src/index.ts"),
       },
       {
+        find: "@simple-api-stream/ini/toml",
+        replacement: resolve(import.meta.dirname, "packages/ini/src/toml/index.ts"),
+      },
+      {
+        find: "@simple-api-stream/ini/json",
+        replacement: resolve(import.meta.dirname, "packages/ini/src/json/index.ts"),
+      },
+      {
+        find: "@simple-api-stream/ini",
+        replacement: resolve(import.meta.dirname, "packages/ini/src/index.ts"),
+      },
+      {
         find: "@simple-api-stream/sse",
         replacement: resolve(import.meta.dirname, "packages/sse/src/index.ts"),
       },
