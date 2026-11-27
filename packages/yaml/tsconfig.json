@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@simple-api-stream/core": [
+        "../core/src/index.ts"
+      ],
+      "@simple-api-stream/json": [
+        "../json/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "src"
+  ]
+}

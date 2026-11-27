@@ -1,0 +1,68 @@
+{
+  "name": "@simple-api-stream/yaml",
+  "version": "1.1.1",
+  "description": "Streaming YAML (SAY) parser, serializer, and optional JSON (SAJ) bridge built on the Web Streams API",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./json": {
+      "types": "./dist/json/index.d.ts",
+      "default": "./dist/json/index.js"
+    }
+  },
+  "dependencies": {
+    "@simple-api-stream/core": "^1.1.1"
+  },
+  "peerDependencies": {
+    "@simple-api-stream/json": "^1.1.1"
+  },
+  "peerDependenciesMeta": {
+    "@simple-api-stream/json": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "build": "vite build && tsc --build tsconfig.build.json --force",
+    "typecheck": "tsc --noEmit",
+    "clean": "node ../../utils/remove.ts -- -f ./dist -f ./tsconfig.build.tsbuildinfo",
+    "prepack": "node -e \"require('node:fs').cpSync('../../CHANGELOG.md', 'CHANGELOG.md')\"",
+    "postpack": "node ../../utils/remove.ts -- -f ./CHANGELOG.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simple-api-stream/simple-api-stream.git",
+    "directory": "packages/yaml"
+  },
+  "keywords": [
+    "YAML",
+    "SAY",
+    "stream",
+    "web streams",
+    "TransformStream",
+    "parser"
+  ],
+  "author": "juners",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.x"
+  },
+  "bugs": {
+    "url": "https://github.com/simple-api-stream/simple-api-stream/issues"
+  },
+  "homepage": "https://github.com/simple-api-stream/simple-api-stream#readme"
+}
