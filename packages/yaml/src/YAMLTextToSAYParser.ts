@@ -254,6 +254,7 @@ export class YAMLTextToSAYParser implements SimpleApiParser<string> {
   #inDocument = false;
   #documentCount = 0;
   #hasRootValue = false;
+  #pendingRootMeta?: { anchor?: string, tag?: string };
   #stack: BlockFrame[] = [];
   #blockScalar: BlockScalarState | null = null;
   #flowBuffer: FlowBufferState | null = null;
@@ -370,6 +371,11 @@ export class YAMLTextToSAYParser implements SimpleApiParser<string> {
     this.#flushBlockScalar();
     while (this.#stack.length > 0) {
       this.#popFrame();
+    }
+    if (this.#pendingRootMeta !== undefined) {
+      const meta = this.#pendingRootMeta;
+      this.#pendingRootMeta = undefined;
+      this.#emitEvent(new ScalarEvent("null", null, { style: "plain", ...meta }).toInterface());
     }
     this.#inDocument = false;
     this.#hasRootValue = false;
@@ -624,13 +630,34 @@ export class YAMLTextToSAYParser implements SimpleApiParser<string> {
   }
 
   #parseContent(content: string, indent: number): void {
+    // Leading anchor/tag before a block collection on the same line (e.g. `- &item id: 1` or `&root a: 1`)
+    if (content.startsWith("&") || content.startsWith("!")) {
+      const { rest, anchor, tag } = extractNodeProperties(content);
+      const meta = {
+        ...(anchor !== undefined ? { anchor } : {}),
+        ...(tag !== undefined ? { tag } : {}),
+      };
+      if (rest.length > 0 && !rest.startsWith("{") && !rest.startsWith("[") && findMappingColon(rest) !== -1) {
+        const top = this.#stack[this.#stack.length - 1];
+        if (top?.expectingValue) {
+          top.pendingMeta = meta;
+        }
+        else {
+          this.#pendingRootMeta = meta;
+        }
+        this.#parseContent(rest, indent);
+        return;
+      }
+    }
+
     // Sequence item (`-` or `- ...`)
     if (content === "-" || content.startsWith("- ") || content.startsWith("-\t")) {
       this.#closeFramesAbove(indent, false);
       const top = this.#stack[this.#stack.length - 1];
 
       if (!top || top.type !== "sequence" || top.indent < indent) {
-        const meta = top?.expectingValue ? top.pendingMeta : undefined;
+        const meta = top?.expectingValue ? top.pendingMeta : this.#pendingRootMeta;
+        this.#pendingRootMeta = undefined;
         this.#consumeValueSlot();
         this.#emitEvent(new StartSequenceEvent(meta));
         this.#stack.push({ type: "sequence", indent, expectingValue: false });
@@ -662,7 +689,8 @@ export class YAMLTextToSAYParser implements SimpleApiParser<string> {
       let top = this.#stack[this.#stack.length - 1];
 
       if (!top || top.type !== "mapping" || top.indent < indent) {
-        const meta = top?.expectingValue ? top.pendingMeta : undefined;
+        const meta = top?.expectingValue ? top.pendingMeta : this.#pendingRootMeta;
+        this.#pendingRootMeta = undefined;
         this.#consumeValueSlot();
         this.#emitEvent(new StartMappingEvent(meta));
         top = { type: "mapping", indent, expectingValue: false };
@@ -697,15 +725,14 @@ export class YAMLTextToSAYParser implements SimpleApiParser<string> {
       ? { ...(anchor !== undefined ? { anchor } : {}), ...(tag !== undefined ? { tag } : {}) }
       : undefined;
 
-    // Only properties on this line (e.g. `key: &a` followed by nested mapping/sequence on next line)
+    // Only properties on this line (e.g. `key: &a` or `--- &root` followed by nested mapping/sequence on next line)
     if (rest.length === 0) {
       const top = this.#stack[this.#stack.length - 1];
       if (top?.expectingValue) {
         top.pendingMeta = meta;
         return;
       }
-      this.#consumeValueSlot();
-      this.#emitEvent(new ScalarEvent("null", null, { style: "plain", ...meta }).toInterface());
+      this.#pendingRootMeta = meta;
       return;
     }
 

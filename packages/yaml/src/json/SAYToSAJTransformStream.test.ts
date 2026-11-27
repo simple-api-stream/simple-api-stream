@@ -1,7 +1,7 @@
 import { SAJToJSONTextTransformStream } from "@simple-api-stream/json";
 import { describe, expect, it } from "vitest";
 import { YAMLTextToSAYTransformStream } from "../index.js";
-import { SAYToSAJTransformStream } from "./index.js";
+import { SAYToSAJTransformStream, SAYToSAJTransformStreamError } from "./index.js";
 
 function from<T>(items: Iterable<T>): ReadableStream<T> {
   return new ReadableStream<T>({
@@ -57,5 +57,13 @@ describe("SAYToSAJTransformStream", () => {
           .pipeThrough(new SAYToSAJTransformStream()),
       ),
     ).rejects.toThrow();
+
+    await expect(
+      Array.fromAsync(
+        from(["--- &root\nself: *root\n"])
+          .pipeThrough(new YAMLTextToSAYTransformStream())
+          .pipeThrough(new SAYToSAJTransformStream()),
+      ),
+    ).rejects.toThrow(SAYToSAJTransformStreamError);
   });
 });

@@ -106,4 +106,33 @@ describe("ObjectToSAYTransformStream", () => {
       Array.fromAsync(from([circular]).pipeThrough(new ObjectToSAYTransformStream())),
     ).rejects.toThrow(streams.ObjectToSAYTransformStreamError);
   });
+
+  it("emits anchors and aliases for shared and circular references when anchors: true", async () => {
+    const sharedObj = { host: "localhost" };
+    const sharedArr = [1, 2];
+    const root: Record<string, unknown> = {
+      first: sharedObj,
+      second: sharedObj,
+      third: sharedObj,
+      arr1: sharedArr,
+      arr2: sharedArr,
+    };
+    root.self = root;
+
+    const converter = new ObjectToSAYTransformStream({ anchors: true });
+    expect(converter.status.anchors).toBe(true);
+
+    const yaml = (await Array.fromAsync(
+      from([root])
+        .pipeThrough(converter)
+        .pipeThrough(new SAYToYAMLTextTransformStream({ summarize: true })),
+    )).join("");
+
+    expect(yaml).toContain("&a1");
+    expect(yaml).toContain("*a1");
+    expect(yaml).toContain("&a2");
+    expect(yaml).toContain("*a2");
+    expect(yaml).toContain("&a3");
+    expect(yaml).toContain("*a3");
+  });
 });

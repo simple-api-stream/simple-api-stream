@@ -4,7 +4,17 @@ import { SAYToObjectTransformStream } from "../SAYToObjectTransformStream.js";
 
 type SAJEventInterface = eventInterfaces.SAJEventInterface;
 
-function* emitValueAsSAJ(value: unknown): Generator<SAJEventInterface> {
+/**
+ * Error thrown by `SAYToSAJTransformStream` when a YAML value (such as a circular anchor reference) cannot be represented in JSON.
+ */
+export class SAYToSAJTransformStreamError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "SAYToSAJTransformStreamError";
+  }
+}
+
+function* emitValueAsSAJ(value: unknown, ancestors: Set<object> = new Set()): Generator<SAJEventInterface> {
   if (value === null) {
     yield { name: "value", type: "null", value: null };
     return;
@@ -26,20 +36,30 @@ function* emitValueAsSAJ(value: unknown): Generator<SAJEventInterface> {
     yield { name: "value", type: "string", value };
     return;
   }
-  if (Array.isArray(value)) {
-    yield { name: "startArray" };
-    for (const item of value) {
-      yield* emitValueAsSAJ(item);
+  const obj = value as object;
+  if (ancestors.has(obj)) {
+    throw new SAYToSAJTransformStreamError("Circular reference cannot be represented in JSON");
+  }
+  ancestors.add(obj);
+  try {
+    if (Array.isArray(value)) {
+      yield { name: "startArray" };
+      for (const item of value) {
+        yield* emitValueAsSAJ(item, ancestors);
+      }
+      yield { name: "endArray" };
+      return;
     }
-    yield { name: "endArray" };
-    return;
+    yield { name: "startObject" };
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      yield { name: "key", key: k };
+      yield* emitValueAsSAJ(v, ancestors);
+    }
+    yield { name: "endObject" };
   }
-  yield { name: "startObject" };
-  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-    yield { name: "key", key: k };
-    yield* emitValueAsSAJ(v);
+  finally {
+    ancestors.delete(obj);
   }
-  yield { name: "endObject" };
 }
 
 /**

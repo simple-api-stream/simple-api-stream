@@ -223,6 +223,21 @@ describe("YAMLTextToSAYTransformStream", () => {
       service: { config: { timeout: 30 }, label: "hello", copy: "hello" },
       emptyAnchored: null,
     });
+
+    // Document-start anchor (--- &root), compact sequence item anchor (- &item id: 1), and root inline anchor (&rootMap a: 1)
+    const [rootSelf] = await parseYAMLObjects("--- &root\nname: loop\nself: *root\n") as [Record<string, unknown>];
+    expect(rootSelf.name).toBe("loop");
+    expect(rootSelf.self).toBe(rootSelf);
+
+    const [seqItems] = await parseYAMLObjects("- &item id: 1\n  name: one\n- *item\n") as [unknown[]];
+    expect(seqItems).toEqual([{ id: 1, name: "one" }, { id: 1, name: "one" }]);
+    expect(seqItems[0]).toBe(seqItems[1]);
+
+    const [rootInline] = await parseYAMLObjects("&r !t a: 1\nb: *r\n") as [Record<string, unknown>];
+    expect(rootInline.a).toBe(1);
+    expect(rootInline.b).toBe(rootInline);
+
+    expect(await parseYAMLObjects("!tagOnly a: 1\n")).toEqual([{ a: 1 }]);
   });
 
   it("supports YAMLTextToSAYEventWritableStream, Parser direct lifecycle, and status", async () => {

@@ -1,5 +1,6 @@
 import type { SAYEventInterface } from "./event-interface/index.js";
 import {
+  AliasEvent,
   EndDocumentEvent,
   EndMappingEvent,
   EndSequenceEvent,
@@ -32,6 +33,10 @@ export type ObjectToSAYTransformStreamOptions = {
   /** Wrap each written value in `startDocument` / `endDocument` (default: `true`). */
   makeDocument?: boolean
   /**
+   * Automatically emit YAML anchors (`&a1`, ...) and aliases (`*a1`, ...) for shared and circular object/array references (default: `false`).
+   */
+  anchors?: boolean
+  /**
    * How to handle values that cannot be represented in YAML (`undefined`, functions, symbols, `bigint`, invalid `Date`).
    * - `"ignore"` (default): omit the key/element
    * - `"error"`: error the stream
@@ -43,6 +48,7 @@ export type ObjectToSAYTransformStreamOptions = {
 
 type Status = {
   get makeDocument(): boolean
+  get anchors(): boolean
   get unSupported(): ReturnType<typeof toUnsupported>
 };
 
@@ -51,6 +57,7 @@ type Status = {
  */
 export class ObjectToSAYTransformStreamError extends Error implements Status {
   makeDocument: boolean;
+  anchors: boolean;
   unSupported: ReturnType<typeof toUnsupported>;
 
   constructor(message: string, status: Status, options?: ErrorOptions) {
@@ -58,6 +65,7 @@ export class ObjectToSAYTransformStreamError extends Error implements Status {
     this.name = "ObjectToSAYTransformStreamError";
     ({
       makeDocument: this.makeDocument,
+      anchors: this.anchors,
       unSupported: this.unSupported,
     } = status);
   }
@@ -90,6 +98,7 @@ export class ObjectToSAYTransformStream<T = unknown> extends TransformStream<T, 
   static readonly unSupportedToNull = unSupportedToNull;
 
   #makeDocument: boolean;
+  #anchors: boolean;
   #unSupported: ObjectToSAYUnsupportedHandler | typeof skip;
   #controller!: TransformStreamDefaultController<SAYEventInterface>;
 
@@ -104,6 +113,7 @@ export class ObjectToSAYTransformStream<T = unknown> extends TransformStream<T, 
       },
     });
     this.#makeDocument = options?.makeDocument ?? true;
+    this.#anchors = options?.anchors ?? false;
     this.#unSupported = this.#toUnsupported(options?.unSupported);
     this.#controller = controller_;
   }
@@ -119,6 +129,7 @@ export class ObjectToSAYTransformStream<T = unknown> extends TransformStream<T, 
   #status(): Status {
     return {
       makeDocument: this.#makeDocument,
+      anchors: this.#anchors,
       unSupported: toUnsupported(this.#unSupported),
     };
   }
@@ -155,10 +166,38 @@ export class ObjectToSAYTransformStream<T = unknown> extends TransformStream<T, 
     return { skipped: false, value: replaced };
   }
 
+  #collectSharedAnchors(root: unknown): Map<object, string> {
+    const seen = new Set<object>();
+    const shared = new Map<object, string>();
+    let seq = 0;
+
+    const visit = (value: unknown): void => {
+      if (typeof value !== "object" || value === null || value instanceof Date) return;
+      if (seen.has(value)) {
+        if (!shared.has(value)) {
+          shared.set(value, `a${++seq}`);
+        }
+        return;
+      }
+      seen.add(value);
+      if (Array.isArray(value)) {
+        for (const item of value) visit(item);
+      }
+      else {
+        for (const v of Object.values(value)) visit(v);
+      }
+    };
+
+    visit(root);
+    return shared;
+  }
+
   * #emitValue(
     value: unknown,
     allowUnsupported: boolean,
     ancestors: Set<object>,
+    sharedAnchors: Map<object, string>,
+    emittedAnchors: Set<object>,
   ): Generator<SAYEventInterface, boolean, void> {
     if (value === null) {
       yield new ScalarEvent("null", null).toInterface();
@@ -180,7 +219,7 @@ export class ObjectToSAYTransformStream<T = unknown> extends TransformStream<T, 
       if (Number.isNaN(value.getTime())) {
         const resolved = this.#resolveUnsupported(value, allowUnsupported);
         if (resolved.skipped) return false;
-        return yield* this.#emitValue(resolved.value, false, ancestors);
+        return yield* this.#emitValue(resolved.value, false, ancestors, sharedAnchors, emittedAnchors);
       }
       yield new ScalarEvent("string", value.toISOString()).toInterface();
       return true;
@@ -188,27 +227,37 @@ export class ObjectToSAYTransformStream<T = unknown> extends TransformStream<T, 
     if (typeof value !== "object") {
       const resolved = this.#resolveUnsupported(value, allowUnsupported);
       if (resolved.skipped) return false;
-      return yield* this.#emitValue(resolved.value, false, ancestors);
+      return yield* this.#emitValue(resolved.value, false, ancestors, sharedAnchors, emittedAnchors);
     }
 
-    if (ancestors.has(value)) {
+    const anchor = sharedAnchors.get(value);
+    if (anchor !== undefined) {
+      if (emittedAnchors.has(value)) {
+        yield new AliasEvent(anchor);
+        return true;
+      }
+      emittedAnchors.add(value);
+    }
+    else if (ancestors.has(value)) {
       throw this.#makeError("Circular reference detected");
     }
+
     ancestors.add(value);
     try {
+      const meta = anchor !== undefined ? { anchor } : undefined;
       if (Array.isArray(value)) {
-        yield new StartSequenceEvent();
+        yield new StartSequenceEvent(meta);
         for (const item of value) {
-          yield* this.#emitValue(item, true, ancestors);
+          yield* this.#emitValue(item, true, ancestors, sharedAnchors, emittedAnchors);
         }
         yield new EndSequenceEvent();
         return true;
       }
 
-      yield new StartMappingEvent();
+      yield new StartMappingEvent(meta);
       for (const [k, v] of Object.entries(value)) {
         const events: SAYEventInterface[] = [];
-        const emitted = this.#collectValue(v, ancestors, events);
+        const emitted = this.#collectValue(v, ancestors, sharedAnchors, emittedAnchors, events);
         if (emitted) {
           yield new KeyEvent(k);
           yield* events;
@@ -222,8 +271,14 @@ export class ObjectToSAYTransformStream<T = unknown> extends TransformStream<T, 
     }
   }
 
-  #collectValue(value: unknown, ancestors: Set<object>, out: SAYEventInterface[]): boolean {
-    const gen = this.#emitValue(value, true, ancestors);
+  #collectValue(
+    value: unknown,
+    ancestors: Set<object>,
+    sharedAnchors: Map<object, string>,
+    emittedAnchors: Set<object>,
+    out: SAYEventInterface[],
+  ): boolean {
+    const gen = this.#emitValue(value, true, ancestors, sharedAnchors, emittedAnchors);
     while (true) {
       const next = gen.next();
       if (next.done) return next.value;
@@ -234,8 +289,10 @@ export class ObjectToSAYTransformStream<T = unknown> extends TransformStream<T, 
   #transform(chunk: T): void {
     try {
       const ancestors = new Set<object>();
+      const sharedAnchors = this.#anchors ? this.#collectSharedAnchors(chunk) : new Map<object, string>();
+      const emittedAnchors = new Set<object>();
       const events: SAYEventInterface[] = [];
-      const emitted = this.#collectValue(chunk, ancestors, events);
+      const emitted = this.#collectValue(chunk, ancestors, sharedAnchors, emittedAnchors, events);
       if (!emitted) return;
       if (this.#makeDocument) {
         this.#controller.enqueue(new StartDocumentEvent());

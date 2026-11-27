@@ -18,7 +18,7 @@ function from<T>(items: Iterable<T>): ReadableStream<T> {
 describe("SAYToObjectTransformStream", () => {
   it("handles empty documents, documentless streams, __proto__ safety, and multiple: false", async () => {
     const reconstructor = new SAYToObjectTransformStream();
-    expect(reconstructor.status).toEqual({ multiple: true, inDocument: false, depth: 0 });
+    expect(reconstructor.status).toEqual({ multiple: true, mergeKeys: true, inDocument: false, depth: 0 });
 
     const docs = await Array.fromAsync(
       from(["---\n...\n---\n__proto__:\n  polluted: true\n"])
@@ -43,6 +43,58 @@ describe("SAYToObjectTransformStream", () => {
           .pipeThrough(new SAYToObjectTransformStream({ multiple: false })),
       ),
     ).rejects.toThrow(streams.SAYToObjectTransformStreamError);
+  });
+
+  it("resolves YAML merge keys (<<: *base and <<: [*a, *b]) with explicit-key precedence", async () => {
+    const yaml = [
+      "a: &a",
+      "  x: 1",
+      "  y: 2",
+      "b: &b",
+      "  y: 20",
+      "  z: 30",
+      "single:",
+      "  x: 100",
+      "  <<: *a",
+      "  w: 4",
+      "multi:",
+      "  <<: [*a, *b]",
+      "  z: 300",
+      "literal:",
+      "  <<: not-a-mapping",
+      "inlineMap:",
+      "  <<: &im { p: 1 }",
+      "plainInlineMap:",
+      "  <<: { q: 2 }",
+      "nonMapSeq:",
+      "  <<: &ns [1, 2]",
+      "anchoredSeq:",
+      "  <<: &as [*a]",
+    ].join("\n");
+
+    const [merged] = await Array.fromAsync(
+      from([yaml])
+        .pipeThrough(new YAMLTextToSAYTransformStream())
+        .pipeThrough(new SAYToObjectTransformStream()),
+    );
+    expect(merged).toEqual({
+      a: { x: 1, y: 2 },
+      b: { y: 20, z: 30 },
+      single: { x: 100, y: 2, w: 4 },
+      multi: { x: 1, y: 2, z: 300 },
+      literal: { "<<": "not-a-mapping" },
+      inlineMap: { p: 1 },
+      plainInlineMap: { q: 2 },
+      nonMapSeq: { "<<": [1, 2] },
+      anchoredSeq: { x: 1, y: 2 },
+    });
+
+    const [unmerged] = await Array.fromAsync(
+      from([yaml])
+        .pipeThrough(new YAMLTextToSAYTransformStream())
+        .pipeThrough(new SAYToObjectTransformStream({ mergeKeys: false })),
+    ) as [Record<string, unknown>];
+    expect(unmerged.single).toEqual({ "x": 100, "<<": { x: 1, y: 2 }, "w": 4 });
   });
 
   it("errors on unknown alias or malformed event sequences", async () => {
